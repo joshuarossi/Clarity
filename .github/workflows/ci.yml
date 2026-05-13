@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (placeholder)
+        run: |
+          if [ -f "package.json" ] && npm run | grep -q "^  lint$"; then
+            npm run lint
+          else
+            echo "lint script not defined yet — skipping"
+          fi
+
+      - name: Typecheck (placeholder)
+        run: |
+          if [ -f "package.json" ] && npm run | grep -q "^  typecheck$"; then
+            npm run typecheck
+          elif [ -f "tsconfig.json" ]; then
+            npx tsc --noEmit
+          else
+            echo "no typecheck target — skipping"
+          fi
+
+      - name: Unit tests (placeholder)
+        run: |
+          if [ -f "package.json" ] && npm run | grep -q "^  test$"; then
+            npm test
+          else
+            echo "test script not defined yet — skipping"
+          fi
+
+      - name: E2E tests (placeholder)
+        env:
+          CLAUDE_MOCK: "true"
+        run: |
+          if [ -f "package.json" ] && npm run | grep -q "^  test:e2e$"; then
+            npm run test:e2e
+          else
+            echo "test:e2e script not defined yet — skipping"
+          fi
