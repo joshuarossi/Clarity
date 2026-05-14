@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "convex": "^1.38.0"
+  },
+  "devDependencies": {
+    "convex-test": "^0.0.52"
   }
 }
