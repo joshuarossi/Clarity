@@ -67,19 +67,19 @@ non_goals:
 tested_by:
   - ac: "Module exports a validateTransition function that takes current status + requested transition and returns the new status or throws CONFLICT"
     layer: unit
-    file: tests/wor-96/stateMachine.test.ts
+    file: tests/unit/stateMachine.test.ts
   - ac: "All 7 transitions are implemented: the 6 from TechSpec §5.1 plus DRAFT_PRIVATE_COACHING → CLOSED_ABANDONED (invite decline per DesignDoc §4.3)"
     layer: unit
-    file: tests/wor-96/stateMachine.test.ts
+    file: tests/unit/stateMachine.test.ts
   - ac: "Illegal transitions throw ConvexError with code CONFLICT and a descriptive message naming both the current state and the attempted transition"
     layer: unit
-    file: tests/wor-96/stateMachine.test.ts
+    file: tests/unit/stateMachine.test.ts
   - ac: "Vitest unit tests cover every legal transition and at least 5 illegal transitions"
     layer: unit
-    file: tests/wor-96/stateMachine.test.ts
+    file: tests/unit/stateMachine.test.ts
   - ac: "Closure transition (JOINT_ACTIVE → CLOSED_RESOLVED) requires both partyStates to have closureProposed=true and closureConfirmed=true"
     layer: unit
-    file: tests/wor-96/stateMachine.test.ts
+    file: tests/unit/stateMachine.test.ts
 ---
 
 # Contract: WOR-96 — Case lifecycle state machine helper (convex/lib/stateMachine.ts)
@@ -156,11 +156,11 @@ If any condition fails, it throws CONFLICT with a message describing which preco
 
 ## Test coverage
 
-**AC 1 (validateTransition interface) → `tests/wor-96/stateMachine.test.ts` (unit).** Call `validateTransition("DRAFT_PRIVATE_COACHING", "ACCEPT_INVITE")` and assert the return value is `"BOTH_PRIVATE_COACHING"`. This validates the basic function signature: takes two strings, returns a string.
+**AC 1 (validateTransition interface) → `tests/unit/stateMachine.test.ts` (unit).** Call `validateTransition("DRAFT_PRIVATE_COACHING", "ACCEPT_INVITE")` and assert the return value is `"BOTH_PRIVATE_COACHING"`. This validates the basic function signature: takes two strings, returns a string.
 
-**AC 2 (all 7 legal transitions) → `tests/wor-96/stateMachine.test.ts` (unit).** Parameterized test (`test.each` or equivalent) with a tuple array of all 7 `[currentStatus, transition, expectedNewStatus]` entries. The RESOLVE case must also provide valid `ClosureContext`. Each call asserts the returned status matches the expected value and does not throw.
+**AC 2 (all 7 legal transitions) → `tests/unit/stateMachine.test.ts` (unit).** Parameterized test (`test.each` or equivalent) with a tuple array of all 7 `[currentStatus, transition, expectedNewStatus]` entries. The RESOLVE case must also provide valid `ClosureContext`. Each call asserts the returned status matches the expected value and does not throw.
 
-**AC 3 (illegal transitions throw CONFLICT) → `tests/wor-96/stateMachine.test.ts` (unit).** Parameterized test with at least 5 illegal `[currentStatus, transition]` pairs:
+**AC 3 (illegal transitions throw CONFLICT) → `tests/unit/stateMachine.test.ts` (unit).** Parameterized test with at least 5 illegal `[currentStatus, transition]` pairs:
 1. `DRAFT_PRIVATE_COACHING` + `START_JOINT` (skipping phases)
 2. `CLOSED_RESOLVED` + `ACCEPT_INVITE` (transition from terminal)
 3. `READY_FOR_JOINT` + `DECLINE_INVITE` (wrong source for this transition)
@@ -171,7 +171,7 @@ Each call asserts: throws, the thrown value is a `ConvexError`, the error's data
 
 **AC 4 (test coverage completeness) → covered by AC 2 + AC 3 parameterized tests.** No additional test file needed.
 
-**AC 5 (closure precondition) → `tests/wor-96/stateMachine.test.ts` (unit).** Three sub-cases:
+**AC 5 (closure precondition) → `tests/unit/stateMachine.test.ts` (unit).** Three sub-cases:
 1. Call RESOLVE with no context → throws CONFLICT.
 2. Call RESOLVE with context where one party has `closureConfirmed: false` → throws CONFLICT.
 3. Call RESOLVE with context where both parties have `closureProposed: true, closureConfirmed: true` → returns `"CLOSED_RESOLVED"`.
