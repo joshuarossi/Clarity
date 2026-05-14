@@ -32,10 +32,15 @@ export function estimateTokens(text: string): number {
   return Math.ceil(words.length / 0.75);
 }
 
-const summaryCache = new Map<string, string>();
+const clientCaches = new WeakMap<object, Map<string, string>>();
 
-export function resetSummaryCache(): void {
-  summaryCache.clear();
+function getCacheForClient(client: object): Map<string, string> {
+  let cache = clientCaches.get(client);
+  if (!cache) {
+    cache = new Map<string, string>();
+    clientCaches.set(client, cache);
+  }
+  return cache;
 }
 
 function hashContent(messages: CompressibleMessage[]): string {
@@ -66,8 +71,15 @@ export async function compressTranscript(
   const oldestHalf = messages.slice(0, splitIndex);
   const newestHalf = messages.slice(splitIndex);
 
+  if (!options?.client) {
+    throw new Error(
+      "Anthropic client is required for compression but was not provided",
+    );
+  }
+
+  const cache = getCacheForClient(options.client);
   const hash = hashContent(oldestHalf);
-  const cached = summaryCache.get(hash);
+  const cached = cache.get(hash);
 
   if (cached) {
     const summaryMessage: CompressibleMessage = {
@@ -75,12 +87,6 @@ export async function compressTranscript(
       content: `SUMMARY: ${cached}`,
     };
     return [summaryMessage, ...newestHalf];
-  }
-
-  if (!options?.client) {
-    throw new Error(
-      "Anthropic client is required for compression but was not provided",
-    );
   }
 
   const conversationText = oldestHalf
@@ -99,7 +105,7 @@ export async function compressTranscript(
   });
 
   const summaryText = response.content[0].text;
-  summaryCache.set(hash, summaryText);
+  cache.set(hash, summaryText);
 
   const summaryMessage: CompressibleMessage = {
     role: "system",
