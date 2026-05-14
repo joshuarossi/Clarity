@@ -437,7 +437,7 @@ describe("prefers-reduced-motion in globals.css", () => {
 // ── Invariant: theme.ts values match CSS tokens ─────────────────────
 
 describe("theme.ts token mirror", () => {
-  let themeModule: { light: Record<string, string>; dark: Record<string, string> };
+  let themeModule: typeof import("../../src/styles/theme").default;
 
   beforeAll(async () => {
     // Dynamic import of the theme module
@@ -479,16 +479,18 @@ describe("theme.ts token mirror", () => {
   it.each(EXPECTED_THEME_KEYS)(
     "light theme contains key: %s",
     (key) => {
+      const k = key as keyof typeof themeModule.light;
       expect(themeModule.light).toHaveProperty(key);
-      expect(typeof themeModule.light[key]).toBe("string");
+      expect(typeof themeModule.light[k]).toBe("string");
     },
   );
 
   it.each(EXPECTED_THEME_KEYS)(
     "dark theme contains key: %s",
     (key) => {
+      const k = key as keyof typeof themeModule.dark;
       expect(themeModule.dark).toHaveProperty(key);
-      expect(typeof themeModule.dark[key]).toBe("string");
+      expect(typeof themeModule.dark[k]).toBe("string");
     },
   );
 
