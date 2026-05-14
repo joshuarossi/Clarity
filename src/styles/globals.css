@@ -151,9 +151,73 @@
   --private-tint: #2D2924;
 
   /* Shadow (higher alpha for dark) */
+  --shadow-0: none;
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.20);
   --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.28);
   --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.40);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur-medium: 200ms;
+  --dur-slow: 300ms;
+
+  /* Font families */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Typography scale */
+  --font-size-display: 32px;
+  --line-height-display: 40px;
+  --font-weight-display: 500;
+  --tracking-display: -0.02em;
+
+  --font-size-h1: 24px;
+  --line-height-h1: 32px;
+  --font-weight-h1: 500;
+  --tracking-h1: -0.015em;
+
+  --font-size-h2: 20px;
+  --line-height-h2: 28px;
+  --font-weight-h2: 500;
+  --tracking-h2: -0.01em;
+
+  --font-size-h3: 17px;
+  --line-height-h3: 24px;
+  --font-weight-h3: 500;
+  --tracking-h3: 0em;
+
+  --font-size-body: 15px;
+  --line-height-body: 1.6;
+  --font-weight-body: 400;
+  --tracking-body: 0em;
+
+  --font-size-chat: 16px;
+  --line-height-chat: 1.55;
+  --font-weight-chat: 400;
+  --tracking-chat: 0em;
+
+  --font-size-label: 14px;
+  --line-height-label: 20px;
+  --font-weight-label: 500;
+  --tracking-label: 0em;
+
+  --font-size-meta: 13px;
+  --line-height-meta: 18px;
+  --font-weight-meta: 400;
+  --tracking-meta: 0em;
+
+  --font-size-timestamp: 12px;
+  --line-height-timestamp: 16px;
+  --font-weight-timestamp: 400;
+  --tracking-timestamp: 0em;
 }
 
 /* ─── Font smoothing on html ─── */
