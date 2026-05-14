@@ -1,0 +1,193 @@
+/* ─── Google Fonts ─── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ─── Components ─── */
+@import './components.css';
+
+/* ─── Base tokens (light theme) ─── */
+:root {
+  /* Neutrals */
+  --bg-canvas: #FAF8F5;
+  --bg-surface: #FFFFFF;
+  --bg-surface-subtle: #F3EFE9;
+  --text-primary: #1F1D1A;
+  --text-secondary: #5C5952;
+  --text-tertiary: #8A8680;
+  --border-default: #E5E0D8;
+  --border-strong: #CBC4B8;
+
+  /* Accent — Sage */
+  --accent: #6B8E7F;
+  --accent-hover: #5A7A6C;
+  --accent-subtle: #DCE7E0;
+  --accent-on: #FFFFFF;
+
+  /* Coach — Dusty Lavender */
+  --coach-accent: #8B7AB5;
+  --coach-subtle: #EAE4F2;
+
+  /* Party colors */
+  --party-initiator: #6B85A8;
+  --party-initiator-subtle: #DFE5EF;
+  --party-invitee: #B07A8F;
+  --party-invitee-subtle: #EFE0E4;
+
+  /* Feedback */
+  --danger: #B5594D;
+  --danger-subtle: #F2DCD8;
+  --warning: #B58B4D;
+  --warning-subtle: #F2E5D4;
+  --success: #6B8E7F;
+
+  /* Tints */
+  --private-tint: #F0E9E0;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Shadow */
+  --shadow-0: none;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.10);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur-medium: 200ms;
+  --dur-slow: 300ms;
+
+  /* Font families */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Typography scale */
+  --font-size-display: 32px;
+  --line-height-display: 40px;
+  --font-weight-display: 500;
+  --tracking-display: -0.02em;
+
+  --font-size-h1: 24px;
+  --line-height-h1: 32px;
+  --font-weight-h1: 500;
+  --tracking-h1: -0.015em;
+
+  --font-size-h2: 20px;
+  --line-height-h2: 28px;
+  --font-weight-h2: 500;
+  --tracking-h2: -0.01em;
+
+  --font-size-h3: 17px;
+  --line-height-h3: 24px;
+  --font-weight-h3: 500;
+  --tracking-h3: 0em;
+
+  --font-size-body: 15px;
+  --line-height-body: 1.6;
+  --font-weight-body: 400;
+  --tracking-body: 0em;
+
+  --font-size-chat: 16px;
+  --line-height-chat: 1.55;
+  --font-weight-chat: 400;
+  --tracking-chat: 0em;
+
+  --font-size-label: 14px;
+  --line-height-label: 20px;
+  --font-weight-label: 500;
+  --tracking-label: 0em;
+
+  --font-size-meta: 13px;
+  --line-height-meta: 18px;
+  --font-weight-meta: 400;
+  --tracking-meta: 0em;
+
+  --font-size-timestamp: 12px;
+  --line-height-timestamp: 16px;
+  --font-weight-timestamp: 400;
+  --tracking-timestamp: 0em;
+}
+
+/* ─── Dark theme ─── */
+[data-theme="dark"] {
+  /* Neutrals */
+  --bg-canvas: #1A1816;
+  --bg-surface: #242220;
+  --bg-surface-subtle: #2E2B28;
+  --text-primary: #F2EFE9;
+  --text-secondary: #A8A39A;
+  --text-tertiary: #7A766E;
+  --border-default: #3A3632;
+  --border-strong: #4A4640;
+
+  /* Accent — Sage */
+  --accent: #89A99B;
+  --accent-hover: #9ABAAC;
+  --accent-subtle: #2E3A35;
+  --accent-on: #1A1816;
+
+  /* Coach — Dusty Lavender */
+  --coach-accent: #A797CC;
+  --coach-subtle: #342E42;
+
+  /* Party colors */
+  --party-initiator: #8BA3C2;
+  --party-initiator-subtle: #2C3542;
+  --party-invitee: #CC96A9;
+  --party-invitee-subtle: #3E2E34;
+
+  /* Feedback */
+  --danger: #CC786D;
+  --danger-subtle: #3E2A27;
+  --warning: #CC9F6D;
+  --warning-subtle: #3E3228;
+  --success: #89A99B;
+
+  /* Tints */
+  --private-tint: #2D2924;
+
+  /* Shadow (higher alpha for dark) */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.20);
+  --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.28);
+  --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.40);
+}
+
+/* ─── Font smoothing on html ─── */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ─── Base body ─── */
+body {
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Focus-visible ring ─── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,127 @@
+/* ─── Streaming cursor ─── */
+@keyframes cc-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+.cc-streaming-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  vertical-align: text-bottom;
+  background: currentColor;
+  margin-left: 2px;
+  animation: cc-blink 1s steps(2, start) infinite;
+}
+
+/* ─── Bubble enter animation ─── */
+@keyframes cc-bubble-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Base bubble ─── */
+.cc-bubble {
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  max-width: min(640px, 80%);
+  font-size: var(--font-size-chat);
+  line-height: var(--line-height-chat);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  animation: cc-bubble-enter var(--dur-fast) var(--ease-out) both;
+}
+
+/* ─── Coach bubble (private phase) ─── */
+.cc-bubble-coach {
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  max-width: min(640px, 80%);
+  font-size: var(--font-size-chat);
+  line-height: var(--line-height-chat);
+  background: var(--accent-subtle);
+  border: none;
+  animation: cc-bubble-enter var(--dur-fast) var(--ease-out) both;
+}
+
+/* ─── Coach bubble (joint session) ─── */
+.cc-bubble-coach-joint {
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  max-width: min(640px, 80%);
+  font-size: var(--font-size-chat);
+  line-height: var(--line-height-chat);
+  background: var(--coach-subtle);
+  border: none;
+  border-left: 3px solid var(--coach-accent);
+  animation: cc-bubble-enter var(--dur-fast) var(--ease-out) both;
+}
+
+/* ─── Coach intervention bubble ─── */
+.cc-bubble-coach-intervention {
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  max-width: min(640px, 80%);
+  font-size: var(--font-size-chat);
+  line-height: var(--line-height-chat);
+  background: var(--coach-subtle);
+  border: none;
+  border-left: 4px solid var(--coach-accent);
+  animation: cc-bubble-enter var(--dur-fast) var(--ease-out) both;
+}
+
+/* ─── Party initiator bubble (joint chat) ─── */
+.cc-bubble-party-initiator {
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  max-width: min(640px, 80%);
+  font-size: var(--font-size-chat);
+  line-height: var(--line-height-chat);
+  background: var(--party-initiator-subtle);
+  border: none;
+  animation: cc-bubble-enter var(--dur-fast) var(--ease-out) both;
+}
+
+/* ─── Party invitee bubble (joint chat) ─── */
+.cc-bubble-party-invitee {
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  max-width: min(640px, 80%);
+  font-size: var(--font-size-chat);
+  line-height: var(--line-height-chat);
+  background: var(--party-invitee-subtle);
+  border: none;
+  animation: cc-bubble-enter var(--dur-fast) var(--ease-out) both;
+}
+
+/* ─── Error bubble ─── */
+.cc-bubble-error {
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  max-width: min(640px, 80%);
+  font-size: var(--font-size-chat);
+  line-height: var(--line-height-chat);
+  background: var(--danger-subtle);
+  border: 1px solid var(--danger);
+  animation: cc-bubble-enter var(--dur-fast) var(--ease-out) both;
+}
+
+/* ─── Privacy banner ─── */
+.cc-banner-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--private-tint);
+  border-bottom: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  font-size: var(--font-size-meta);
+  line-height: 1.5;
+}
