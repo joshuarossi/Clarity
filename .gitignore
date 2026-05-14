@@ -12,7 +12,10 @@ build/
 .env.*.local
 
 # Convex
-convex/_generated/
+# convex/_generated/ is intentionally committed so vitest and the Archon
+# validator can resolve `import { api } from "../convex/_generated/api"`
+# without running `npx convex codegen` first. Re-run codegen and commit
+# the diff whenever the schema or functions change.
 
 # IDE / OS
 .DS_Store
