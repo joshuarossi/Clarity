@@ -44,13 +44,14 @@ Scale variables follow the pattern `--font-size-{role}` and
 
 - Radius: `--radius-sm` (6 px) through `--radius-full` (9999 px)
 - Shadows: `--shadow-0` through `--shadow-3`
-- Motion ease: `--ease` — `cubic-bezier(0.2, 0.7, 0.3, 1)`
-- Durations: `--duration-hover` (150 ms), `--duration-panel` (200 ms),
-  `--duration-reveal` (300 ms)
+- Motion ease: `--ease-out` — `cubic-bezier(0.2, 0.7, 0.3, 1)`
+- Durations: `--dur-fast` (150 ms), `--dur-medium` (200 ms),
+  `--dur-slow` (300 ms)
 
-All animations are wrapped in
-`@media (prefers-reduced-motion: no-preference)` so users who prefer
-reduced motion see no non-essential animation.
+A global `@media (prefers-reduced-motion: reduce)` reset in `globals.css`
+disables all animations and transitions when the user prefers reduced
+motion. New animations do **not** need individual `no-preference` wrappers —
+the global reset handles them automatically.
 
 ## Dark mode
 
@@ -89,4 +90,4 @@ Clarity-specific variants:
 - **danger** — terracotta fill (`--danger`)
 - **link** — underlined text style
 
-Sizes: `sm` (32 px), `md` (40 px, default), `lg` (48 px).
+Sizes: `sm` (32 px), `md` (40 px, default), `lg` (48 px), `icon` (36 × 36 px).

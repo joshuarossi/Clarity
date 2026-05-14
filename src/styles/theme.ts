@@ -5,7 +5,6 @@
  */
 
 interface ThemeTokens {
-  [key: string]: string;
   bgCanvas: string;
   bgSurface: string;
   bgSurfaceSubtle: string;
