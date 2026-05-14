@@ -34,6 +34,10 @@ export function estimateTokens(text: string): number {
 
 const summaryCache = new Map<string, string>();
 
+export function resetSummaryCache(): void {
+  summaryCache.clear();
+}
+
 function hashContent(messages: CompressibleMessage[]): string {
   const concatenated = messages.map((m) => m.content).join("\n");
   return createHash("sha256").update(concatenated).digest("hex");
