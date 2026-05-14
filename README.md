@@ -14,3 +14,26 @@ Spec attachments live on the Epic:
 - 03-DesignDoc.md
 - STYLE_GUIDE.md
 - style-guide.html
+
+## Getting started
+
+```bash
+npm install
+```
+
+### Environment
+
+Copy `.env.example` (if present) or create `.env.local` with:
+
+```
+VITE_CONVEX_URL=<your Convex deployment URL>
+```
+
+### Development
+
+```bash
+npx convex dev   # start Convex backend (watches for schema changes)
+npm run dev      # start Vite dev server
+```
+
+Open `http://localhost:5173` in your browser.

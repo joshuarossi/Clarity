@@ -44,14 +44,33 @@ throw forbidden("Only admins may archive cases");
 throw rateLimited("Too many session requests");
 ```
 
-### Frontend consumption
+### Frontend error handler
 
-On the client, catch a `ConvexError` and inspect `error.data`:
+`src/lib/errorHandler.ts` provides `handleConvexError(error)` which
+accepts any caught error and returns a user-friendly string suitable for
+toast display. It maps each `ErrorCode` to a plain-language message:
+
+| Code              | User-facing message                                                |
+| ----------------- | ------------------------------------------------------------------ |
+| `UNAUTHENTICATED` | "Please sign in to continue."                                      |
+| `FORBIDDEN`       | "You don't have permission to do that."                            |
+| `NOT_FOUND`       | "We couldn't find what you're looking for."                        |
+| `CONFLICT`        | "This action can't be performed right now. The state may have changed." |
+| `INVALID_INPUT`   | "Please check your input and try again."                           |
+| `TOKEN_INVALID`   | "This invite link is no longer valid."                             |
+| `RATE_LIMITED`    | "Too many requests. Please wait a moment and try again."           |
+| `AI_ERROR`        | "The AI service encountered an issue. Please try again."           |
+| `INTERNAL`        | "Something went wrong on our end. Please try again."               |
+
+Unrecognised errors fall back to a generic "Something went wrong" message.
 
 ```ts
-if (error instanceof ConvexError) {
-  const { code, message, httpStatus } = error.data;
-  // map `code` to a user-facing string
+import { handleConvexError } from "../lib/errorHandler";
+
+try {
+  await doSomething();
+} catch (error) {
+  showToast(handleConvexError(error));
 }
 ```
 
