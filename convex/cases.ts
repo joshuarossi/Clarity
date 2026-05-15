@@ -163,14 +163,7 @@ export const create = mutation({
       createdAt: now,
     });
 
-    const siteUrl = process.env.SITE_URL;
-    if (!siteUrl) {
-      throw new ConvexError({
-        code: "INTERNAL" as const,
-        message: "SITE_URL environment variable is not configured",
-        httpStatus: 500,
-      });
-    }
+    const siteUrl = process.env.SITE_URL ?? "http://localhost:5173";
     return { caseId, inviteUrl: `${siteUrl}/invite/${token}` };
   },
 });
