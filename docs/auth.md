@@ -63,6 +63,39 @@ Calls `requireAuth` internally, then checks that the user's `role` is
 **Typical usage:** admin-only operations such as template management or
 audit-log queries.
 
+## Login page (`/login`)
+
+The login page renders a single centered card (~400 px wide) with the
+heading "Sign in to Clarity". It offers two sign-in methods:
+
+1. **Magic link** — the user enters their email and clicks
+   "Send magic link". On success the form is replaced by a
+   "Check your email…" confirmation message. On failure an inline
+   error appears below the email input.
+2. **Google OAuth** — a secondary "Continue with Google" button starts
+   the OAuth redirect flow.
+
+Fine-print text ("By signing in, you agree to our Terms and Privacy
+Policy") is displayed below the buttons.
+
+### Post-login redirect
+
+When an unauthenticated user hits a protected route, the
+`ProtectedRoute` wrapper stores the intended destination in a URL search
+parameter. After a successful login the user is redirected to that
+original path instead of the default `/dashboard`.
+
+## Profile page (`/profile`)
+
+The profile page is minimal (no avatar upload). It shows:
+
+| Field        | Editable? | Notes                                       |
+|--------------|-----------|---------------------------------------------|
+| Display name | Yes       | Saved via the `updateDisplayName` mutation   |
+| Email        | No        | Read-only, sourced from the auth identity    |
+
+A **Sign out** button logs the user out and redirects to the login page.
+
 ## Error codes
 
 | Code              | HTTP Status | When                              |

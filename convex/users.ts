@@ -1,4 +1,6 @@
-import { query } from "./_generated/server";
+import { v } from "convex/values";
+import { query, mutation } from "./_generated/server";
+import { requireAuth } from "./lib/auth";
 
 export const me = query({
   args: {},
@@ -16,5 +18,18 @@ export const me = query({
       .withIndex("by_email", (q) => q.eq("email", email))
       .unique();
     return user;
+  },
+});
+
+export const updateDisplayName = mutation({
+  args: { displayName: v.string() },
+  handler: async (ctx, { displayName }) => {
+    const user = await requireAuth(ctx);
+    const trimmed = displayName.trim();
+    if (!trimmed) {
+      throw new Error("Display name cannot be empty");
+    }
+    await ctx.db.patch(user._id, { displayName: trimmed });
+    return null;
   },
 });
