@@ -25,7 +25,8 @@ import { PrivacyBanner } from "@/components/ui/PrivacyBanner";
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `copy` | `string` | — | Privacy explanation text shown in the banner |
+| `copy` | `ReactNode` | — | Privacy explanation content shown in the banner |
+| `className` | `string` | — | Additional CSS class names |
 
 ## StatusPill
 
@@ -36,29 +37,29 @@ carrier of meaning.
 ```tsx
 import { StatusPill } from "@/components/ui/StatusPill";
 
-<StatusPill variant="turn" label="Your Turn" />
+<StatusPill variant="pill-turn" label="Your Turn" />
 ```
 
 ### Variants
 
 | Variant | Dot shape | Color | CSS class |
 |---------|-----------|-------|-----------|
-| `turn` | Filled circle | Green | `.pill-turn` |
-| `waiting` | Hollow circle | Gray | `.pill-waiting` |
-| `ready` | Filled circle | Amber | `.pill-ready` |
-| `closed` | Square | Neutral | `.pill-closed` |
+| `pill-turn` | Filled circle | Green | `.cc-status-pill--pill-turn` |
+| `pill-waiting` | Hollow circle | Gray | `.cc-status-pill--pill-waiting` |
+| `pill-ready` | Filled circle | Amber | `.cc-status-pill--pill-ready` |
+| `pill-closed` | Square | Neutral | `.cc-status-pill--pill-closed` |
 
 ### Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `variant` | `"turn" \| "waiting" \| "ready" \| "closed"` | — | Visual variant |
+| `variant` | `"pill-turn" \| "pill-waiting" \| "pill-ready" \| "pill-closed"` | — | Visual variant |
 | `label` | `string` | — | Text shown inside the pill |
 
 ## PartyAvatar
 
-Renders a 32 × 32 circle with white initials on a role-specific
-background color.
+Renders a circle with white initials on a role-specific background color.
+Three sizes: `sm` (24 px), `md` (32 px, default), `lg` (40 px).
 
 ```tsx
 import { PartyAvatar } from "@/components/ui/PartyAvatar";
@@ -78,9 +79,10 @@ import { PartyAvatar } from "@/components/ui/PartyAvatar";
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `name` | `string` | — | Full name; first letter used as the initial |
+| `name` | `string` | — | Full name; first + last initial extracted for display |
 | `role` | `"initiator" \| "invitee" \| "coach"` | — | Determines background color |
-| `size` | `number` | `32` | Diameter in pixels |
+| `size` | `"sm" \| "md" \| "lg"` | `"md"` | Avatar size: sm=24px, md=32px, lg=40px |
+| `className` | `string` | — | Additional CSS class names |
 
 ## PhaseHeader
 

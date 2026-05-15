@@ -23,7 +23,7 @@ export function StatusPill({ variant, label, className }: StatusPillProps): Reac
         .join(" ")}
     >
       <span
-        className={["cc-status-pill-dot", dotShapeClass[variant], variant]
+        className={["cc-status-pill-dot", dotShapeClass[variant]]
           .join(" ")}
         aria-hidden="true"
       />

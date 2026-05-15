@@ -86,10 +86,10 @@ Defined in `components.css`:
 | Class | Use |
 |---|---|
 | `.cc-banner-privacy` | Privacy banner with `--private-tint` background and lock icon |
-| `.pill-turn` | StatusPill — active turn (green filled circle) |
-| `.pill-waiting` | StatusPill — waiting (gray hollow circle) |
-| `.pill-ready` | StatusPill — ready (amber filled circle) |
-| `.pill-closed` | StatusPill — closed (neutral square) |
+| `.cc-status-pill--pill-turn` | StatusPill — active turn (green filled circle) |
+| `.cc-status-pill--pill-waiting` | StatusPill — waiting (gray hollow circle) |
+| `.cc-status-pill--pill-ready` | StatusPill — ready (amber filled circle) |
+| `.cc-status-pill--pill-closed` | StatusPill — closed (neutral square) |
 | `.cc-phase-header` | PhaseHeader top bar (56 px, `--bg-surface` background) |
 
 See [UI Primitives](ui-primitives.md) for component usage and props.
