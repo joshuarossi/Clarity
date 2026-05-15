@@ -1,14 +1,20 @@
 import { useState, type FormEvent } from "react";
-import { useConvexAuth } from "@convex-dev/auth/react";
-import { useAuthActions } from "@convex-dev/auth/react";
+import { useConvexAuth, useAuthActions } from "@convex-dev/auth/react";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
+
+function safeRedirect(value: string | null): string {
+  if (value && value.startsWith("/") && !value.startsWith("//")) {
+    return value;
+  }
+  return "/dashboard";
+}
 
 export function LoginPage(): React.ReactElement {
   const { isLoading, isAuthenticated } = useConvexAuth();
   const { signIn } = useAuthActions();
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const redirectTo = safeRedirect(searchParams.get("redirect"));
 
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);

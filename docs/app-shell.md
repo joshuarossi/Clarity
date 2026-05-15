@@ -26,6 +26,7 @@ Defined in `src/App.tsx`:
 | `/`                           | public      | Landing / home page       |
 | `/login`                      | public      | Login (redirects to dashboard if already signed in) |
 | `/invite/:token`              | public      | Party invite acceptance   |
+| `/profile`                    | auth        | User profile / sign-out   |
 | `/dashboard`                  | auth        | User dashboard            |
 | `/cases/new`                  | auth        | Create a new case         |
 | `/cases/:caseId`              | auth        | Case detail               |

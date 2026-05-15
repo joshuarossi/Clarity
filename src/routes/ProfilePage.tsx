@@ -15,6 +15,7 @@ export function ProfilePage(): React.ReactElement {
   const [displayName, setDisplayName] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.displayName != null) {
@@ -41,16 +42,23 @@ export function ProfilePage(): React.ReactElement {
     if (!trimmed) return;
     setSaving(true);
     setSaved(false);
+    setSaveError(null);
     try {
       await updateDisplayName({ displayName: trimmed });
       setSaved(true);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Failed to save display name. Please try again.");
     } finally {
       setSaving(false);
     }
   }
 
   async function handleSignOut() {
-    await signOut();
+    try {
+      await signOut();
+    } catch {
+      // Best-effort sign-out — navigate to login regardless.
+    }
     navigate("/login");
   }
 
@@ -94,15 +102,20 @@ export function ProfilePage(): React.ReactElement {
             </Button>
           </div>
           {saved && (
-            <p style={{ fontSize: "0.875rem", color: "var(--cc-success, #16a34a)", marginTop: "0.25rem" }}>
+            <p role="status" style={{ fontSize: "0.875rem", color: "var(--cc-success, #16a34a)", marginTop: "0.25rem" }}>
               Display name updated.
+            </p>
+          )}
+          {saveError && (
+            <p role="alert" style={{ color: "var(--cc-danger, #dc2626)", fontSize: "0.875rem", marginTop: "0.25rem" }}>
+              {saveError}
             </p>
           )}
         </div>
 
         <div style={{ marginBottom: "1.5rem" }}>
-          <label htmlFor="profile-email">Email</label>
-          <p id="profile-email" style={{ marginTop: "0.25rem" }}>
+          <span>Email</span>
+          <p style={{ marginTop: "0.25rem" }}>
             {user.email}
           </p>
         </div>
