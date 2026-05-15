@@ -16,7 +16,7 @@ export function MessageInput({
   const [text, setText] = React.useState("");
 
   const trimmed = text.trim();
-  const canSend = trimmed.length > 0 && !isAiResponding;
+  const hasText = trimmed.length > 0;
 
   const send = React.useCallback(() => {
     const t = text.trim();
@@ -65,9 +65,10 @@ export function MessageInput({
       <button
         type="button"
         className="cc-btn cc-btn-primary cc-btn-md"
-        disabled={!canSend}
+        disabled={isAiResponding}
         onClick={send}
         aria-label="Send message"
+        style={!hasText && !isAiResponding ? { opacity: 0.5, pointerEvents: "none" } : undefined}
       >
         Send
       </button>
