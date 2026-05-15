@@ -35,12 +35,17 @@ coaching data is exposed.
 ### `cases/create`
 
 Creates a new case. Pins the template version from the category's current
-active template. Generates an invite token and returns the case ID plus an
-invite URL.
+active template. In standard mode, generates an invite token and returns the
+case ID plus an invite URL. In solo mode, both parties are the caller, no
+invite token is generated, and `inviteUrl` is `null`.
 
 | Argument | Type | Description |
 |----------|------|-------------|
-| `categoryId` | `Id<"categories">` | Category for the case |
+| `category` | `string` | Category for the case |
+| `mainTopic` | `string` | Main topic of the dispute |
+| `description` | `string` | Description of the situation |
+| `desiredOutcome` | `string` | Desired outcome |
+| `templateId` | `Id<"templates">` (optional) | Explicit template override |
 | `isSolo` | `boolean` (optional) | Solo mode — both parties are the caller |
 
 **Solo mode:** When `isSolo` is `true`, both `initiatorUserId` and
@@ -55,9 +60,9 @@ Updates the caller's intake form fields on their `partyState`.
 | Argument | Type | Description |
 |----------|------|-------------|
 | `caseId` | `Id<"cases">` | The case to update |
-| `mainTopic` | `string` (optional) | Main topic of the dispute |
-| `description` | `string` (optional) | Description of the situation |
-| `desiredOutcome` | `string` (optional) | Desired outcome |
+| `mainTopic` | `string` | Main topic of the dispute |
+| `description` | `string` | Description of the situation |
+| `desiredOutcome` | `string` | Desired outcome |
 
 ## Privacy invariant
 

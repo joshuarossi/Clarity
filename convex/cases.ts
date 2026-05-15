@@ -51,7 +51,21 @@ export const partyStates = query({
       .withIndex("by_case", (q) => q.eq("caseId", caseId))
       .collect();
 
-    const self = allPartyStates.find((ps) => ps.userId === user._id);
+    const caseDoc = await ctx.db.get(caseId);
+
+    let self;
+    let otherPartyState;
+
+    if (caseDoc?.isSolo) {
+      self = allPartyStates.find((ps) => ps.role === "INITIATOR");
+      otherPartyState = allPartyStates.find((ps) => ps.role === "INVITEE");
+    } else {
+      self = allPartyStates.find((ps) => ps.userId === user._id);
+      otherPartyState = allPartyStates.find(
+        (ps) => ps.userId !== user._id,
+      );
+    }
+
     if (!self) {
       throw new ConvexError({
         code: "NOT_FOUND" as const,
@@ -59,10 +73,6 @@ export const partyStates = query({
         httpStatus: 404,
       });
     }
-
-    const otherPartyState = allPartyStates.find(
-      (ps) => ps.userId !== user._id,
-    );
 
     const other = otherPartyState
       ? {
@@ -153,7 +163,14 @@ export const create = mutation({
       createdAt: now,
     });
 
-    const siteUrl = process.env.SITE_URL ?? "http://localhost:5173";
+    const siteUrl = process.env.SITE_URL;
+    if (!siteUrl) {
+      throw new ConvexError({
+        code: "INTERNAL" as const,
+        message: "SITE_URL environment variable is not configured",
+        httpStatus: 500,
+      });
+    }
     return { caseId, inviteUrl: `${siteUrl}/invite/${token}` };
   },
 });
@@ -201,9 +218,7 @@ export const updateMyForm = mutation({
 function generateToken(): string {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-  let token = "";
-  for (let i = 0; i < 32; i++) {
-    token += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return token;
+  const randomBytes = new Uint8Array(32);
+  crypto.getRandomValues(randomBytes);
+  return Array.from(randomBytes, (byte) => chars[byte % chars.length]).join("");
 }
