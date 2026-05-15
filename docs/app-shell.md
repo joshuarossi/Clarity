@@ -8,13 +8,13 @@ Vite and connected to the Convex backend via reactive providers.
 Providers are nested in `src/main.tsx` in this order:
 
 ```
-<ConvexProvider>          — reactive backend connection (VITE_CONVEX_URL)
-  <ConvexAuthProvider>    — session / identity management
-    <BrowserRouter>       — client-side routing
-      <App />
-    </BrowserRouter>
-  </ConvexAuthProvider>
-</ConvexProvider>
+<ConvexAuthProvider>      — wraps ConvexProvider internally; provides
+                            reactive backend connection (VITE_CONVEX_URL)
+                            + session / identity management
+  <BrowserRouter>         — client-side routing
+    <App />
+  </BrowserRouter>
+</ConvexAuthProvider>
 ```
 
 ## Route Tree

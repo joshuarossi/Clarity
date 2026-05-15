@@ -2,6 +2,7 @@ import { useConvexAuth } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { Navigate } from "react-router-dom";
 import { api } from "../../../convex/_generated/api";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 export function AdminRoute({ children }: { children: React.ReactNode }) {
   const { isLoading, isAuthenticated } = useConvexAuth();
@@ -11,11 +12,7 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
   );
 
   if (isLoading) {
-    return (
-      <div className="cc-loading-container" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
-        <div aria-label="Loading" role="status">Loading…</div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!isAuthenticated) {
@@ -23,14 +20,14 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (user === undefined) {
-    return (
-      <div className="cc-loading-container" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
-        <div aria-label="Loading" role="status">Loading…</div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
-  if (!user || user.role !== "ADMIN") {
+  if (user === null) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (user.role !== "ADMIN") {
     return <Navigate to="/dashboard" replace />;
   }
 

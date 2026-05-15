@@ -15,6 +15,14 @@ const USER_MESSAGES: Record<ErrorCode, string> = {
   INTERNAL: "Something went wrong. Please try again.",
 };
 
+/**
+ * Maps a ConvexError to a user-friendly message.
+ *
+ * This function intentionally discards the original error context to prevent
+ * leaking internal details to the UI. Callers should log the original error
+ * before calling this function if error context needs to be preserved for
+ * debugging.
+ */
 export function handleConvexError(error: unknown): ErrorMessage {
   if (error instanceof ConvexError) {
     const data = error.data as { code?: string };
