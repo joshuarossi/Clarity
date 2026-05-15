@@ -82,10 +82,13 @@ describe("AC: MessageInput Enter-to-send and Shift-Enter for newline", () => {
 });
 
 describe("AC: Send button disabled while AI is responding", () => {
-  it("Send button is enabled when isAiResponding is false", () => {
+  it("Send button is enabled when isAiResponding is false and textarea has content", () => {
     const { container } = render(
       <MessageInput onSend={() => {}} isAiResponding={false} />,
     );
+    const textarea = container.querySelector("textarea");
+    expect(textarea).not.toBeNull();
+    fireEvent.change(textarea!, { target: { value: "hello" } });
     const sendBtn = container.querySelector("button");
     expect(sendBtn).not.toBeNull();
     expect(sendBtn!.disabled).toBe(false);
