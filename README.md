@@ -33,3 +33,14 @@ Then start the dev server:
 npx convex dev   # backend
 npm run dev       # frontend (Vite)
 ```
+
+### Seed data
+
+To populate the local database with an admin user and default templates:
+
+```bash
+npx convex run seed:seed
+```
+
+The seed is idempotent — running it multiple times is safe. It will not
+run in production environments.
