@@ -65,10 +65,9 @@ export function MessageInput({
       <button
         type="button"
         className="cc-btn cc-btn-primary cc-btn-md"
-        disabled={isAiResponding}
+        disabled={isAiResponding || !hasText}
         onClick={send}
         aria-label="Send message"
-        style={!hasText && !isAiResponding ? { opacity: 0.5, pointerEvents: "none" } : undefined}
       >
         Send
       </button>
