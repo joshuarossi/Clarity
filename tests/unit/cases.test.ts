@@ -2,22 +2,14 @@ import { describe, it, expect } from "vitest";
 import { convexTest } from "convex-test";
 import { ConvexError } from "convex/values";
 import schema from "../../convex/schema";
-import {
-  list,
-  get,
-  partyStates,
-  create,
-  updateMyForm,
-} from "../../convex/cases";
+import { api } from "../../convex/_generated/api";
 
 /**
  * WOR-111: Cases Convex module — create, get, list, partyStates queries +
  * mutations.
  *
- * Integration tests using convex-test with the project schema and direct
- * module imports. At red state, the import from convex/cases.ts produces
- * TS2307 because the module has not been created yet — that is the expected
- * red-state error and is tolerated by the validator.
+ * Integration tests using convex-test with the project schema and generated
+ * API FunctionReferences.
  */
 
 // ── Helpers ─────────────────────────────────────────────────────────────
@@ -137,7 +129,7 @@ describe("cases/list query", () => {
 
     const result = await t
       .withIdentity({ email: "a@test.com" })
-      .run(async (ctx) => ctx.runQuery(list, {}));
+      .run(async (ctx) => ctx.runQuery(api.cases.list, {}));
 
     expect(result).toHaveLength(2);
     expect(result[0]._id).toEqual(case2Id);
@@ -149,7 +141,7 @@ describe("cases/list query", () => {
 
     const result = await t
       .withIdentity({ email: "lonely@test.com" })
-      .run(async (ctx) => ctx.runQuery(list, {}));
+      .run(async (ctx) => ctx.runQuery(api.cases.list, {}));
 
     expect(result).toEqual([]);
   });
@@ -173,7 +165,7 @@ describe("cases/list query", () => {
 
     const result = await t
       .withIdentity({ email: "solo-list@test.com" })
-      .run(async (ctx) => ctx.runQuery(list, {}));
+      .run(async (ctx) => ctx.runQuery(api.cases.list, {}));
 
     expect(result).toHaveLength(1);
   });
@@ -199,7 +191,7 @@ describe("cases/get query", () => {
 
     const result = await t
       .withIdentity({ email: "party@test.com" })
-      .run(async (ctx) => ctx.runQuery(get, { caseId }));
+      .run(async (ctx) => ctx.runQuery(api.cases.get, { caseId }));
 
     expect(result._id).toEqual(caseId);
     expect(result.status).toBe("DRAFT_PRIVATE_COACHING");
@@ -232,7 +224,7 @@ describe("cases/get query", () => {
     await expectConvexError(
       t
         .withIdentity({ email: "stranger@test.com" })
-        .run(async (ctx) => ctx.runQuery(get, { caseId })),
+        .run(async (ctx) => ctx.runQuery(api.cases.get, { caseId })),
       "FORBIDDEN",
     );
   });
@@ -291,7 +283,7 @@ describe("cases/partyStates query", () => {
 
     const result = await t
       .withIdentity({ email: "initiator@test.com" })
-      .run(async (ctx) => ctx.runQuery(partyStates, { caseId }));
+      .run(async (ctx) => ctx.runQuery(api.cases.partyStates, { caseId }));
 
     // Self has full fields
     expect(result.self.role).toBe("INITIATOR");
@@ -343,7 +335,7 @@ describe("cases/partyStates query", () => {
 
     const result = await t
       .withIdentity({ email: "alone@test.com" })
-      .run(async (ctx) => ctx.runQuery(partyStates, { caseId }));
+      .run(async (ctx) => ctx.runQuery(api.cases.partyStates, { caseId }));
 
     expect(result.self.role).toBe("INITIATOR");
     expect(result.other).toBeNull();
@@ -359,7 +351,7 @@ describe("cases/create mutation — standard mode", () => {
     const result = await t
       .withIdentity({ email: "creator@test.com" })
       .run(async (ctx) =>
-        ctx.runMutation(create, {
+        ctx.runMutation(api.cases.create, {
           category: "workplace",
           mainTopic: "Conflict topic",
           description: "Conflict description",
@@ -423,7 +415,7 @@ describe("cases/create mutation — solo mode", () => {
     const result = await t
       .withIdentity({ email: "solo@test.com" })
       .run(async (ctx) =>
-        ctx.runMutation(create, {
+        ctx.runMutation(api.cases.create, {
           category: "personal",
           mainTopic: "Solo topic",
           description: "Solo desc",
@@ -513,7 +505,7 @@ describe("cases/create pins templateVersionId at creation time", () => {
     await t
       .withIdentity({ email: "pin@test.com" })
       .run(async (ctx) =>
-        ctx.runMutation(create, {
+        ctx.runMutation(api.cases.create, {
           category: "family",
           mainTopic: "Topic",
           description: "Desc",
@@ -535,7 +527,7 @@ describe("cases/create pins templateVersionId at creation time", () => {
       t
         .withIdentity({ email: "notemplate@test.com" })
         .run(async (ctx) =>
-          ctx.runMutation(create, {
+          ctx.runMutation(api.cases.create, {
             category: "nonexistent",
             mainTopic: "Topic",
             description: "Desc",
@@ -556,7 +548,7 @@ describe("cases/updateMyForm mutation", () => {
     const created = await t
       .withIdentity({ email: "updater@test.com" })
       .run(async (ctx) =>
-        ctx.runMutation(create, {
+        ctx.runMutation(api.cases.create, {
           category: "workplace",
           mainTopic: "Original topic",
           description: "Original desc",
@@ -572,7 +564,7 @@ describe("cases/updateMyForm mutation", () => {
     await t
       .withIdentity({ email: "updater@test.com" })
       .run(async (ctx) =>
-        ctx.runMutation(updateMyForm, {
+        ctx.runMutation(api.cases.updateMyForm, {
           caseId: created.caseId,
           mainTopic: "Updated topic",
           description: "Updated desc",
@@ -607,7 +599,7 @@ describe("cases/updateMyForm mutation", () => {
     const created = await t
       .withIdentity({ email: "sm@test.com" })
       .run(async (ctx) =>
-        ctx.runMutation(create, {
+        ctx.runMutation(api.cases.create, {
           category: "workplace",
           mainTopic: "Topic",
           description: "Desc",
@@ -623,7 +615,7 @@ describe("cases/updateMyForm mutation", () => {
     await t
       .withIdentity({ email: "sm@test.com" })
       .run(async (ctx) =>
-        ctx.runMutation(updateMyForm, {
+        ctx.runMutation(api.cases.updateMyForm, {
           caseId: created.caseId,
           mainTopic: "New Topic",
           description: "New Desc",
@@ -645,7 +637,7 @@ describe("all functions enforce auth via requireAuth", () => {
     const { t } = await seedEnv("auth-list@test.com");
 
     await expectConvexError(
-      t.run(async (ctx) => ctx.runQuery(list, {})),
+      t.run(async (ctx) => ctx.runQuery(api.cases.list, {})),
       "UNAUTHENTICATED",
     );
   });
@@ -666,7 +658,7 @@ describe("all functions enforce auth via requireAuth", () => {
     );
 
     await expectConvexError(
-      t.run(async (ctx) => ctx.runQuery(get, { caseId })),
+      t.run(async (ctx) => ctx.runQuery(api.cases.get, { caseId })),
       "UNAUTHENTICATED",
     );
   });
@@ -687,7 +679,7 @@ describe("all functions enforce auth via requireAuth", () => {
     );
 
     await expectConvexError(
-      t.run(async (ctx) => ctx.runQuery(partyStates, { caseId })),
+      t.run(async (ctx) => ctx.runQuery(api.cases.partyStates, { caseId })),
       "UNAUTHENTICATED",
     );
   });
@@ -697,7 +689,7 @@ describe("all functions enforce auth via requireAuth", () => {
 
     await expectConvexError(
       t.run(async (ctx) =>
-        ctx.runMutation(create, {
+        ctx.runMutation(api.cases.create, {
           category: "workplace",
           mainTopic: "T",
           description: "D",
@@ -725,7 +717,7 @@ describe("all functions enforce auth via requireAuth", () => {
 
     await expectConvexError(
       t.run(async (ctx) =>
-        ctx.runMutation(updateMyForm, {
+        ctx.runMutation(api.cases.updateMyForm, {
           caseId,
           mainTopic: "T",
           description: "D",
