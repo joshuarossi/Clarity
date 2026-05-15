@@ -3,15 +3,13 @@ import { useConvexAuth } from "@convex-dev/auth/react";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { AdminRoute } from "./components/layout/AdminRoute";
 import { TopNav } from "./components/layout/TopNav";
+import { LoginPage } from "./routes/LoginPage";
+import { ProfilePage } from "./routes/ProfilePage";
 
 /* ---------- Stub page components ---------- */
 
 function HomePage() {
   return <main><h1 data-testid="page-home">Home</h1></main>;
-}
-
-function LoginPage() {
-  return <main><h1 data-testid="page-login">Login</h1></main>;
 }
 
 function InvitePage() {
@@ -94,6 +92,7 @@ function AppLayout() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={isAuthenticated && !isLoading ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
         <Route path="/invite/:token" element={<InvitePage />} />
+        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/cases/new" element={<ProtectedRoute><NewCasePage /></ProtectedRoute>} />
         <Route path="/cases/:caseId" element={<ProtectedRoute><CaseDetailPage /></ProtectedRoute>} />
