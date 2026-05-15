@@ -7,12 +7,13 @@ export const me = query({
     if (!identity) {
       return null;
     }
-    if (!identity.email) {
+    const email = identity.email;
+    if (!email) {
       return null;
     }
     const user = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", identity.email))
+      .withIndex("by_email", (q) => q.eq("email", email))
       .unique();
     return user;
   },
