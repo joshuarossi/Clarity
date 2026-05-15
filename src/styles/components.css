@@ -113,6 +113,24 @@
   animation: cc-bubble-enter var(--dur-fast) var(--ease-out) both;
 }
 
+/* ─── Bubble timestamp (hover reveal) ─── */
+.cc-bubble-timestamp {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-timestamp);
+  line-height: var(--line-height-timestamp);
+  opacity: 0;
+  transition: opacity var(--dur-fast);
+}
+
+.cc-bubble:hover .cc-bubble-timestamp,
+.cc-bubble-coach:hover .cc-bubble-timestamp,
+.cc-bubble-coach-joint:hover .cc-bubble-timestamp,
+.cc-bubble-coach-intervention:hover .cc-bubble-timestamp,
+.cc-bubble-party-initiator:hover .cc-bubble-timestamp,
+.cc-bubble-party-invitee:hover .cc-bubble-timestamp {
+  opacity: 1;
+}
+
 /* ─── Button base ─── */
 .cc-btn {
   display: inline-flex;
