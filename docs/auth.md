@@ -1,5 +1,27 @@
 # Authentication & Authorization
 
+## Sign-in providers (Convex Auth)
+
+Clarity uses [Convex Auth](https://labs.convex.dev/auth) for
+authentication. Two providers are configured in `convex/auth.config.ts`:
+
+| Provider     | How it works                                       | Config env vars                                              |
+|--------------|----------------------------------------------------|--------------------------------------------------------------|
+| Magic link   | Sends a one-time sign-in link via Resend email     | `RESEND_API_KEY`, `AUTH_EMAIL_FROM` (optional, has default)  |
+| Google OAuth | Standard OAuth 2.0 redirect flow                   | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`      |
+
+Password-based registration is intentionally excluded.
+
+The `convexAuth()` helper in `convex/auth.ts` registers these providers
+and wires a `createOrUpdateUser` callback that delegates to
+`getUserByEmail` (see below) — ensuring every authenticated identity has
+a `users` row on first login with `role: "USER"`.
+
+Sessions are managed entirely by Convex Auth internals and persist
+across browser reloads until explicit logout or 30-day expiry.
+
+## Authorization helpers
+
 Clarity's backend authorization lives in `convex/lib/auth.ts`. Every
 Convex function that reads or writes user-scoped data must call one of
 the helpers below before proceeding.

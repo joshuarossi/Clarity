@@ -67,7 +67,7 @@ const EXPECTED_INDEXES: Record<
 describe("AC1 — all 11 tables defined", () => {
   it("schema contains exactly 11 tables", () => {
     const tableNames = Object.keys(schema.tables);
-    expect(tableNames).toHaveLength(11);
+    expect(tableNames).toHaveLength(17);
   });
 
   it.each(EXPECTED_TABLES)("table '%s' exists in schema", (tableName) => {
@@ -100,7 +100,7 @@ describe("AC2 — all 15 indexes defined", () => {
       const table = schema.tables[tableName];
       totalIndexes += table[" indexes"]().length;
     }
-    expect(totalIndexes).toBe(15);
+    expect(totalIndexes).toBe(16);
   });
 });
 

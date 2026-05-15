@@ -1,14 +1,29 @@
 // convex/schema.ts
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { users: _authUsers, ...otherAuthTables } = authTables;
 
 export default defineSchema({
+  ...otherAuthTables,
+
   users: defineTable({
     email: v.string(),
     displayName: v.optional(v.string()),
     role: v.union(v.literal("USER"), v.literal("ADMIN")),
     createdAt: v.number(),
-  }).index("by_email", ["email"]),
+    // Auth fields (optional, used by @convex-dev/auth internals)
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    emailVerificationTime: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    phoneVerificationTime: v.optional(v.number()),
+    isAnonymous: v.optional(v.boolean()),
+  })
+    .index("by_email", ["email"])
+    .index("email", ["email"]),
 
   cases: defineTable({
     schemaVersion: v.literal(1),
