@@ -22,6 +22,14 @@ export function LoginPage(): React.ReactElement {
   async function handleMagicLink(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!email.trim()) {
+      setError("Please enter an email address.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
     setSubmitting(true);
     try {
       await signIn("magic-link", { email });
@@ -69,7 +77,7 @@ export function LoginPage(): React.ReactElement {
           </div>
         ) : (
           <>
-            <form onSubmit={handleMagicLink}>
+            <form onSubmit={handleMagicLink} noValidate>
               <div style={{ marginBottom: "1rem" }}>
                 <label htmlFor="login-email">Email address</label>
                 <input
