@@ -25,6 +25,12 @@ Create a `.env.local` with:
 
 ```
 VITE_CONVEX_URL=<your Convex deployment URL>
+
+# Authentication (Convex Auth)
+GOOGLE_OAUTH_CLIENT_ID=<your Google OAuth client ID>
+GOOGLE_OAUTH_CLIENT_SECRET=<your Google OAuth client secret>
+RESEND_API_KEY=<your Resend API key for magic-link emails>
+# AUTH_EMAIL_FROM=Clarity <noreply@clarity.app>   # optional, defaults shown
 ```
 
 Then start the dev server:
