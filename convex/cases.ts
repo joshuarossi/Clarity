@@ -1,6 +1,7 @@
 import { v, ConvexError } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { requireAuth, requirePartyToCase } from "./lib/auth";
+import { generateToken, buildInviteUrl } from "./invites";
 
 export const list = query({
   args: {},
@@ -163,8 +164,7 @@ export const create = mutation({
       createdAt: now,
     });
 
-    const siteUrl = process.env.SITE_URL ?? "http://localhost:5173";
-    return { caseId, inviteUrl: `${siteUrl}/invite/${token}` };
+    return { caseId, inviteUrl: buildInviteUrl(token) };
   },
 });
 
@@ -208,10 +208,3 @@ export const updateMyForm = mutation({
   },
 });
 
-function generateToken(): string {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-  const randomBytes = new Uint8Array(32);
-  crypto.getRandomValues(randomBytes);
-  return Array.from(randomBytes, (byte) => chars[byte % chars.length]).join("");
-}
