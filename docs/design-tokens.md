@@ -79,6 +79,21 @@ Defined in `components.css`:
 All bubbles share: `padding: 12px 16px`, `border-radius: var(--radius-lg)`,
 `max-width: min(640px, 80%)`, and a 150 ms fade-in enter animation.
 
+## Privacy banner and status classes
+
+Defined in `components.css`:
+
+| Class | Use |
+|---|---|
+| `.cc-banner-privacy` | Privacy banner with `--private-tint` background and lock icon |
+| `.pill-turn` | StatusPill — active turn (green filled circle) |
+| `.pill-waiting` | StatusPill — waiting (gray hollow circle) |
+| `.pill-ready` | StatusPill — ready (amber filled circle) |
+| `.pill-closed` | StatusPill — closed (neutral square) |
+| `.cc-phase-header` | PhaseHeader top bar (56 px, `--bg-surface` background) |
+
+See [UI Primitives](ui-primitives.md) for component usage and props.
+
 ## Button variants
 
 The shadcn/ui `<Button>` (`src/components/ui/button.tsx`) is extended with
