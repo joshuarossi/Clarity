@@ -46,14 +46,25 @@ throw rateLimited("Too many session requests");
 
 ### Frontend consumption
 
-On the client, catch a `ConvexError` and inspect `error.data`:
+Use the `handleConvexError` utility in `src/lib/errorHandler.ts` to
+convert any caught error into a user-friendly message:
 
 ```ts
-if (error instanceof ConvexError) {
-  const { code, message, httpStatus } = error.data;
-  // map `code` to a user-facing string
+import { handleConvexError } from "../lib/errorHandler";
+
+try {
+  await someMutation();
+} catch (err) {
+  const { code, message } = handleConvexError(err);
+  showToast(message); // e.g. "Please sign in to continue."
 }
 ```
+
+The utility checks for `ConvexError` instances, extracts the `code`
+from `error.data`, and returns a pre-defined user-facing string. Unknown
+or non-Convex errors fall back to a generic "Something went wrong"
+message. See [App Shell](app-shell.md#frontend-error-handler) for more
+detail.
 
 ## Types
 

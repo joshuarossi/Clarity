@@ -12,6 +12,7 @@ import type * as lib_auth from "../lib/auth.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_prompts from "../lib/prompts.js";
 import type * as lib_stateMachine from "../lib/stateMachine.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   "lib/errors": typeof lib_errors;
   "lib/prompts": typeof lib_prompts;
   "lib/stateMachine": typeof lib_stateMachine;
+  users: typeof users;
 }>;
 
 /**

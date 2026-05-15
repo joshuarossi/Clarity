@@ -440,8 +440,13 @@ describe("theme.ts token mirror", () => {
   let themeModule: { light: Record<string, string>; dark: Record<string, string> };
 
   beforeAll(async () => {
-    // Dynamic import of the theme module
-    themeModule = (await import("../../src/styles/theme")).default;
+    // Dynamic import of the theme module — convert to Record via Object.fromEntries
+    // so we can index with dynamic string keys in assertions below.
+    const imported = await import("../../src/styles/theme");
+    themeModule = {
+      light: Object.fromEntries(Object.entries(imported.default.light)),
+      dark: Object.fromEntries(Object.entries(imported.default.dark)),
+    };
   });
 
   it("exports light and dark keys", () => {
