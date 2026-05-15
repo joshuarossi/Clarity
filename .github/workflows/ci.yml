@@ -23,9 +23,8 @@ jobs:
       - name: ESLint
         run: npm run lint
 
-      # Prettier step removed — prettier is not a project dependency
-      # and no .prettierrc exists. Add prettier to devDependencies
-      # before re-enabling this check.
+      - name: Prettier
+        run: npx prettier --check .
 
   typecheck:
     needs: lint
