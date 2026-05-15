@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as cases from "../cases.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_prompts from "../lib/prompts.js";
@@ -22,6 +23,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  cases: typeof cases;
   "lib/auth": typeof lib_auth;
   "lib/errors": typeof lib_errors;
   "lib/prompts": typeof lib_prompts;
