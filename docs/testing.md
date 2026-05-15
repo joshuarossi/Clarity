@@ -59,8 +59,25 @@ are always identical for a given role — no randomness.
 **`CLAUDE_MOCK_DELAY_MS`** — optional. Controls simulated streaming
 latency in milliseconds (default: `100`).
 
-### CI considerations
+### CI pipeline
+
+The GitHub Actions workflow (`.github/workflows/ci.yml`) runs four
+sequential jobs on every push and pull request to `main`:
+
+1. **lint** — ESLint + Prettier check
+2. **typecheck** — `tsc --noEmit`
+3. **unit** — `vitest run`
+4. **e2e** — Playwright with `CLAUDE_MOCK=true`, Convex dev deployment,
+   and seeded test data
+
+Jobs are chained via `needs:` so fast-failing checks (lint, typecheck)
+gate the slower ones. All jobs use Node.js LTS (`lts/*`) with npm
+caching.
+
+The E2E job requires a `CONVEX_DEPLOY_KEY` GitHub Actions secret to
+provision an ephemeral Convex deployment and seed data. On failure, the
+Playwright HTML report and trace files are uploaded as workflow artifacts
+(retained for 14 days).
 
 The Playwright config reads a `CI` environment variable to adjust
-timeouts and retries automatically. GitHub Actions workflows should set
-`CLAUDE_MOCK=true` and ensure a Convex dev deployment is available.
+timeouts and retries automatically.
