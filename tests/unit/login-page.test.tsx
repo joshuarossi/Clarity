@@ -159,7 +159,7 @@ describe("AC: Error state on magic-link failure", () => {
     const { container } = renderLoginPage();
 
     fireEvent.change(screen.getByLabelText(/email/i), {
-      target: { value: "bad-email" },
+      target: { value: "fail@example.com" },
     });
     fireEvent.click(
       screen.getByRole("button", { name: /send magic link/i }),
@@ -177,7 +177,7 @@ describe("AC: Error state on magic-link failure", () => {
     renderLoginPage();
 
     fireEvent.change(screen.getByLabelText(/email/i), {
-      target: { value: "bad" },
+      target: { value: "retry@example.com" },
     });
     fireEvent.click(
       screen.getByRole("button", { name: /send magic link/i }),
