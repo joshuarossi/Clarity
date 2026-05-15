@@ -16,10 +16,22 @@ const sizeClass: Record<AvatarSize, string> = {
   lg: "cc-avatar--lg",
 };
 
+const sizePx: Record<AvatarSize, number> = {
+  sm: 24,
+  md: 32,
+  lg: 40,
+};
+
 const roleClass: Record<PartyRole, string> = {
   initiator: "cc-avatar--initiator",
   invitee: "cc-avatar--invitee",
   coach: "cc-avatar--coach",
+};
+
+const roleColorVar: Record<PartyRole, string> = {
+  initiator: "var(--party-initiator)",
+  invitee: "var(--party-invitee)",
+  coach: "var(--coach-accent)",
 };
 
 function getInitials(name: string): string {
@@ -38,11 +50,19 @@ export function PartyAvatar({
   const initials = getInitials(name);
   const display = role === "coach" && !initials ? "⟡" : initials;
 
+  const px = sizePx[size];
+
   return (
     <span
       className={["cc-avatar", sizeClass[size], roleClass[role], className]
         .filter(Boolean)
         .join(" ")}
+      style={{
+        width: `${px}px`,
+        height: `${px}px`,
+        backgroundColor: roleColorVar[role],
+        color: "#fff",
+      }}
       aria-hidden="true"
     >
       {display}
