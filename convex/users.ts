@@ -25,7 +25,11 @@ export const updateDisplayName = mutation({
   args: { displayName: v.string() },
   handler: async (ctx, { displayName }) => {
     const user = await requireAuth(ctx);
-    await ctx.db.patch(user._id, { displayName });
+    const trimmed = displayName.trim();
+    if (!trimmed) {
+      throw new Error("Display name cannot be empty");
+    }
+    await ctx.db.patch(user._id, { displayName: trimmed });
     return null;
   },
 });
