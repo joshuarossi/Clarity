@@ -50,3 +50,20 @@ npx convex run seed:seed
 
 The seed is idempotent — running it multiple times is safe. It will not
 run in production environments.
+
+### Running E2E tests
+
+Playwright is configured for Chromium, Firefox, and WebKit:
+
+```bash
+npx playwright test
+```
+
+To run tests with the deterministic Claude mock (no real API calls):
+
+```bash
+CLAUDE_MOCK=true npx playwright test
+```
+
+See [docs/testing.md](docs/testing.md) for fixtures, helpers, and CI
+details.
