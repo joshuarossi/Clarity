@@ -71,18 +71,9 @@ function NotFoundPage() {
 /* ---------- Layout ---------- */
 
 function AppLayout() {
-  const { isAuthenticated } = useConvexAuth();
+  const { isAuthenticated, isLoading } = useConvexAuth();
   const location = useLocation();
   const caseMatch = location.pathname.match(/^\/cases\/([^/]+)\/(private|joint|closed)$/);
-
-  if (!isAuthenticated) {
-    return <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/invite/:token" element={<InvitePage />} />
-      <Route path="/" element={<HomePage />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>;
-  }
 
   const phaseMap: Record<string, string> = {
     private: "Private Coaching",
@@ -92,14 +83,16 @@ function AppLayout() {
 
   return (
     <>
-      {caseMatch ? (
-        <TopNav variant="case-detail" caseId={caseMatch[1]} casePhase={phaseMap[caseMatch[2]]} />
-      ) : (
-        <TopNav variant="logged-in" />
+      {isAuthenticated && !isLoading && (
+        caseMatch ? (
+          <TopNav variant="case-detail" caseId={caseMatch[1]} casePhase={phaseMap[caseMatch[2]]} />
+        ) : (
+          <TopNav variant="logged-in" />
+        )
       )}
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
         <Route path="/invite/:token" element={<InvitePage />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/cases/new" element={<ProtectedRoute><NewCasePage /></ProtectedRoute>} />
