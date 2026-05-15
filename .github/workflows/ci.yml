@@ -23,8 +23,9 @@ jobs:
       - name: ESLint
         run: npm run lint
 
-      - name: Prettier
-        run: npx prettier --check .
+      # Prettier step removed — prettier is not a project dependency
+      # and no .prettierrc exists. Add prettier to devDependencies
+      # before re-enabling this check.
 
   typecheck:
     needs: lint
@@ -79,13 +80,13 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Provision Convex dev deployment
+      - name: Deploy Convex functions
         run: npx convex deploy --cmd 'echo "deployed"'
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
 
       - name: Seed test data
-        run: npx convex run seed
+        run: npx convex run seed:seed
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
 
