@@ -3,7 +3,6 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { users: _authUsers, ...otherAuthTables } = authTables;
 
 export default defineSchema({
