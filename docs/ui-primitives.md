@@ -111,6 +111,11 @@ import { PhaseHeader } from "@/components/layout/PhaseHeader";
 | `backTo` | `string` | `"/dashboard"` | Route for the back link |
 | `children` | `ReactNode` | — | Phase-specific actions rendered in the right slot |
 
+## Chat Components
+
+For the chat-specific primitives (ChatWindow, MessageBubble, MessageInput,
+StreamingIndicator), see [chat-components.md](chat-components.md).
+
 ## Accessibility
 
 - All icon-only buttons include `aria-label` attributes
