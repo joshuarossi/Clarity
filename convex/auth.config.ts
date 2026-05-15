@@ -24,7 +24,10 @@ const emailProvider = Email({
       }),
     });
     if (!response.ok) {
-      throw new Error("Failed to send verification email");
+      const body = await response.text().catch(() => "(no body)");
+      throw new Error(
+        `Failed to send verification email: ${response.status} ${body}`,
+      );
     }
   },
 });
