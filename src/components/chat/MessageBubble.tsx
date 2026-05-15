@@ -60,11 +60,16 @@ export function MessageBubble({
     status === "ERROR" ? "cc-bubble-error" : VARIANT_CLASS[variant];
 
   const handleCopy = React.useCallback(() => {
-    navigator.clipboard.writeText(content).then(() => {
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(content).then(() => {
+        onCopy?.();
+      }).catch(() => {
+        // Fail silently per contract
+      });
+    } else {
+      // Clipboard API unavailable — still invoke callback
       onCopy?.();
-    }).catch(() => {
-      // Fail silently per contract
-    });
+    }
   }, [content, onCopy]);
 
   return (
@@ -76,9 +81,13 @@ export function MessageBubble({
       {status === "STREAMING" && <StreamingIndicator />}
       {status === "COMPLETE" && (
         <>
-          <div className="cc-bubble-timestamp" style={{ marginTop: 4 }}>
+          <time
+            className="cc-bubble-timestamp"
+            dateTime={new Date(createdAt).toISOString()}
+            style={{ marginTop: 4 }}
+          >
             {formatTimestamp(createdAt)}
-          </div>
+          </time>
           <button
             type="button"
             className="cc-btn cc-btn-ghost cc-btn-sm"

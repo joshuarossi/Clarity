@@ -44,7 +44,7 @@ export function ChatWindow({
       }}
     >
       {messages.map((msg) => (
-        <div key={msg.id} className="cc-bubble-enter-wrapper">
+        <div key={msg.id} className="cc-bubble-enter">
           <MessageBubble
             variant={msg.variant}
             status={msg.status}
