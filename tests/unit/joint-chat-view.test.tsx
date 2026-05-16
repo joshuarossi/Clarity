@@ -134,9 +134,20 @@ const DEFAULT_MESSAGES: JointMessage[] = [
 
 const FN_NAME = Symbol.for("functionName");
 
+interface PartyStates {
+  self: { role: string; _id: string; _creationTime: number; caseId: string; userId: string };
+  other: { role: string; hasCompletedPC: boolean; closureProposed: boolean } | null;
+}
+
+const DEFAULT_PARTY_STATES: PartyStates = {
+  self: { role: "INITIATOR", _id: "ps1", _creationTime: 0, caseId: CASE_ID, userId: INITIATOR_ID },
+  other: { role: "INVITEE", hasCompletedPC: false, closureProposed: false },
+};
+
 let caseFixture: CaseDoc | undefined;
 let messagesFixture: JointMessage[] | undefined;
 let synthesisFixture: Synthesis | null | undefined;
+let partyStatesFixture: PartyStates | undefined;
 
 function setupDefaultMocks() {
   mockUseQuery.mockImplementation(
@@ -156,6 +167,12 @@ function setupDefaultMocks() {
         name.includes("jointChat.mySynthesis")
       ) {
         return synthesisFixture;
+      }
+      if (
+        name.includes("cases:partyStates") ||
+        name.includes("cases.partyStates")
+      ) {
+        return partyStatesFixture;
       }
       return undefined;
     },
@@ -206,6 +223,7 @@ beforeEach(() => {
   caseFixture = DEFAULT_CASE;
   messagesFixture = DEFAULT_MESSAGES;
   synthesisFixture = DEFAULT_SYNTHESIS;
+  partyStatesFixture = DEFAULT_PARTY_STATES;
 
   setupDefaultMocks();
 });
