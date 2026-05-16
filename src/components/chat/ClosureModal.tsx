@@ -5,6 +5,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "../ui/Dialog";
+import { handleConvexError } from "../../lib/errorHandler";
 
 interface ClosureModalProps {
   open: boolean;
@@ -60,9 +61,8 @@ export function ClosureModal({
       await onProposeClosure(summary.trim());
       handleOpenChange(false);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to propose closure.",
-      );
+      console.error("Failed to propose closure:", err);
+      setError(handleConvexError(err).message);
     } finally {
       setLoading(false);
     }
@@ -75,9 +75,8 @@ export function ClosureModal({
       await onUnilateralClose(reason.trim() || undefined);
       handleOpenChange(false);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to close session.",
-      );
+      console.error("Failed to close session:", err);
+      setError(handleConvexError(err).message);
     } finally {
       setLoading(false);
     }

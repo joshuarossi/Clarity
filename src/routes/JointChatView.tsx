@@ -198,18 +198,32 @@ function JointChatViewInner({
   };
 
   const handleConfirmClosure = async () => {
-    await confirmClosure({
-      caseId,
-      ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
-    });
-    navigate(`/cases/${caseId}/closed`);
+    try {
+      await confirmClosure({
+        caseId,
+        ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
+      });
+      navigate(`/cases/${caseId}/closed`);
+    } catch (err) {
+      console.error("Failed to confirm closure:", err);
+      setSendError(
+        err instanceof Error ? err.message : "Failed to confirm closure. Please try again.",
+      );
+    }
   };
 
   const handleRejectClosure = async () => {
-    await rejectClosure({
-      caseId,
-      ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
-    });
+    try {
+      await rejectClosure({
+        caseId,
+        ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
+      });
+    } catch (err) {
+      console.error("Failed to reject closure:", err);
+      setSendError(
+        err instanceof Error ? err.message : "Failed to reject closure. Please try again.",
+      );
+    }
   };
 
   // Derive other party name and banner visibility
