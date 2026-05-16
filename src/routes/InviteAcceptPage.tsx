@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -36,13 +36,9 @@ export function InviteAcceptPage(): React.ReactElement {
           </p>
           <div style={{ marginTop: "1.5rem" }}>
             {isAuthenticated ? (
-              <Link to="/dashboard">
-                <Button variant="primary">Go to dashboard</Button>
-              </Link>
+              <Button variant="primary" onClick={() => navigate("/dashboard")}>Go to dashboard</Button>
             ) : (
-              <Link to="/login">
-                <Button variant="primary">Sign in</Button>
-              </Link>
+              <Button variant="primary" onClick={() => navigate("/login")}>Sign in</Button>
             )}
           </div>
         </div>
@@ -61,13 +57,9 @@ export function InviteAcceptPage(): React.ReactElement {
           </p>
           <div style={{ marginTop: "1.5rem" }}>
             {isAuthenticated ? (
-              <Link to="/dashboard">
-                <Button variant="primary">Go to dashboard</Button>
-              </Link>
+              <Button variant="primary" onClick={() => navigate("/dashboard")}>Go to dashboard</Button>
             ) : (
-              <Link to="/login">
-                <Button variant="primary">Sign in</Button>
-              </Link>
+              <Button variant="primary" onClick={() => navigate("/login")}>Sign in</Button>
             )}
           </div>
         </div>
@@ -85,9 +77,7 @@ export function InviteAcceptPage(): React.ReactElement {
             Clarity is a private mediation tool. You'll each talk with an AI coach privately before having a facilitated conversation together.
           </p>
           <div style={{ marginTop: "1.5rem" }}>
-            <Link to={`/login?redirect=/invite/${token}`}>
-              <Button variant="primary">Sign in to continue</Button>
-            </Link>
+            <Button variant="primary" onClick={() => navigate(`/login?redirect=/invite/${token}`)}>Sign in to continue</Button>
           </div>
         </div>
       </main>
