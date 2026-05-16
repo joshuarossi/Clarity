@@ -149,7 +149,7 @@ export const generate = internalAction({
     const initiatorPromptMsgs = toPromptMessages(initiatorMessages);
     const inviteePromptMsgs = toPromptMessages(inviteeMessages);
 
-    // 4. Assemble prompt
+    // 4. Assemble prompt (both parties' form fields + private messages)
     const prompt = assemblePrompt({
       role: "SYNTHESIS",
       caseId: args.caseId,
@@ -165,6 +165,20 @@ export const generate = internalAction({
         otherPartyPrivateMessages: inviteePromptMsgs,
       },
     });
+
+    // Include invitee's form fields (AC: "both parties' form fields as context")
+    const inviteeFormParts: string[] = [];
+    if (inviteeState.mainTopic) inviteeFormParts.push(`Main topic: ${inviteeState.mainTopic}`);
+    if (inviteeState.description) inviteeFormParts.push(`Description: ${inviteeState.description}`);
+    if (inviteeState.desiredOutcome) inviteeFormParts.push(`Desired outcome: ${inviteeState.desiredOutcome}`);
+    if (inviteeFormParts.length > 0) {
+      const insertIdx = prompt.messages.length > 0 &&
+        prompt.messages[0].content.startsWith("[Case intake context]") ? 1 : 0;
+      prompt.messages.splice(insertIdx, 0, {
+        role: "user" as const,
+        content: `[Party B intake context]\n${inviteeFormParts.join("\n")}`,
+      });
+    }
 
     // Extract USER-role message content for privacy filter
     const initiatorUserMessages = initiatorMessages
@@ -200,7 +214,11 @@ export const generate = internalAction({
           10,
         );
         if (attempt < failCount) {
-          // Simulate a filter-failing response for mock mode
+          // Return a distinct mock response (different from the standard mock).
+          // Note: this does NOT guarantee a privacy filter failure — that
+          // depends on the seeded private messages. To test filter failures,
+          // seed the other party's messages with content from the standard
+          // mock response.
           rawResponse = JSON.stringify({
             forInitiator: "mock-filter-fail-initiator",
             forInvitee: "mock-filter-fail-invitee",
@@ -209,22 +227,32 @@ export const generate = internalAction({
           rawResponse = getMockClaudeResponse("SYNTHESIS");
         }
       } else {
-        const { default: Anthropic } = await import("@anthropic-ai/sdk");
-        const client = new Anthropic({
-          apiKey: process.env.ANTHROPIC_API_KEY,
-        });
+        try {
+          const { default: Anthropic } = await import("@anthropic-ai/sdk");
+          const client = new Anthropic({
+            apiKey: process.env.ANTHROPIC_API_KEY,
+          });
 
-        const response = await client.messages.create({
-          model: "claude-sonnet-4-5",
-          max_tokens: 4096,
-          system: prompt.system,
-          messages: prompt.messages,
-        });
+          const response = await client.messages.create({
+            model: "claude-sonnet-4-5",
+            max_tokens: 4096,
+            system: prompt.system,
+            messages: prompt.messages,
+          });
 
-        rawResponse = response.content
-          .filter((block) => block.type === "text")
-          .map((block) => block.text)
-          .join("");
+          rawResponse = response.content
+            .filter((block) => block.type === "text")
+            .map((block) => block.text)
+            .join("");
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.error(
+            `synthesis.generate: Claude API error (attempt ${attempt + 1})`,
+            { caseId: args.caseId, error: errorMessage },
+          );
+          lastFilterMatches.push(`api_error: ${errorMessage}`);
+          continue;
+        }
       }
 
       // Validate JSON structure

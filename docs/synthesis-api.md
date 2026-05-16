@@ -83,11 +83,12 @@ On success, a single mutation atomically:
 
 > Module: `convex/lib/synthesisValidation.ts`
 
-Exports helpers for:
+Exports helpers for parsing and validating the strict JSON output schema
+(`validateSynthesisOutput`), the `SynthesisOutput` type, and the
+`GENERIC_FALLBACK_SYNTHESIS` fallback constant.
 
-- Parsing and validating the strict JSON output schema.
-- Running the token-overlap privacy filter against a party's message
-  corpus.
+The token-overlap privacy filter is in `convex/lib/privacyFilter.ts`
+(consumed by the synthesis action, not modified by this ticket).
 
 ## Loading state
 

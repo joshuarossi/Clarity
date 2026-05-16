@@ -20,8 +20,9 @@ export function validateSynthesisOutput(
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
-  } catch {
-    return { ok: false, error: "Invalid JSON" };
+  } catch (e) {
+    const detail = e instanceof SyntaxError ? e.message : "unknown parse error";
+    return { ok: false, error: `Invalid JSON: ${detail}` };
   }
 
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
