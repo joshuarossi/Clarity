@@ -7,6 +7,7 @@ export const listAll = query({
   handler: async (ctx) => {
     await requireAdmin(ctx);
     const templates = await ctx.db.query("templates").collect();
+    const allCases = await ctx.db.query("cases").collect();
 
     const enriched = await Promise.all(
       templates.map(async (template) => {
@@ -14,6 +15,11 @@ export const listAll = query({
         let currentVersion: number | null = null;
         if (template.currentVersionId) {
           const versionDoc = await ctx.db.get(template.currentVersionId);
+          if (!versionDoc) {
+            console.warn(
+              `Template ${template._id} has currentVersionId ${template.currentVersionId} but the referenced document no longer exists`
+            );
+          }
           currentVersion = versionDoc ? versionDoc.version : null;
         }
 
@@ -24,7 +30,6 @@ export const listAll = query({
           .collect();
         const versionIds = new Set(versions.map((v) => v._id));
 
-        const allCases = await ctx.db.query("cases").collect();
         const pinnedCasesCount = allCases.filter((c) =>
           versionIds.has(c.templateVersionId)
         ).length;

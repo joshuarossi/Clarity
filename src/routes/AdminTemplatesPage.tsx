@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -70,7 +71,6 @@ export function AdminTemplatesPage(): React.ReactElement {
                 <tr
                   key={template._id}
                   className={`border-b cursor-pointer hover:bg-gray-50 ${isArchived ? "archived-muted opacity-60" : ""}`}
-                  style={isArchived ? { opacity: 0.6 } : undefined}
                   onClick={() => navigate(`/admin/templates/${template._id}`)}
                   role="link"
                   tabIndex={0}
