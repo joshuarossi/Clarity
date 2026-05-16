@@ -1,6 +1,6 @@
 # Private Coaching API
 
-> Module: `convex/privateCoaching.ts` · Tickets: WOR-117, WOR-118
+> Module: `convex/privateCoaching.ts` · Tickets: WOR-117, WOR-118, WOR-119
 
 ## Overview
 
@@ -11,6 +11,27 @@ visible **only** to the sender — the other party can never see them.
 The module exposes one query, two client-facing mutations, and an internal
 action (`generateAIResponse`) that streams AI responses back to the
 database in real time.
+
+## Frontend — PrivateCoachingView
+
+> Component: `src/routes/CasePrivatePage.tsx` · Route: `/cases/:id/private`
+
+The PrivateCoachingView is the full-screen chat page where each party
+holds a private conversation with the AI coach. Key features:
+
+- **Privacy banner** — a persistent top banner with a lock icon stating
+  the other party will never see the conversation. Clicking the lock
+  opens a privacy-details modal.
+- **Streaming messages** — AI responses appear with a blinking cursor as
+  tokens arrive in real time; a copy button shows only after the message
+  is complete.
+- **Input** — Enter sends, Shift+Enter inserts a newline. The Send button
+  is disabled while the AI is responding, but the textarea stays enabled
+  for pre-typing.
+- **Mark complete** — a subtle footer CTA opens a confirmation dialog
+  showing the message count, then transitions the view to read-only.
+- **Error handling** — AI errors render inline with error styling and a
+  Retry button.
 
 ## Queries
 
