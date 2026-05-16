@@ -1,6 +1,6 @@
 # Draft Coach API
 
-> Module: `convex/draftCoach.ts` · Tickets: WOR-127, WOR-128
+> Module: `convex/draftCoach.ts` · Tickets: WOR-127, WOR-128, WOR-129
 
 ## Overview
 
@@ -146,6 +146,46 @@ Deletes the last `ERROR` draft message in the session and re-schedules
 `generateResponse`. Requires auth + session ownership.
 
 **Args:** `{ sessionId: Id<"draftSessions"> }`
+
+## UI Components (WOR-129)
+
+### `DraftCoachPanel`
+
+> File: `src/components/joint/DraftCoachPanel.tsx`
+
+The primary UI surface for the Draft Coach experience. It renders as a
+right-side sheet (420 px wide, `--shadow-3`) on desktop and converts to a
+full-screen bottom sheet on viewports narrower than 768 px.
+
+**Key behaviours:**
+
+- **Privacy tint** — uses `--private-tint` background to signal that only the
+  current user can see the conversation.
+- **Header** — Sparkles icon (coach accent), "Draft Coach" title, Lock icon
+  with tooltip explaining privacy, and a close button.
+- **Private banner** — "This is private to you. [Name] can't see what you're
+  discussing here."
+- **Chat area** — reuses `ChatWindow` at 14 px font size for the narrower
+  surface.
+- **Send gate** — the "Draft it for me" button triggers readiness; when
+  `finalDraft` is populated, a `DraftReadyCard` replaces the input area.
+- **Focus management** — textarea receives focus on open; focus is trapped
+  inside the panel (ARIA `role="dialog"`).
+- **Error handling** — AI errors render inline with a Retry button.
+
+### `DraftReadyCard`
+
+> File: `src/components/joint/DraftReadyCard.tsx`
+
+Displays the polished draft in a quoted card and offers four action buttons
+(stacked vertically):
+
+| Button                   | Style          | Action                                          |
+|--------------------------|----------------|-------------------------------------------------|
+| Send this message        | Primary        | Calls `sendFinalDraft`; posts to joint chat     |
+| Edit before sending      | Secondary      | Drops text into joint-chat input; closes panel  |
+| Keep refining with Coach | Ghost          | Continues coaching conversation                 |
+| Discard                  | Ghost / danger | Calls `discardSession`; closes panel            |
 
 ## Authorization
 

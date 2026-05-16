@@ -6,6 +6,7 @@ export interface MessageInputProps {
   placeholder?: string;
   className?: string;
   autoFocus?: boolean;
+  defaultValue?: string;
 }
 
 export function MessageInput({
@@ -14,8 +15,9 @@ export function MessageInput({
   placeholder = "Type a message...",
   className,
   autoFocus,
+  defaultValue,
 }: MessageInputProps): React.ReactElement {
-  const [text, setText] = React.useState("");
+  const [text, setText] = React.useState(defaultValue ?? "");
 
   const trimmed = text.trim();
   const hasText = trimmed.length > 0;

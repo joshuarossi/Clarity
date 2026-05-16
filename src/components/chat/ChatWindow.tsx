@@ -6,12 +6,14 @@ export interface ChatWindowProps {
   messages: ChatMessage[];
   className?: string;
   onRetry?: () => void;
+  style?: React.CSSProperties;
 }
 
 export function ChatWindow({
   messages,
   className,
   onRetry,
+  style,
 }: ChatWindowProps): React.ReactElement {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const isAtBottomRef = React.useRef(true);
@@ -43,6 +45,7 @@ export function ChatWindow({
         flexDirection: "column",
         gap: 8,
         padding: 16,
+        ...style,
       }}
     >
       {messages.map((msg) => (
