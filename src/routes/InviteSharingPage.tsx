@@ -118,14 +118,10 @@ export function InviteSharingPage(): React.ReactElement {
           variant="primary"
           onClick={linkCopy.copy}
           style={{ width: "100%", marginBottom: "1.5rem" }}
+          aria-live="polite"
         >
           {linkCopy.copied ? "Copied!" : "Copy link"}
         </Button>
-
-        {/* Aria-live region for copy feedback */}
-        <div aria-live="polite" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
-          {linkCopy.copied ? "Copied!" : ""}
-        </div>
 
         {/* Share options */}
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.5rem" }}>
@@ -139,17 +135,12 @@ export function InviteSharingPage(): React.ReactElement {
           </a>
 
           <Button variant="secondary" onClick={smsCopy.copy} style={{ width: "100%" }}>
-            {smsCopy.copied ? "Copied!" : "Copy for text"}
+            Copy for text
           </Button>
 
           <Button variant="secondary" onClick={linkCopy.copy} style={{ width: "100%" }}>
-            {linkCopy.copied ? "Copied!" : "Just copy the link"}
+            Just copy the link
           </Button>
-        </div>
-
-        {/* Aria-live region for SMS copy feedback */}
-        <div aria-live="polite" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
-          {smsCopy.copied ? "Copied!" : ""}
         </div>
 
         {/* Expandable suggested language section */}
