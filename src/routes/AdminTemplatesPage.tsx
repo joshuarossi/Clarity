@@ -48,8 +48,7 @@ export function AdminTemplatesPage(): React.ReactElement {
 
       {templates !== undefined && templates.length === 0 && (
         <p className="text-gray-500 mt-8" data-testid="empty-state">
-          No templates yet. The app will use a built-in default baseline. Create
-          a template when you want to tune the Coach's behavior per category.
+          No templates yet. The app will use a built-in default baseline. Create a template when you want to tune the Coach&#x2019;s behavior per category.
         </p>
       )}
 
@@ -70,7 +69,7 @@ export function AdminTemplatesPage(): React.ReactElement {
               return (
                 <tr
                   key={template._id}
-                  className={`border-b cursor-pointer hover:bg-gray-50 ${isArchived ? "opacity-60" : ""}`}
+                  className={`border-b cursor-pointer hover:bg-gray-50 ${isArchived ? "archived-muted opacity-60" : ""}`}
                   onClick={() => navigate(`/admin/templates/${template._id}`)}
                   role="link"
                   tabIndex={0}
