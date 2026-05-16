@@ -78,6 +78,9 @@ Updates the caller's intake form fields on their `partyState`.
 | `description` | `string` | Description of the situation |
 | `desiredOutcome` | `string` | Desired outcome |
 
+**Side effect:** If the caller's `partyState.formCompletedAt` is not yet set,
+it is stamped with the current time on first submission.
+
 ## Privacy invariant
 
 One party never sees the other's form content or private coaching data.

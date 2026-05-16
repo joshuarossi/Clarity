@@ -1,23 +1,15 @@
 import * as React from "react";
 import { useParams, Navigate, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
+import { ConvexError } from "convex/values";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { LoadingSpinner } from "../components/layout/LoadingSpinner";
 import { PhaseHeader } from "../components/layout/PhaseHeader";
 import { PartyToggle } from "../components/layout/PartyToggle";
 import { useSoloActingParty } from "../hooks/useSoloActingParty";
-
-/* ---------- Types ---------- */
-
-type CaseStatus =
-  | "DRAFT_PRIVATE_COACHING"
-  | "BOTH_PRIVATE_COACHING"
-  | "READY_FOR_JOINT"
-  | "JOINT_ACTIVE"
-  | "CLOSED_RESOLVED"
-  | "CLOSED_UNRESOLVED"
-  | "CLOSED_ABANDONED";
+import { handleConvexError } from "../lib/errorHandler";
+import type { CaseStatus } from "../../convex/lib/stateMachine";
 
 /* ---------- Pure helpers ---------- */
 
@@ -34,8 +26,10 @@ function statusToPhase(status: CaseStatus): { phaseName: string; subroute: strin
     case "CLOSED_UNRESOLVED":
     case "CLOSED_ABANDONED":
       return { phaseName: "Closed", subroute: "closed" };
-    default:
+    default: {
+      const _exhaustive: never = status;
       return { phaseName: "Unknown", subroute: "private" };
+    }
   }
 }
 
@@ -100,7 +94,7 @@ function InviteeFormView({
       });
     } catch (err) {
       console.error("Failed to submit perspective form:", err);
-      setError(err instanceof Error ? err.message : "Failed to submit. Please try again.");
+      setError(handleConvexError(err).message);
     } finally {
       setSubmitting(false);
     }
@@ -168,7 +162,9 @@ function InviteeFormView({
 function ForbiddenRedirect() {
   const navigate = useNavigate();
   React.useEffect(() => {
-    navigate("/dashboard");
+    navigate("/dashboard", {
+      state: { error: "You do not have access to that case." },
+    });
   }, [navigate]);
   return null;
 }
@@ -180,8 +176,11 @@ class CaseErrorBoundary extends React.Component<
   state = { error: null as string | null };
 
   static getDerivedStateFromError(err: Error) {
-    if (err.message === "FORBIDDEN" || err.message === "NOT_FOUND") {
-      return { error: err.message };
+    if (err instanceof ConvexError) {
+      const code = (err.data as Record<string, unknown>)?.code;
+      if (code === "FORBIDDEN" || code === "NOT_FOUND") {
+        return { error: String(code) };
+      }
     }
     throw err;
   }
@@ -208,24 +207,20 @@ function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElemen
   const headingRef = React.useRef<HTMLElement>(null);
   const prevStatusRef = React.useRef<string | undefined>(undefined);
 
-  // Handle FORBIDDEN / NOT_FOUND errors from the query
-  // Convex useQuery throws on ConvexError — we catch via an error boundary approach.
-  // However, Convex reactive queries surface errors differently:
-  // When the query throws, useQuery returns undefined and the error shows in console.
-  // We use a separate pattern: check if user is a party via the partyStates query.
-  // If both queries return undefined for too long with no data, that's a loading state.
-  // The actual FORBIDDEN redirect is handled by the ConvexError propagating.
+  // FORBIDDEN / NOT_FOUND errors from useQuery propagate as thrown errors.
+  // CaseErrorBoundary (above) catches these and redirects to /dashboard.
+
+  const currentStatus = caseDoc?.status;
 
   // Focus management on phase transitions (NFR-A11Y)
   React.useEffect(() => {
     if (caseDoc && prevStatusRef.current && prevStatusRef.current !== caseDoc.status) {
-      // Status changed — focus the heading
       headingRef.current?.focus();
     }
     if (caseDoc) {
       prevStatusRef.current = caseDoc.status;
     }
-  }, [caseDoc?.status]);
+  }, [currentStatus]);
 
   // Loading state
   if (caseDoc === undefined || partyStates === undefined) {
@@ -249,7 +244,6 @@ function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElemen
   const activeToggleParty: "initiator" | "invitee" =
     solo.actingRole === "INVITEE" ? "invitee" : "initiator";
 
-  // Render the appropriate subview
   const renderSubview = () => {
     if (showInviteeForm) {
       return <InviteeFormView caseId={caseId} category={caseDoc.category} />;
