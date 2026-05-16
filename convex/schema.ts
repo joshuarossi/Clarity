@@ -46,7 +46,8 @@ export default defineSchema({
     closureSummary: v.optional(v.string()),
   })
     .index("by_initiator", ["initiatorUserId"])
-    .index("by_invitee", ["inviteeUserId"]),
+    .index("by_invitee", ["inviteeUserId"])
+    .index("by_status", ["status"]),
 
   partyStates: defineTable({
     caseId: v.id("cases"),
@@ -137,6 +138,16 @@ export default defineSchema({
     publishedByUserId: v.id("users"),
     notes: v.optional(v.string()),
   }).index("by_template", ["templateId"]),
+
+  notifications: defineTable({
+    userId: v.id("users"),
+    caseId: v.id("cases"),
+    type: v.string(),
+    read: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_read", ["userId", "read"]),
 
   auditLog: defineTable({
     actorUserId: v.id("users"),
