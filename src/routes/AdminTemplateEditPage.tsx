@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogClose,
 } from "../components/ui/Dialog";
+import { handleConvexError } from "../lib/errorHandler";
 
 export function AdminTemplateEditPage(): React.ReactElement {
   const { id } = useParams<{ id: string }>();
@@ -38,6 +39,8 @@ export function AdminTemplateEditPage(): React.ReactElement {
   const [archiving, setArchiving] = React.useState(false);
   const [viewingVersionId, setViewingVersionId] = React.useState<string | null>(null);
   const [archiveDialogOpen, setArchiveDialogOpen] = React.useState(false);
+  const [publishError, setPublishError] = React.useState<string | null>(null);
+  const [archiveError, setArchiveError] = React.useState<string | null>(null);
 
   // Pre-populate form when template data loads
   const currentVersion = template?.currentVersion;
@@ -90,6 +93,7 @@ export function AdminTemplateEditPage(): React.ReactElement {
   const handlePublish = async () => {
     if (!globalGuidance.trim()) return;
     setPublishing(true);
+    setPublishError(null);
     try {
       await publishNewVersion({
         templateId: template._id,
@@ -100,6 +104,9 @@ export function AdminTemplateEditPage(): React.ReactElement {
       });
       setNotes("");
       setFormInitialized(false);
+    } catch (err) {
+      const { message } = handleConvexError(err);
+      setPublishError(message);
     } finally {
       setPublishing(false);
     }
@@ -107,9 +114,13 @@ export function AdminTemplateEditPage(): React.ReactElement {
 
   const handleArchive = async () => {
     setArchiving(true);
+    setArchiveError(null);
     try {
       await archiveTemplate({ templateId: template._id });
       navigate("/admin/templates");
+    } catch (err) {
+      const { message } = handleConvexError(err);
+      setArchiveError(message);
     } finally {
       setArchiving(false);
       setArchiveDialogOpen(false);
@@ -129,7 +140,7 @@ export function AdminTemplateEditPage(): React.ReactElement {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left pane: Form */}
-        <div className="lg:col-span-2" data-testid="template-edit-form-pane">
+        <form className="lg:col-span-2" data-testid="edit-form-pane" onSubmit={(e) => e.preventDefault()}>
           {/* Read-only context fields */}
           <div className="mb-6 space-y-4">
             <div>
@@ -249,6 +260,9 @@ export function AdminTemplateEditPage(): React.ReactElement {
                         ? "No cases are currently pinned to this template."
                         : `${template.pinnedCasesCount} case${template.pinnedCasesCount === 1 ? " is" : "s are"} currently pinned to this template. They will continue working, but new cases won't be able to select this template.`}
                     </p>
+                    {archiveError && (
+                      <p className="text-red-600 text-sm mt-2" role="alert">{archiveError}</p>
+                    )}
                     <div className="flex gap-3 mt-4 justify-end">
                       <DialogClose asChild>
                         <Button className="bg-gray-200 text-gray-800 hover:bg-gray-300">
@@ -269,10 +283,13 @@ export function AdminTemplateEditPage(): React.ReactElement {
               </div>
             </div>
           )}
-        </div>
+          {publishError && (
+            <p className="text-red-600 text-sm mt-2" role="alert">{publishError}</p>
+          )}
+        </form>
 
         {/* Right pane: Version history timeline */}
-        <div data-testid="template-version-timeline">
+        <section data-testid="version-timeline-pane">
           <h2 className="text-lg font-semibold mb-4">Version History</h2>
 
           {versionList.length === 0 && (
@@ -285,6 +302,7 @@ export function AdminTemplateEditPage(): React.ReactElement {
                 key={ver._id}
                 className="border rounded p-3"
                 data-testid="version-entry"
+                data-version={ver.version}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">v{ver.version}</span>
@@ -314,7 +332,7 @@ export function AdminTemplateEditPage(): React.ReactElement {
                 {viewingVersionId === ver._id && (
                   <div
                     className="mt-3 p-3 bg-gray-50 rounded text-sm space-y-2"
-                    data-testid="version-readonly-view"
+                    data-testid="version-content-view"
                   >
                     <div>
                       <span className="font-medium text-xs">Global Guidance:</span>
@@ -343,7 +361,7 @@ export function AdminTemplateEditPage(): React.ReactElement {
               </div>
             ))}
           </div>
-        </div>
+        </section>
       </div>
     </main>
   );
