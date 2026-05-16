@@ -32,6 +32,7 @@ export function NewCasePage(): React.ReactElement {
   const [otherPartyName, setOtherPartyName] = useState("");
   const [isSolo, setIsSolo] = useState(false);
 
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -66,7 +67,7 @@ export function NewCasePage(): React.ReactElement {
     if (Object.keys(errs).length > 0) {
       // Focus first invalid field
       if (errs.category) {
-        categoryRef.current?.focus();
+        categoryRef.current?.querySelector<HTMLInputElement>('input[type="radio"]')?.focus();
       } else if (errs.mainTopic) {
         mainTopicRef.current?.focus();
       } else if (errs.description) {
@@ -119,7 +120,6 @@ export function NewCasePage(): React.ReactElement {
           {/* --- Category radio cards --- */}
           <fieldset
             ref={categoryRef}
-            tabIndex={-1}
             style={{ border: "none", padding: 0, margin: "0 0 1.5rem" }}
           >
             <legend style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
@@ -249,6 +249,9 @@ export function NewCasePage(): React.ReactElement {
                 style={{ cursor: "help", display: "inline-flex" }}
               >
                 <Lock size={16} aria-hidden="true" />
+                <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
+                  Only you and the AI coach will see this.
+                </span>
               </span>
             </div>
             <p
@@ -308,6 +311,9 @@ export function NewCasePage(): React.ReactElement {
                 style={{ cursor: "help", display: "inline-flex" }}
               >
                 <Lock size={16} aria-hidden="true" />
+                <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
+                  Only you and the AI coach will see this.
+                </span>
               </span>
             </div>
             <p
@@ -360,31 +366,45 @@ export function NewCasePage(): React.ReactElement {
           </div>
 
           {/* --- Advanced disclosure (solo mode) --- */}
-          <details style={{ marginBottom: "1.5rem" }}>
-            <summary style={{ cursor: "pointer", fontWeight: 600 }}>
+          <div style={{ marginBottom: "1.5rem" }}>
+            <button
+              type="button"
+              onClick={() => setAdvancedOpen(!advancedOpen)}
+              aria-expanded={advancedOpen}
+              style={{
+                cursor: "pointer",
+                fontWeight: 600,
+                background: "none",
+                border: "none",
+                padding: 0,
+                font: "inherit",
+              }}
+            >
               Advanced
-            </summary>
-            <div style={{ marginTop: "0.5rem", paddingLeft: "0.25rem" }}>
-              <label
-                htmlFor="solo-mode"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  id="solo-mode"
-                  type="checkbox"
-                  checked={isSolo}
-                  onChange={(e) => setIsSolo(e.target.checked)}
-                  disabled={submitting}
-                />
-                Create this as a solo test case (I&apos;ll play both parties)
-              </label>
-            </div>
-          </details>
+            </button>
+            {advancedOpen && (
+              <div style={{ marginTop: "0.5rem", paddingLeft: "0.25rem" }}>
+                <label
+                  htmlFor="solo-mode"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    id="solo-mode"
+                    type="checkbox"
+                    checked={isSolo}
+                    onChange={(e) => setIsSolo(e.target.checked)}
+                    disabled={submitting}
+                  />
+                  Create this as a solo test case (I&apos;ll play both parties)
+                </label>
+              </div>
+            )}
+          </div>
 
           {/* --- Submit --- */}
           {submitError && (
