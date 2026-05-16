@@ -84,7 +84,7 @@ export function MessageBubble({
       {status === "COMPLETE" && (
         <>
           <time
-            className="cc-bubble-timestamp cc-timestamp-hidden"
+            className="cc-bubble-timestamp"
             dateTime={new Date(createdAt).toISOString()}
             style={{ marginTop: 4 }}
           >

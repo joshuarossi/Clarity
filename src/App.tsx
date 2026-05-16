@@ -22,7 +22,7 @@ function HomePage() {
 
 /* CasePrivatePage — imported from src/routes/CasePrivatePage.tsx */
 
-/* CaseJointPage — imported from src/routes/JointChatView.tsx */
+/* JointChatView — imported from src/routes/JointChatView.tsx */
 
 function CaseClosedPage() {
   const { caseId } = useParams();

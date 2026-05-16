@@ -62,25 +62,38 @@ function ClosureModal({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onProposeClosure: (summary: string) => void;
-  onUnilateralClose: () => void;
+  onProposeClosure: (summary: string) => Promise<void>;
+  onUnilateralClose: () => Promise<void>;
 }) {
   const [summary, setSummary] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   const handlePropose = async () => {
     if (!summary.trim()) return;
     setLoading(true);
-    onProposeClosure(summary.trim());
-    setLoading(false);
-    onOpenChange(false);
+    setError(null);
+    try {
+      await onProposeClosure(summary.trim());
+      onOpenChange(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to propose closure.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleWalkAway = async () => {
     setLoading(true);
-    onUnilateralClose();
-    setLoading(false);
-    onOpenChange(false);
+    setError(null);
+    try {
+      await onUnilateralClose();
+      onOpenChange(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to close session.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -107,6 +120,9 @@ function ClosureModal({
             resize: "none",
           }}
         />
+        {error && (
+          <p style={{ color: "var(--danger)", fontSize: 13, marginTop: 8 }}>{error}</p>
+        )}
         <div
           style={{
             display: "flex",
@@ -161,6 +177,7 @@ function JointChatViewInner({
   const [synthesisOpen, setSynthesisOpen] = React.useState(false);
   const [closureOpen, setClosureOpen] = React.useState(false);
   const [draftCoachOpen, setDraftCoachOpen] = React.useState(false);
+  const [sendError, setSendError] = React.useState<string | null>(null);
 
   // Loading state
   if (
@@ -222,6 +239,7 @@ function JointChatViewInner({
   });
 
   const handleSend = async (text: string) => {
+    setSendError(null);
     try {
       await sendUserMessage({
         caseId,
@@ -230,6 +248,9 @@ function JointChatViewInner({
       });
     } catch (err) {
       console.error("Failed to send message:", err);
+      setSendError(
+        err instanceof Error ? err.message : "Failed to send message. Please try again.",
+      );
     }
   };
 
@@ -238,40 +259,34 @@ function JointChatViewInner({
     const lastUserMsg = [...jointMessages]
       .reverse()
       .find((m) => m.authorType === "USER");
-    if (lastUserMsg) {
-      try {
-        await sendUserMessage({
-          caseId,
-          content: lastUserMsg.content,
-          ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
-        });
-      } catch (err) {
-        console.error("Failed to retry:", err);
-      }
+    if (!lastUserMsg) {
+      console.warn("handleRetry: no prior user message to re-send");
+      return;
+    }
+    try {
+      await sendUserMessage({
+        caseId,
+        content: lastUserMsg.content,
+        ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
+      });
+    } catch (err) {
+      console.error("Failed to retry:", err);
     }
   };
 
   const handleProposeClosure = async (summary: string) => {
-    try {
-      await proposeClosure({
-        caseId,
-        summary,
-        ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
-      });
-    } catch (err) {
-      console.error("Failed to propose closure:", err);
-    }
+    await proposeClosure({
+      caseId,
+      summary,
+      ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
+    });
   };
 
   const handleUnilateralClose = async () => {
-    try {
-      await unilateralClose({
-        caseId,
-        ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
-      });
-    } catch (err) {
-      console.error("Failed to close session:", err);
-    }
+    await unilateralClose({
+      caseId,
+      ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
+    });
   };
 
   return (
@@ -329,6 +344,13 @@ function JointChatViewInner({
       <div style={{ flex: 1, overflow: "hidden" }}>
         <ChatWindow messages={messages} className="cc-joint-chat-messages" onRetry={handleRetry} />
       </div>
+
+      {/* Send error feedback */}
+      {sendError && (
+        <p style={{ color: "var(--danger)", fontSize: 13, padding: "0 16px", margin: 0 }}>
+          {sendError}
+        </p>
+      )}
 
       {/* Input area */}
       <div style={{ padding: "0 16px 16px" }}>
