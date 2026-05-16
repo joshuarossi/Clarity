@@ -72,10 +72,12 @@ export default defineSchema({
     content: v.string(),
     status: v.union(v.literal("STREAMING"), v.literal("COMPLETE"), v.literal("ERROR")),
     tokens: v.optional(v.number()),
+    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
     createdAt: v.number(),
   })
     .index("by_case_and_user", ["caseId", "userId"])
-    .index("by_case", ["caseId"]),
+    .index("by_case", ["caseId"])
+    .index("by_case_user_role", ["caseId", "userId", "partyRole"]),
 
   jointMessages: defineTable({
     caseId: v.id("cases"),

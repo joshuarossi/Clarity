@@ -13,16 +13,23 @@ import {
 } from "./lib/claudeMock";
 
 export const myMessages = query({
-  args: { caseId: v.id("cases") },
-  handler: async (ctx, { caseId }) => {
+  args: {
+    caseId: v.id("cases"),
+    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
+  },
+  handler: async (ctx, { caseId, partyRole }) => {
     const user = await requireAuth(ctx);
 
-    const messages = await ctx.db
+    let messages = await ctx.db
       .query("privateMessages")
       .withIndex("by_case_and_user", (q) =>
         q.eq("caseId", caseId).eq("userId", user._id),
       )
       .collect();
+
+    if (partyRole) {
+      messages = messages.filter((m) => m.partyRole === partyRole);
+    }
 
     messages.sort((a, b) => a.createdAt - b.createdAt);
     return messages;
@@ -33,6 +40,7 @@ export const sendUserMessage = mutation({
   args: {
     caseId: v.id("cases"),
     content: v.string(),
+    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
   },
   handler: async (ctx, args) => {
     const user = await requireAuth(ctx);
@@ -52,12 +60,17 @@ export const sendUserMessage = mutation({
       content: args.content,
       status: "COMPLETE",
       createdAt: Date.now(),
+      ...(args.partyRole ? { partyRole: args.partyRole } : {}),
     });
 
     await ctx.scheduler.runAfter(
       0,
       internal.privateCoaching.generateAIResponse,
-      { caseId: args.caseId, userId: user._id },
+      {
+        caseId: args.caseId,
+        userId: user._id,
+        ...(args.partyRole ? { partyRole: args.partyRole } : {}),
+      },
     );
 
     return messageId;
@@ -149,6 +162,7 @@ export const insertStreamingMessage = internalMutation({
   args: {
     caseId: v.id("cases"),
     userId: v.id("users"),
+    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("privateMessages", {
@@ -158,6 +172,7 @@ export const insertStreamingMessage = internalMutation({
       content: "",
       status: "STREAMING",
       createdAt: Date.now(),
+      ...(args.partyRole ? { partyRole: args.partyRole } : {}),
     });
   },
 });
@@ -204,14 +219,21 @@ export const getPrivateMessagesForUser = internalQuery({
   args: {
     caseId: v.id("cases"),
     userId: v.id("users"),
+    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
   },
   handler: async (ctx, args) => {
-    return await ctx.db
+    let messages = await ctx.db
       .query("privateMessages")
       .withIndex("by_case_and_user", (q) =>
         q.eq("caseId", args.caseId).eq("userId", args.userId),
       )
       .collect();
+
+    if (args.partyRole) {
+      messages = messages.filter((m) => m.partyRole === args.partyRole);
+    }
+
+    return messages;
   },
 });
 
@@ -242,6 +264,7 @@ export const generateAIResponse = internalAction({
   args: {
     caseId: v.id("cases"),
     userId: v.id("users"),
+    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
   },
   handler: async (ctx, args) => {
     // 1. Read party state for form fields
@@ -261,7 +284,11 @@ export const generateAIResponse = internalAction({
     // 2. Read acting user's prior messages (privacy: only by_case_and_user)
     const allMessages = await ctx.runQuery(
       internal.privateCoaching.getPrivateMessagesForUser,
-      { caseId: args.caseId, userId: args.userId },
+      {
+        caseId: args.caseId,
+        userId: args.userId,
+        ...(args.partyRole ? { partyRole: args.partyRole } : {}),
+      },
     );
 
     const recentHistory: PromptMessage[] = allMessages
@@ -286,7 +313,11 @@ export const generateAIResponse = internalAction({
     // 4. Insert STREAMING row before API call
     const messageId = await ctx.runMutation(
       internal.privateCoaching.insertStreamingMessage,
-      { caseId: args.caseId, userId: args.userId },
+      {
+        caseId: args.caseId,
+        userId: args.userId,
+        ...(args.partyRole ? { partyRole: args.partyRole } : {}),
+      },
     );
 
     // 5. Unified retry loop for both mock and real API paths

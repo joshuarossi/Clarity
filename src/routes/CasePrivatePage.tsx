@@ -7,6 +7,9 @@ import { PrivacyBanner } from "../components/ui/PrivacyBanner";
 import { MessageBubble } from "../components/chat/MessageBubble";
 import { MessageInput } from "../components/chat/MessageInput";
 import { LoadingSpinner } from "../components/layout/LoadingSpinner";
+import { PhaseHeader } from "../components/layout/PhaseHeader";
+import { PartyToggle } from "../components/layout/PartyToggle";
+import { useSoloActingParty } from "../hooks/useSoloActingParty";
 import {
   Dialog,
   DialogContent,
@@ -153,9 +156,18 @@ function CasePrivatePageInner({
 }: {
   caseId: Id<"cases">;
 }): React.ReactElement {
-  const messages = useQuery(api.privateCoaching.myMessages, { caseId });
+  const solo = useSoloActingParty(caseId);
   const caseDoc = useQuery(api.cases.get, { caseId });
-  const partyStates = useQuery(api.cases.partyStates, { caseId });
+
+  const messagesArgs = solo.isSolo
+    ? { caseId, partyRole: solo.actingRole as "INITIATOR" | "INVITEE" }
+    : { caseId };
+  const partyStatesArgs = solo.isSolo
+    ? { caseId, viewAsRole: solo.actingRole as "INITIATOR" | "INVITEE" }
+    : { caseId };
+
+  const messages = useQuery(api.privateCoaching.myMessages, messagesArgs);
+  const partyStates = useQuery(api.cases.partyStates, partyStatesArgs);
   const otherPartyNameResult = useQuery(api.cases.otherPartyName, { caseId });
 
   const sendUserMessage = useMutation(api.privateCoaching.sendUserMessage);
@@ -198,6 +210,13 @@ function CasePrivatePageInner({
   const otherPartyName =
     otherPartyNameResult?.displayName ?? "The other party";
 
+  // Solo mode toggle label names
+  const userName = otherPartyNameResult?.displayName;
+  const initiatorLabel = userName ? `${userName} (Initiator)` : "Initiator";
+  const inviteeLabel = userName ? `${userName} (Invitee)` : "Invitee";
+  const activeToggleParty: "initiator" | "invitee" =
+    solo.actingRole === "INVITEE" ? "invitee" : "initiator";
+
   const isCompleted = Boolean(partyStates.self.privateCoachingCompletedAt);
   const bothComplete = isCompleted && Boolean(partyStates.other?.hasCompletedPC);
 
@@ -213,7 +232,11 @@ function CasePrivatePageInner({
   const handleSend = async (text: string) => {
     setSendError(null);
     try {
-      await sendUserMessage({ caseId, content: text });
+      await sendUserMessage({
+        caseId,
+        content: text,
+        ...(solo.isSolo ? { partyRole: solo.actingRole } : {}),
+      });
     } catch (err) {
       console.error("Failed to send message:", err);
       setSendError(
@@ -267,6 +290,18 @@ function CasePrivatePageInner({
         width: "100%",
       }}
     >
+      {/* Phase header with solo toggle */}
+      {solo.isSolo && (
+        <PhaseHeader caseName={caseDoc.category} phaseName="Private Coaching">
+          <PartyToggle
+            initiatorName={initiatorLabel}
+            inviteeName={inviteeLabel}
+            activeParty={activeToggleParty}
+            onToggle={solo.setActingParty}
+          />
+        </PhaseHeader>
+      )}
+
       {/* Privacy banner — always visible */}
       <PrivacyBanner copy={privacyBannerCopy} />
 

@@ -42,8 +42,11 @@ export const get = query({
 });
 
 export const partyStates = query({
-  args: { caseId: v.id("cases") },
-  handler: async (ctx, { caseId }) => {
+  args: {
+    caseId: v.id("cases"),
+    viewAsRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
+  },
+  handler: async (ctx, { caseId, viewAsRole }) => {
     const user = await requireAuth(ctx);
     await requirePartyToCase(ctx, caseId, user._id);
 
@@ -58,8 +61,10 @@ export const partyStates = query({
     let otherPartyState;
 
     if (caseDoc?.isSolo) {
-      self = allPartyStates.find((ps) => ps.role === "INITIATOR");
-      otherPartyState = allPartyStates.find((ps) => ps.role === "INVITEE");
+      const selfRole = viewAsRole ?? "INITIATOR";
+      const otherRole = selfRole === "INITIATOR" ? "INVITEE" : "INITIATOR";
+      self = allPartyStates.find((ps) => ps.role === selfRole);
+      otherPartyState = allPartyStates.find((ps) => ps.role === otherRole);
     } else {
       self = allPartyStates.find((ps) => ps.userId === user._id);
       otherPartyState = allPartyStates.find(
