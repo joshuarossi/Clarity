@@ -48,12 +48,16 @@ function ConfirmCompleteDialog({
   messageCount,
   otherPartyName,
   onConfirm,
+  loading,
+  error,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   messageCount: number;
   otherPartyName: string;
   onConfirm: () => void;
+  loading?: boolean;
+  error?: string | null;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -63,6 +67,11 @@ function ConfirmCompleteDialog({
           You&apos;ve had {messageCount} messages with the Coach. Ready to move
           on to the joint session with {otherPartyName}?
         </DialogDescription>
+        {error && (
+          <p role="alert" style={{ color: "var(--text-error, #dc2626)", fontSize: "0.875rem", marginTop: 8 }}>
+            {error}
+          </p>
+        )}
         <div
           style={{
             display: "flex",
@@ -75,6 +84,7 @@ function ConfirmCompleteDialog({
             type="button"
             className="cc-btn cc-btn-ghost cc-btn-sm"
             onClick={() => onOpenChange(false)}
+            disabled={loading}
           >
             Continue Coaching
           </button>
@@ -82,8 +92,9 @@ function ConfirmCompleteDialog({
             type="button"
             className="cc-btn cc-btn-primary cc-btn-sm"
             onClick={onConfirm}
+            disabled={loading}
           >
-            Mark Complete
+            {loading ? "Completing\u2026" : "Mark Complete"}
           </button>
         </div>
       </DialogContent>
@@ -122,22 +133,43 @@ function ReadOnlyBanner({
 
 export function CasePrivatePage(): React.ReactElement {
   const { caseId } = useParams<{ caseId: string }>();
+
+  // Issue 2: Guard against undefined caseId from route params
+  if (!caseId) {
+    return (
+      <main data-testid="page-case-private">
+        <p>Invalid case URL.</p>
+      </main>
+    );
+  }
+
   const typedCaseId = caseId as Id<"cases">;
 
-  const messages = useQuery(api.privateCoaching.myMessages, { caseId: typedCaseId });
-  const caseDoc = useQuery(api.cases.get, { caseId: typedCaseId });
-  const partyStates = useQuery(api.cases.partyStates, { caseId: typedCaseId });
-  const otherPartyNameResult = useQuery(api.cases.otherPartyName, { caseId: typedCaseId });
+  return <CasePrivatePageInner caseId={typedCaseId} />;
+}
+
+function CasePrivatePageInner({
+  caseId,
+}: {
+  caseId: Id<"cases">;
+}): React.ReactElement {
+  const messages = useQuery(api.privateCoaching.myMessages, { caseId });
+  const caseDoc = useQuery(api.cases.get, { caseId });
+  const partyStates = useQuery(api.cases.partyStates, { caseId });
+  const otherPartyNameResult = useQuery(api.cases.otherPartyName, { caseId });
 
   const sendUserMessage = useMutation(api.privateCoaching.sendUserMessage);
   const markComplete = useMutation(api.privateCoaching.markComplete);
   const retryLastAIResponse = useMutation(api.privateCoaching.retryLastAIResponse);
 
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [sendError, setSendError] = React.useState<string | null>(null);
+  const [markCompleteError, setMarkCompleteError] = React.useState<string | null>(null);
+  const [markCompleteLoading, setMarkCompleteLoading] = React.useState(false);
+  const [retryLoading, setRetryLoading] = React.useState(false);
 
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const isAtBottomRef = React.useRef(true);
-  const inputRef = React.useRef<HTMLTextAreaElement>(null);
 
   const handleScroll = React.useCallback(() => {
     const el = scrollRef.current;
@@ -152,11 +184,6 @@ export function CasePrivatePage(): React.ReactElement {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
-
-  // Focus input on mount
-  React.useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
 
   // Loading state
   if (
@@ -183,17 +210,47 @@ export function CasePrivatePage(): React.ReactElement {
 
   const userMessageCount = messages.filter((m) => m.role === "USER").length;
 
-  const handleSend = (text: string) => {
-    sendUserMessage({ caseId: typedCaseId, content: text });
+  const handleSend = async (text: string) => {
+    setSendError(null);
+    try {
+      await sendUserMessage({ caseId, content: text });
+    } catch (err) {
+      console.error("Failed to send message:", err);
+      setSendError(
+        err instanceof Error ? err.message : "Failed to send message. Please try again.",
+      );
+    }
   };
 
-  const handleRetry = () => {
-    retryLastAIResponse({ caseId: typedCaseId });
+  const handleRetry = async () => {
+    setRetryLoading(true);
+    try {
+      await retryLastAIResponse({ caseId });
+    } catch (err) {
+      console.error("Failed to retry AI response:", err);
+    } finally {
+      setRetryLoading(false);
+    }
   };
 
-  const handleMarkComplete = () => {
-    markComplete({ caseId: typedCaseId });
-    setConfirmOpen(false);
+  const handleMarkComplete = async () => {
+    setMarkCompleteLoading(true);
+    setMarkCompleteError(null);
+    try {
+      await markComplete({ caseId });
+      setConfirmOpen(false);
+    } catch (err) {
+      console.error("Failed to mark coaching complete:", err);
+      setMarkCompleteError(
+        err instanceof Error ? err.message : "Failed to complete. Please try again.",
+      );
+    } finally {
+      setMarkCompleteLoading(false);
+    }
+  };
+
+  const handleCopy = (content: string) => {
+    navigator.clipboard.writeText(content).catch(() => {});
   };
 
   const privacyBannerCopy = `\u{1F512} This conversation is private to you. ${otherPartyName} will never see any of it.`;
@@ -261,12 +318,25 @@ export function CasePrivatePage(): React.ReactElement {
                 content={content}
                 createdAt={msg.createdAt}
                 onRetry={msg.status === "ERROR" ? handleRetry : undefined}
-                onCopy={msg.status === "COMPLETE" ? () => {} : undefined}
+                onCopy={msg.status === "COMPLETE" ? () => handleCopy(msg.content) : undefined}
               />
             </div>
           );
         })}
       </div>
+
+      {sendError && (
+        <div
+          role="alert"
+          style={{
+            padding: "8px 16px",
+            color: "var(--text-error, #dc2626)",
+            fontSize: "0.875rem",
+          }}
+        >
+          {sendError}
+        </div>
+      )}
 
       {/* Input area or read-only state */}
       {isReadOnly ? (
@@ -283,6 +353,7 @@ export function CasePrivatePage(): React.ReactElement {
               onSend={handleSend}
               isAiResponding={isAiResponding}
               placeholder="Type a message..."
+              autoFocus
             />
           </div>
           <MarkCompleteFooter onClick={() => setConfirmOpen(true)} />
@@ -292,6 +363,8 @@ export function CasePrivatePage(): React.ReactElement {
             messageCount={userMessageCount}
             otherPartyName={otherPartyName}
             onConfirm={handleMarkComplete}
+            loading={markCompleteLoading}
+            error={markCompleteError}
           />
         </>
       )}

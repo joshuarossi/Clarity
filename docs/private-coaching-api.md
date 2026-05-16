@@ -8,13 +8,13 @@ Private coaching is the confidential, AI-guided conversation each party
 has before joint mediation. Messages sent during private coaching are
 visible **only** to the sender — the other party can never see them.
 
-The module exposes one query, two client-facing mutations, and an internal
+The module exposes one query, three client-facing mutations, and an internal
 action (`generateAIResponse`) that streams AI responses back to the
 database in real time.
 
 ## Frontend — PrivateCoachingView
 
-> Component: `src/routes/CasePrivatePage.tsx` · Route: `/cases/:id/private`
+> Component: `src/routes/CasePrivatePage.tsx` · Route: `/cases/:caseId/private`
 
 The PrivateCoachingView is the full-screen chat page where each party
 holds a private conversation with the AI coach. Key features:
@@ -81,6 +81,20 @@ Returns `{ synthesisScheduled: boolean }`.
 
 **Idempotency:** Calling `markComplete` a second time is a no-op — it
 will not re-trigger synthesis.
+
+### `privateCoaching/retryLastAIResponse`
+
+Deletes the most recent AI message with `status=ERROR` for the caller and
+reschedules `generateAIResponse`.
+
+| Argument | Type           | Description                      |
+|----------|----------------|----------------------------------|
+| `caseId` | `Id<"cases">`  | The case to retry AI response in |
+
+**Status guard:** The case must be in `DRAFT_PRIVATE_COACHING` or
+`BOTH_PRIVATE_COACHING` status. If not, a `CONFLICT` error is thrown.
+
+Throws `CONFLICT` if no error message exists to retry.
 
 ## Authentication
 

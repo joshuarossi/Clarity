@@ -113,7 +113,15 @@ export const retryLastAIResponse = mutation({
   args: { caseId: v.id("cases") },
   handler: async (ctx, args) => {
     const user = await requireAuth(ctx);
-    await requirePartyToCase(ctx, args.caseId, user._id);
+    const caseDoc = await requirePartyToCase(ctx, args.caseId, user._id);
+
+    if (
+      caseDoc.status !== "DRAFT_PRIVATE_COACHING" &&
+      caseDoc.status !== "BOTH_PRIVATE_COACHING"
+    ) {
+      throw conflict("Case is not in private coaching phase");
+    }
+
     // Find the last AI message with ERROR status for this user
     const messages = await ctx.db
       .query("privateMessages")
