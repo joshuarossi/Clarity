@@ -21,6 +21,7 @@ const EXPECTED_TABLES = [
   "inviteTokens",
   "templates",
   "templateVersions",
+  "notifications",
   "auditLog",
 ] as const;
 
@@ -42,6 +43,7 @@ const EXPECTED_INDEXES: Record<
   cases: [
     { name: "by_initiator", fields: ["initiatorUserId"] },
     { name: "by_invitee", fields: ["inviteeUserId"] },
+    { name: "by_status", fields: ["status"] },
   ],
   partyStates: [
     { name: "by_case", fields: ["caseId"] },
@@ -61,6 +63,10 @@ const EXPECTED_INDEXES: Record<
   ],
   templates: [{ name: "by_category", fields: ["category"] }],
   templateVersions: [{ name: "by_template", fields: ["templateId"] }],
+  notifications: [
+    { name: "by_user", fields: ["userId"] },
+    { name: "by_user_and_read", fields: ["userId", "read"] },
+  ],
   auditLog: [{ name: "by_actor", fields: ["actorUserId"] }],
 };
 
@@ -68,7 +74,7 @@ const EXPECTED_INDEXES: Record<
 describe("AC1 — all 11 tables defined", () => {
   it("schema contains exactly 11 tables", () => {
     const tableNames = Object.keys(schema.tables);
-    expect(tableNames).toHaveLength(17);
+    expect(tableNames).toHaveLength(18);
   });
 
   it.each(EXPECTED_TABLES)("table '%s' exists in schema", (tableName) => {
@@ -101,7 +107,7 @@ describe("AC2 — all 15 indexes defined", () => {
       const table = schema.tables[tableName];
       totalIndexes += table[" indexes"]().length;
     }
-    expect(totalIndexes).toBe(19);
+    expect(totalIndexes).toBe(22);
   });
 });
 
