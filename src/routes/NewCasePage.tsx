@@ -45,7 +45,8 @@ export function NewCasePage(): React.ReactElement {
     const el = descriptionRef.current;
     if (!el) return;
     el.style.height = "auto";
-    const minHeight = 5 * 1.5 * 16; // 5 rows * line-height approx
+    const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 24;
+    const minHeight = 5 * lineHeight;
     el.style.height = `${Math.max(el.scrollHeight, minHeight)}px`;
   }, []);
 
@@ -89,6 +90,7 @@ export function NewCasePage(): React.ReactElement {
         state: { otherPartyName },
       });
     } catch (err) {
+      console.error("Case creation failed:", err);
       setSubmitError(
         err instanceof Error
           ? err.message
@@ -136,7 +138,7 @@ export function NewCasePage(): React.ReactElement {
                 <label
                   key={cat.value}
                   htmlFor={`category-${cat.value}`}
-                  className="cc-card"
+                  className="cc-radio-card"
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -145,12 +147,12 @@ export function NewCasePage(): React.ReactElement {
                     cursor: "pointer",
                     border:
                       category === cat.value
-                        ? "2px solid var(--cc-primary, #2563eb)"
-                        : "2px solid var(--cc-border, #e5e7eb)",
+                        ? "2px solid var(--accent)"
+                        : "2px solid var(--border-default)",
                     borderRadius: "0.5rem",
                     background:
                       category === cat.value
-                        ? "var(--cc-primary-light, #eff6ff)"
+                        ? "var(--accent-subtle)"
                         : undefined,
                   }}
                 >
@@ -171,7 +173,7 @@ export function NewCasePage(): React.ReactElement {
               <p
                 role="alert"
                 style={{
-                  color: "var(--cc-danger, #dc2626)",
+                  color: "var(--danger)",
                   fontSize: "0.875rem",
                   marginTop: "0.25rem",
                 }}
@@ -190,7 +192,7 @@ export function NewCasePage(): React.ReactElement {
               id="main-topic-helper"
               style={{
                 fontSize: "0.875rem",
-                color: "var(--cc-text-muted, #6b7280)",
+                color: "var(--text-secondary)",
                 marginTop: "0.25rem",
                 marginBottom: "0.25rem",
               }}
@@ -215,8 +217,8 @@ export function NewCasePage(): React.ReactElement {
                 fontSize: "0.75rem",
                 marginTop: "0.25rem",
                 color: counterClass
-                  ? "var(--cc-warning, #d97706)"
-                  : "var(--cc-text-muted, #6b7280)",
+                  ? "var(--warning)"
+                  : "var(--text-secondary)",
               }}
             >
               {mainTopic.length}/{MAIN_TOPIC_SOFT_LIMIT}
@@ -225,7 +227,7 @@ export function NewCasePage(): React.ReactElement {
               <p
                 role="alert"
                 style={{
-                  color: "var(--cc-danger, #dc2626)",
+                  color: "var(--danger)",
                   fontSize: "0.875rem",
                   marginTop: "0.25rem",
                 }}
@@ -243,13 +245,16 @@ export function NewCasePage(): React.ReactElement {
               </label>
               <span
                 tabIndex={0}
-                role="img"
                 aria-label="Privacy info"
+                aria-describedby="description-privacy-tooltip"
                 title="Only you and the AI coach will see this."
                 style={{ cursor: "help", display: "inline-flex" }}
               >
                 <Lock size={16} aria-hidden="true" />
-                <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
+                <span
+                  id="description-privacy-tooltip"
+                  style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}
+                >
                   Only you and the AI coach will see this.
                 </span>
               </span>
@@ -258,7 +263,7 @@ export function NewCasePage(): React.ReactElement {
               id="description-helper"
               style={{
                 fontSize: "0.875rem",
-                color: "var(--cc-text-muted, #6b7280)",
+                color: "var(--text-secondary)",
                 marginTop: "0.25rem",
                 marginBottom: "0.25rem",
               }}
@@ -287,7 +292,7 @@ export function NewCasePage(): React.ReactElement {
               <p
                 role="alert"
                 style={{
-                  color: "var(--cc-danger, #dc2626)",
+                  color: "var(--danger)",
                   fontSize: "0.875rem",
                   marginTop: "0.25rem",
                 }}
@@ -305,13 +310,16 @@ export function NewCasePage(): React.ReactElement {
               </label>
               <span
                 tabIndex={0}
-                role="img"
                 aria-label="Privacy info"
+                aria-describedby="outcome-privacy-tooltip"
                 title="Only you and the AI coach will see this."
                 style={{ cursor: "help", display: "inline-flex" }}
               >
                 <Lock size={16} aria-hidden="true" />
-                <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>
+                <span
+                  id="outcome-privacy-tooltip"
+                  style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}
+                >
                   Only you and the AI coach will see this.
                 </span>
               </span>
@@ -320,7 +328,7 @@ export function NewCasePage(): React.ReactElement {
               id="desired-outcome-helper"
               style={{
                 fontSize: "0.875rem",
-                color: "var(--cc-text-muted, #6b7280)",
+                color: "var(--text-secondary)",
                 marginTop: "0.25rem",
                 marginBottom: "0.25rem",
               }}
@@ -347,7 +355,7 @@ export function NewCasePage(): React.ReactElement {
               id="other-party-helper"
               style={{
                 fontSize: "0.875rem",
-                color: "var(--cc-text-muted, #6b7280)",
+                color: "var(--text-secondary)",
                 marginTop: "0.25rem",
                 marginBottom: "0.25rem",
               }}
@@ -411,7 +419,7 @@ export function NewCasePage(): React.ReactElement {
             <p
               role="alert"
               style={{
-                color: "var(--cc-danger, #dc2626)",
+                color: "var(--danger)",
                 fontSize: "0.875rem",
                 marginBottom: "0.75rem",
               }}
