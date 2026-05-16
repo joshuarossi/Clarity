@@ -17,12 +17,7 @@ import { ClosedCaseView } from "./routes/ClosedCaseView";
 import { AdminTemplatesPage } from "./routes/AdminTemplatesPage";
 import { AdminTemplateEditPage } from "./routes/AdminTemplateEditPage";
 import { AdminAuditLogPage } from "./routes/AdminAuditLogPage";
-
-/* ---------- Stub page components ---------- */
-
-function HomePage() {
-  return <main><h1 data-testid="page-home">Home</h1></main>;
-}
+import { LandingPage } from "./routes/LandingPage";
 
 /* CasePrivatePage — imported from src/routes/CasePrivatePage.tsx */
 
@@ -67,7 +62,7 @@ function AppLayout() {
         )
       )}
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={isAuthenticated && !isLoading ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
         <Route path="/invite/:token" element={<InviteAcceptPage />} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
