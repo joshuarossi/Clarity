@@ -95,13 +95,13 @@ describe("AC2 — all 15 indexes defined", () => {
     },
   );
 
-  it("total index count across all tables is 17", () => {
+  it("total index count across all tables is 19", () => {
     let totalIndexes = 0;
     for (const tableName of EXPECTED_TABLES) {
       const table = schema.tables[tableName];
       totalIndexes += table[" indexes"]().length;
     }
-    expect(totalIndexes).toBe(17);
+    expect(totalIndexes).toBe(19);
   });
 });
 
