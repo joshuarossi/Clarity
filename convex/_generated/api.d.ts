@@ -8,8 +8,10 @@
  * @module
  */
 
+import type * as abandonedCases from "../abandonedCases.js";
 import type * as admin from "../admin.js";
 import type * as cases from "../cases.js";
+import type * as crons from "../crons.js";
 import type * as draftCoach from "../draftCoach.js";
 import type * as invites from "../invites.js";
 import type * as jointChat from "../jointChat.js";
@@ -29,8 +31,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  abandonedCases: typeof abandonedCases;
   admin: typeof admin;
   cases: typeof cases;
+  crons: typeof crons;
   draftCoach: typeof draftCoach;
   invites: typeof invites;
   jointChat: typeof jointChat;
