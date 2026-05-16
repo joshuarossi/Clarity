@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation, internalAction, internalMutation } from "./_generated/server";
+import { query, mutation, internalAction, internalMutation, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { requireAuth, requirePartyToCase } from "./lib/auth";
 import { conflict } from "./lib/errors";
@@ -165,10 +165,10 @@ export const markMessageError = internalMutation({
 });
 
 // ---------------------------------------------------------------------------
-// Internal query for reading acting user's messages
+// Internal queries for reading acting user's messages and party state
 // ---------------------------------------------------------------------------
 
-export const getPrivateMessagesForUser = internalMutation({
+export const getPrivateMessagesForUser = internalQuery({
   args: {
     caseId: v.id("cases"),
     userId: v.id("users"),
@@ -183,7 +183,7 @@ export const getPrivateMessagesForUser = internalMutation({
   },
 });
 
-export const getPartyState = internalMutation({
+export const getPartyState = internalQuery({
   args: {
     caseId: v.id("cases"),
     userId: v.id("users"),
@@ -213,7 +213,7 @@ export const generateAIResponse = internalAction({
   },
   handler: async (ctx, args) => {
     // 1. Read party state for form fields
-    const partyState = await ctx.runMutation(
+    const partyState = await ctx.runQuery(
       internal.privateCoaching.getPartyState,
       { caseId: args.caseId, userId: args.userId },
     );
@@ -227,7 +227,7 @@ export const generateAIResponse = internalAction({
       : undefined;
 
     // 2. Read acting user's prior messages (privacy: only by_case_and_user)
-    const allMessages = await ctx.runMutation(
+    const allMessages = await ctx.runQuery(
       internal.privateCoaching.getPrivateMessagesForUser,
       { caseId: args.caseId, userId: args.userId },
     );
@@ -248,7 +248,6 @@ export const generateAIResponse = internalAction({
       recentHistory,
       context: {
         formFields,
-        actingPartyPrivateMessages: recentHistory,
       },
     });
 
@@ -264,6 +263,10 @@ export const generateAIResponse = internalAction({
     if (!isMock) {
       const apiKey = process.env.ANTHROPIC_API_KEY;
       if (!apiKey) {
+        console.error(
+          "generateAIResponse: ANTHROPIC_API_KEY is not set — cannot call Claude API",
+          { caseId: args.caseId, userId: args.userId, messageId },
+        );
         await ctx.runMutation(internal.privateCoaching.markMessageError, {
           messageId,
         });
@@ -343,10 +346,17 @@ export const generateAIResponse = internalAction({
             const now = Date.now();
             if (now - lastFlush >= 50) {
               lastFlush = now;
-              await ctx.runMutation(
-                internal.privateCoaching.updateStreamingMessage,
-                { messageId, content },
-              );
+              try {
+                await ctx.runMutation(
+                  internal.privateCoaching.updateStreamingMessage,
+                  { messageId, content },
+                );
+              } catch (flushErr) {
+                console.error(
+                  "generateAIResponse: failed to flush streaming update",
+                  { messageId, error: flushErr instanceof Error ? flushErr.message : String(flushErr) },
+                );
+              }
             }
           });
 
@@ -375,10 +385,23 @@ export const generateAIResponse = internalAction({
           "status" in error &&
           (error as Record<string, unknown>).status === 429;
 
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const statusCode = error instanceof Error && "status" in error
+          ? (error as Record<string, unknown>).status
+          : undefined;
+
         if (attempt < maxAttempts) {
           const delay = is429 ? 2000 * Math.pow(2, attempt - 1) : 2000;
+          console.error(
+            `generateAIResponse: attempt ${attempt} failed (status=${statusCode ?? "unknown"}), retrying in ${delay}ms`,
+            { caseId: args.caseId, userId: args.userId, error: errorMessage },
+          );
           await sleep(delay);
         } else {
+          console.error(
+            `generateAIResponse: all ${maxAttempts} attempts failed, marking message as ERROR`,
+            { caseId: args.caseId, userId: args.userId, messageId, error: errorMessage },
+          );
           await ctx.runMutation(internal.privateCoaching.markMessageError, {
             messageId,
           });
