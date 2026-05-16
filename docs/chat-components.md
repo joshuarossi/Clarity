@@ -28,6 +28,7 @@ import { ChatWindow } from "@/components/chat/ChatWindow";
 | `messages` | `ChatMessage[]` | — | Array of messages to render |
 | `onRetry` | `() => void` | — | Callback passed to the Retry button on messages with `ERROR` status |
 | `className` | `string` | — | Additional CSS class names |
+| `style` | `React.CSSProperties` | — | Inline style overrides applied to the root `role="log"` element |
 
 ## MessageBubble
 
@@ -102,6 +103,8 @@ import { MessageInput } from "@/components/chat/MessageInput";
 | `isAiResponding` | `boolean` | `false` | Disables the Send button while AI streams |
 | `placeholder` | `string` | `"Type a message..."` | Textarea placeholder text |
 | `className` | `string` | — | Additional CSS class names |
+| `autoFocus` | `boolean` | — | Auto-focus the textarea on mount |
+| `defaultValue` | `string` | — | Initial text to populate the textarea (e.g. for "Edit before sending") |
 
 ## StreamingIndicator
 

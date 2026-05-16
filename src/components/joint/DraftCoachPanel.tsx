@@ -35,35 +35,46 @@ export function DraftCoachPanel({
 
   const [isSending, setIsSending] = React.useState(false);
   const [startingSession, setStartingSession] = React.useState(false);
+  const [sessionError, setSessionError] = React.useState<string | null>(null);
+  const [sendError, setSendError] = React.useState<string | null>(null);
+  const [sendFinalError, setSendFinalError] = React.useState<string | null>(null);
 
   // Start session if none exists
   React.useEffect(() => {
-    if (sessionData === null && !startingSession) {
+    if (sessionData === null && !startingSession && !sessionError) {
       setStartingSession(true);
       startSession({ caseId }).catch((err) => {
         console.error("Failed to start draft session:", err);
         setStartingSession(false);
+        setSessionError(
+          err instanceof Error ? err.message : "Failed to start coaching session.",
+        );
       });
     }
     if (sessionData !== null && sessionData !== undefined) {
       setStartingSession(false);
+      setSessionError(null);
     }
-  }, [sessionData, caseId, startSession, startingSession]);
+  }, [sessionData, caseId, startSession, startingSession, sessionError]);
 
   // If session exists but is not ACTIVE, start a fresh one
   React.useEffect(() => {
     if (
       sessionData &&
       sessionData.session.status !== "ACTIVE" &&
-      !startingSession
+      !startingSession &&
+      !sessionError
     ) {
       setStartingSession(true);
       startSession({ caseId }).catch((err) => {
         console.error("Failed to start fresh draft session:", err);
         setStartingSession(false);
+        setSessionError(
+          err instanceof Error ? err.message : "Failed to start coaching session.",
+        );
       });
     }
-  }, [sessionData, caseId, startSession, startingSession]);
+  }, [sessionData, caseId, startSession, startingSession, sessionError]);
 
   // Focus textarea on mount
   React.useEffect(() => {
@@ -76,11 +87,31 @@ export function DraftCoachPanel({
     return () => clearTimeout(timer);
   }, []);
 
-  // Keyboard: Escape closes panel
+  // Keyboard: Escape closes panel + focus trap (Tab/Shift+Tab)
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose();
+        return;
+      }
+      if (e.key === "Tab" && panelRef.current) {
+        const focusable = panelRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -120,30 +151,42 @@ export function DraftCoachPanel({
 
   const handleSendMessage = async (text: string) => {
     if (!session) return;
+    setSendError(null);
     try {
       await sendMessage({ sessionId: session._id, content: text });
     } catch (err) {
       console.error("Failed to send draft coach message:", err);
+      setSendError(
+        err instanceof Error ? err.message : "Failed to send message. Please try again.",
+      );
     }
   };
 
   const handleDraftItForMe = async () => {
     if (!session) return;
+    setSendError(null);
     try {
       await sendMessage({ sessionId: session._id, content: "Generate Draft" });
     } catch (err) {
       console.error("Failed to request draft:", err);
+      setSendError(
+        err instanceof Error ? err.message : "Failed to request draft. Please try again.",
+      );
     }
   };
 
   const handleSendFinalDraft = async () => {
     if (!session) return;
     setIsSending(true);
+    setSendFinalError(null);
     try {
       await sendFinalDraft({ sessionId: session._id });
       onClose();
     } catch (err) {
       console.error("Failed to send final draft:", err);
+      setSendFinalError(
+        err instanceof Error ? err.message : "Failed to send draft to joint chat. Please try again.",
+      );
     } finally {
       setIsSending(false);
     }
@@ -155,9 +198,14 @@ export function DraftCoachPanel({
     onClose();
   };
 
-  const handleKeepRefining = () => {
-    // Clear finalDraft by continuing conversation — panel stays open
-    // The user can just keep typing; we focus the textarea
+  const handleKeepRefining = async () => {
+    if (!session) return;
+    // Send a continuation message — backend clears finalDraft when new message arrives
+    try {
+      await sendMessage({ sessionId: session._id, content: "I'd like to refine this further." });
+    } catch (err) {
+      console.error("Failed to continue coaching:", err);
+    }
     const textarea = panelRef.current?.querySelector("textarea");
     if (textarea) {
       textarea.focus();
@@ -166,11 +214,15 @@ export function DraftCoachPanel({
 
   const handleDiscard = async () => {
     if (!session) return;
+    setSendFinalError(null);
     try {
       await discardSession({ sessionId: session._id });
       onClose();
     } catch (err) {
       console.error("Failed to discard session:", err);
+      setSendFinalError(
+        err instanceof Error ? err.message : "Failed to discard session. Please try again.",
+      );
     }
   };
 
@@ -250,7 +302,22 @@ export function DraftCoachPanel({
 
       {/* Chat area */}
       <div style={{ flex: 1, overflow: "hidden", fontSize: "14px" }}>
-        {sessionData === undefined || startingSession ? (
+        {sessionError ? (
+          <div style={{ padding: 16, textAlign: "center" }}>
+            <p style={{ color: "var(--danger)", fontSize: 13, margin: "0 0 8px" }}>
+              {sessionError}
+            </p>
+            <button
+              type="button"
+              className="cc-btn cc-btn-ghost cc-btn-sm"
+              onClick={() => {
+                setSessionError(null);
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        ) : sessionData === undefined || startingSession ? (
           <LoadingSpinner />
         ) : (
           <ChatWindow
@@ -262,6 +329,13 @@ export function DraftCoachPanel({
         )}
       </div>
 
+      {/* Send final error feedback */}
+      {sendFinalError && (
+        <p style={{ color: "var(--danger)", fontSize: 13, padding: "0 16px", margin: 0 }}>
+          {sendFinalError}
+        </p>
+      )}
+
       {/* Draft Ready Card */}
       {session?.finalDraft && (
         <DraftReadyCard
@@ -272,6 +346,13 @@ export function DraftCoachPanel({
           onDiscard={handleDiscard}
           isSending={isSending}
         />
+      )}
+
+      {/* Send error feedback */}
+      {sendError && (
+        <p style={{ color: "var(--danger)", fontSize: 13, padding: "0 16px", margin: 0 }}>
+          {sendError}
+        </p>
       )}
 
       {/* Input area */}

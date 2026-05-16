@@ -179,6 +179,7 @@ function JointChatViewInner({
   const [closureOpen, setClosureOpen] = React.useState(false);
   const [draftCoachOpen, setDraftCoachOpen] = React.useState(false);
   const [draftInputText, setDraftInputText] = React.useState<string | null>(null);
+  const [draftVersion, setDraftVersion] = React.useState(0);
   const [sendError, setSendError] = React.useState<string | null>(null);
 
   // Loading state
@@ -359,7 +360,7 @@ function JointChatViewInner({
         <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
           <div style={{ flex: 1 }}>
             <MessageInput
-              key={draftInputText ?? "default"}
+              key={`draft-${draftVersion}`}
               onSend={handleSend}
               isAiResponding={isCoachStreaming}
               placeholder="Type a message..."
@@ -392,6 +393,7 @@ function JointChatViewInner({
           onClose={() => setDraftCoachOpen(false)}
           onEditBeforeSending={(draftText) => {
             setDraftInputText(draftText);
+            setDraftVersion((v) => v + 1);
             setDraftCoachOpen(false);
           }}
           viewAsRole={solo.isSolo ? solo.actingRole : undefined}
