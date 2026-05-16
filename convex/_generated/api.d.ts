@@ -9,6 +9,7 @@
  */
 
 import type * as cases from "../cases.js";
+import type * as draftCoach from "../draftCoach.js";
 import type * as invites from "../invites.js";
 import type * as jointChat from "../jointChat.js";
 import type * as lib_auth from "../lib/auth.js";
@@ -28,6 +29,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   cases: typeof cases;
+  draftCoach: typeof draftCoach;
   invites: typeof invites;
   jointChat: typeof jointChat;
   "lib/auth": typeof lib_auth;
