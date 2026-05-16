@@ -168,6 +168,119 @@ export const create = mutation({
   },
 });
 
+export const listForDashboard = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await requireAuth(ctx);
+
+    const byInitiator = await ctx.db
+      .query("cases")
+      .withIndex("by_initiator", (q) => q.eq("initiatorUserId", user._id))
+      .collect();
+
+    const byInvitee = await ctx.db
+      .query("cases")
+      .withIndex("by_invitee", (q) => q.eq("inviteeUserId", user._id))
+      .collect();
+
+    const seen = new Set<string>();
+    const all = [];
+    for (const c of [...byInitiator, ...byInvitee]) {
+      if (!seen.has(c._id)) {
+        seen.add(c._id);
+        all.push(c);
+      }
+    }
+
+    all.sort((a, b) => b.updatedAt - a.updatedAt);
+
+    const results = [];
+    for (const caseDoc of all) {
+      // Determine caller's role and other party
+      const callerIsInitiator = caseDoc.initiatorUserId === user._id;
+      const otherPartyRole: "initiator" | "invitee" = callerIsInitiator
+        ? "invitee"
+        : "initiator";
+
+      // Resolve other party name
+      let otherPartyName: string | null = null;
+      if (callerIsInitiator) {
+        if (caseDoc.inviteeUserId) {
+          const inviteeUser = await ctx.db.get(caseDoc.inviteeUserId);
+          otherPartyName = inviteeUser?.displayName ?? inviteeUser?.name ?? null;
+        }
+      } else {
+        const initiatorUser = await ctx.db.get(caseDoc.initiatorUserId);
+        otherPartyName =
+          initiatorUser?.displayName ?? initiatorUser?.name ?? null;
+      }
+
+      // Determine status variant and label
+      let statusVariant: "pill-turn" | "pill-waiting" | "pill-ready" | "pill-closed";
+      let statusLabel: string;
+
+      const status = caseDoc.status;
+      if (
+        status === "CLOSED_RESOLVED" ||
+        status === "CLOSED_UNRESOLVED" ||
+        status === "CLOSED_ABANDONED"
+      ) {
+        statusVariant = "pill-closed";
+        statusLabel = "Closed";
+      } else if (status === "READY_FOR_JOINT") {
+        statusVariant = "pill-ready";
+        statusLabel = "Ready for joint";
+      } else if (status === "JOINT_ACTIVE") {
+        statusVariant = "pill-ready";
+        statusLabel = "In session";
+      } else if (status === "DRAFT_PRIVATE_COACHING") {
+        // Only initiator sees DRAFT; invitee just accepted invite
+        if (callerIsInitiator) {
+          statusVariant = "pill-waiting";
+          statusLabel = "Waiting";
+        } else {
+          statusVariant = "pill-turn";
+          statusLabel = "Your turn";
+        }
+      } else if (status === "BOTH_PRIVATE_COACHING") {
+        // Check if caller has completed private coaching
+        const callerPartyState = await ctx.db
+          .query("partyStates")
+          .withIndex("by_case_and_user", (q) =>
+            q.eq("caseId", caseDoc._id).eq("userId", user._id),
+          )
+          .unique();
+
+        if (callerPartyState?.privateCoachingCompletedAt) {
+          statusVariant = "pill-waiting";
+          statusLabel = "Waiting";
+        } else {
+          statusVariant = "pill-turn";
+          statusLabel = "Your turn";
+        }
+      } else {
+        statusVariant = "pill-waiting";
+        statusLabel = "Waiting";
+      }
+
+      results.push({
+        _id: caseDoc._id,
+        status: caseDoc.status,
+        isSolo: caseDoc.isSolo,
+        category: caseDoc.category,
+        createdAt: caseDoc.createdAt,
+        updatedAt: caseDoc.updatedAt,
+        otherPartyName,
+        otherPartyRole,
+        statusVariant,
+        statusLabel,
+      });
+    }
+
+    return results;
+  },
+});
+
 export const updateMyForm = mutation({
   args: {
     caseId: v.id("cases"),

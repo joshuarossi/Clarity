@@ -8,15 +8,12 @@ import { ProfilePage } from "./routes/ProfilePage";
 import { NewCasePage } from "./routes/NewCasePage";
 import { InviteSharingPage } from "./routes/InviteSharingPage";
 import { InviteAcceptPage } from "./routes/InviteAcceptPage";
+import { DashboardPage } from "./routes/DashboardPage";
 
 /* ---------- Stub page components ---------- */
 
 function HomePage() {
   return <main><h1 data-testid="page-home">Home</h1></main>;
-}
-
-function DashboardPage() {
-  return <main><h1 data-testid="page-dashboard">Dashboard</h1></main>;
 }
 
 function CaseDetailPage() {
