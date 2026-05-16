@@ -70,7 +70,7 @@ export function AdminTemplatesPage(): React.ReactElement {
               return (
                 <tr
                   key={template._id}
-                  className={`border-b cursor-pointer hover:bg-gray-50 ${isArchived ? "archived-muted opacity-60" : ""}`}
+                  className={`border-b cursor-pointer hover:bg-gray-50 ${isArchived ? "archived archived-muted opacity-60" : ""}`}
                   onClick={() => navigate(`/admin/templates/${template._id}`)}
                   role="link"
                   tabIndex={0}
