@@ -85,6 +85,7 @@ export function AdminTemplateEditPage(): React.ReactElement {
   }
 
   const isArchived = template.archivedAt != null;
+  const versionList = Array.isArray(versions) ? versions : [];
 
   const handlePublish = async () => {
     if (!globalGuidance.trim()) return;
@@ -93,9 +94,9 @@ export function AdminTemplateEditPage(): React.ReactElement {
       await publishNewVersion({
         templateId: template._id,
         globalGuidance,
-        coachInstructions: coachInstructions || undefined,
-        draftCoachInstructions: draftCoachInstructions || undefined,
-        notes: notes || undefined,
+        coachInstructions,
+        draftCoachInstructions,
+        notes,
       });
       setNotes("");
       setFormInitialized(false);
@@ -274,12 +275,12 @@ export function AdminTemplateEditPage(): React.ReactElement {
         <div data-testid="template-version-timeline">
           <h2 className="text-lg font-semibold mb-4">Version History</h2>
 
-          {versions.length === 0 && (
+          {versionList.length === 0 && (
             <p className="text-gray-500 text-sm">No versions published yet.</p>
           )}
 
           <div className="space-y-3">
-            {versions.map((ver) => (
+            {versionList.map((ver) => (
               <div
                 key={ver._id}
                 className="border rounded p-3"
