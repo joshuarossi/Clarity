@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
 import type * as cases from "../cases.js";
 import type * as draftCoach from "../draftCoach.js";
 import type * as invites from "../invites.js";
@@ -28,6 +29,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
   cases: typeof cases;
   draftCoach: typeof draftCoach;
   invites: typeof invites;
