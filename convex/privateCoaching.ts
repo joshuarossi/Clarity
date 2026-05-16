@@ -13,16 +13,29 @@ import {
 } from "./lib/claudeMock";
 
 export const myMessages = query({
-  args: { caseId: v.id("cases") },
-  handler: async (ctx, { caseId }) => {
+  args: {
+    caseId: v.id("cases"),
+    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
+  },
+  handler: async (ctx, { caseId, partyRole }) => {
     const user = await requireAuth(ctx);
 
-    const messages = await ctx.db
-      .query("privateMessages")
-      .withIndex("by_case_and_user", (q) =>
-        q.eq("caseId", caseId).eq("userId", user._id),
-      )
-      .collect();
+    let messages;
+    if (partyRole) {
+      messages = await ctx.db
+        .query("privateMessages")
+        .withIndex("by_case_user_role", (q) =>
+          q.eq("caseId", caseId).eq("userId", user._id).eq("partyRole", partyRole),
+        )
+        .collect();
+    } else {
+      messages = await ctx.db
+        .query("privateMessages")
+        .withIndex("by_case_and_user", (q) =>
+          q.eq("caseId", caseId).eq("userId", user._id),
+        )
+        .collect();
+    }
 
     messages.sort((a, b) => a.createdAt - b.createdAt);
     return messages;
@@ -33,6 +46,7 @@ export const sendUserMessage = mutation({
   args: {
     caseId: v.id("cases"),
     content: v.string(),
+    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
   },
   handler: async (ctx, args) => {
     const user = await requireAuth(ctx);
@@ -52,12 +66,17 @@ export const sendUserMessage = mutation({
       content: args.content,
       status: "COMPLETE",
       createdAt: Date.now(),
+      ...(args.partyRole ? { partyRole: args.partyRole } : {}),
     });
 
     await ctx.scheduler.runAfter(
       0,
       internal.privateCoaching.generateAIResponse,
-      { caseId: args.caseId, userId: user._id },
+      {
+        caseId: args.caseId,
+        userId: user._id,
+        ...(args.partyRole ? { partyRole: args.partyRole } : {}),
+      },
     );
 
     return messageId;
@@ -65,17 +84,31 @@ export const sendUserMessage = mutation({
 });
 
 export const markComplete = mutation({
-  args: { caseId: v.id("cases") },
+  args: {
+    caseId: v.id("cases"),
+    viewAsRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
+  },
   handler: async (ctx, args) => {
     const user = await requireAuth(ctx);
-    await requirePartyToCase(ctx, args.caseId, user._id);
+    const caseDoc = await requirePartyToCase(ctx, args.caseId, user._id);
 
-    const callerPartyState = await ctx.db
-      .query("partyStates")
-      .withIndex("by_case_and_user", (q) =>
-        q.eq("caseId", args.caseId).eq("userId", user._id),
-      )
-      .unique();
+    let callerPartyState;
+    if (caseDoc.isSolo && args.viewAsRole) {
+      const allForUser = await ctx.db
+        .query("partyStates")
+        .withIndex("by_case_and_user", (q) =>
+          q.eq("caseId", args.caseId).eq("userId", user._id),
+        )
+        .collect();
+      callerPartyState = allForUser.find((ps) => ps.role === args.viewAsRole);
+    } else {
+      callerPartyState = await ctx.db
+        .query("partyStates")
+        .withIndex("by_case_and_user", (q) =>
+          q.eq("caseId", args.caseId).eq("userId", user._id),
+        )
+        .unique();
+    }
 
     if (!callerPartyState) {
       throw conflict("Party state not found");
@@ -132,11 +165,14 @@ export const retryLastAIResponse = mutation({
       .filter(m => m.role === "AI" && m.status === "ERROR")
       .sort((a, b) => b.createdAt - a.createdAt)[0];
     if (!errorMsg) throw conflict("No error message to retry");
+    const errorPartyRole = errorMsg.partyRole;
     // Delete the error row
     await ctx.db.delete(errorMsg._id);
     // Schedule new AI response
     await ctx.scheduler.runAfter(0, internal.privateCoaching.generateAIResponse, {
-      caseId: args.caseId, userId: user._id,
+      caseId: args.caseId,
+      userId: user._id,
+      ...(errorPartyRole ? { partyRole: errorPartyRole } : {}),
     });
   },
 });
@@ -149,6 +185,7 @@ export const insertStreamingMessage = internalMutation({
   args: {
     caseId: v.id("cases"),
     userId: v.id("users"),
+    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("privateMessages", {
@@ -158,6 +195,7 @@ export const insertStreamingMessage = internalMutation({
       content: "",
       status: "STREAMING",
       createdAt: Date.now(),
+      ...(args.partyRole ? { partyRole: args.partyRole } : {}),
     });
   },
 });
@@ -204,14 +242,27 @@ export const getPrivateMessagesForUser = internalQuery({
   args: {
     caseId: v.id("cases"),
     userId: v.id("users"),
+    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
   },
   handler: async (ctx, args) => {
-    return await ctx.db
-      .query("privateMessages")
-      .withIndex("by_case_and_user", (q) =>
-        q.eq("caseId", args.caseId).eq("userId", args.userId),
-      )
-      .collect();
+    let messages;
+    if (args.partyRole) {
+      messages = await ctx.db
+        .query("privateMessages")
+        .withIndex("by_case_user_role", (q) =>
+          q.eq("caseId", args.caseId).eq("userId", args.userId).eq("partyRole", args.partyRole),
+        )
+        .collect();
+    } else {
+      messages = await ctx.db
+        .query("privateMessages")
+        .withIndex("by_case_and_user", (q) =>
+          q.eq("caseId", args.caseId).eq("userId", args.userId),
+        )
+        .collect();
+    }
+
+    return messages;
   },
 });
 
@@ -242,6 +293,7 @@ export const generateAIResponse = internalAction({
   args: {
     caseId: v.id("cases"),
     userId: v.id("users"),
+    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
   },
   handler: async (ctx, args) => {
     // 1. Read party state for form fields
@@ -258,10 +310,14 @@ export const generateAIResponse = internalAction({
         }
       : undefined;
 
-    // 2. Read acting user's prior messages (privacy: only by_case_and_user)
+    // 2. Read acting user's prior messages (privacy: by_case_user_role when partyRole set, else by_case_and_user)
     const allMessages = await ctx.runQuery(
       internal.privateCoaching.getPrivateMessagesForUser,
-      { caseId: args.caseId, userId: args.userId },
+      {
+        caseId: args.caseId,
+        userId: args.userId,
+        ...(args.partyRole ? { partyRole: args.partyRole } : {}),
+      },
     );
 
     const recentHistory: PromptMessage[] = allMessages
@@ -286,7 +342,11 @@ export const generateAIResponse = internalAction({
     // 4. Insert STREAMING row before API call
     const messageId = await ctx.runMutation(
       internal.privateCoaching.insertStreamingMessage,
-      { caseId: args.caseId, userId: args.userId },
+      {
+        caseId: args.caseId,
+        userId: args.userId,
+        ...(args.partyRole ? { partyRole: args.partyRole } : {}),
+      },
     );
 
     // 5. Unified retry loop for both mock and real API paths

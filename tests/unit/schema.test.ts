@@ -50,6 +50,7 @@ const EXPECTED_INDEXES: Record<
   privateMessages: [
     { name: "by_case_and_user", fields: ["caseId", "userId"] },
     { name: "by_case", fields: ["caseId"] },
+    { name: "by_case_user_role", fields: ["caseId", "userId", "partyRole"] },
   ],
   jointMessages: [{ name: "by_case", fields: ["caseId"] }],
   draftSessions: [{ name: "by_case_and_user", fields: ["caseId", "userId"] }],
@@ -94,13 +95,13 @@ describe("AC2 — all 15 indexes defined", () => {
     },
   );
 
-  it("total index count across all tables is 15", () => {
+  it("total index count across all tables is 17", () => {
     let totalIndexes = 0;
     for (const tableName of EXPECTED_TABLES) {
       const table = schema.tables[tableName];
       totalIndexes += table[" indexes"]().length;
     }
-    expect(totalIndexes).toBe(16);
+    expect(totalIndexes).toBe(17);
   });
 });
 

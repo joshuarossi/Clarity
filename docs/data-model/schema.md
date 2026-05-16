@@ -39,7 +39,7 @@ Each table defines indexes for the queries that downstream tasks will use:
 - **users**: `by_email`
 - **cases**: `by_initiator`, `by_invitee`
 - **partyStates**: `by_case`, `by_case_and_user`
-- **privateMessages**: `by_case_and_user`, `by_case`
+- **privateMessages**: `by_case_and_user`, `by_case`, `by_case_user_role`
 - **jointMessages**: `by_case`
 - **draftSessions**: `by_case_and_user`
 - **draftMessages**: `by_draft_session`
