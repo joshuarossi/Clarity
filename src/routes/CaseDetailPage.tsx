@@ -44,14 +44,7 @@ function JointChatView() {
   );
 }
 
-function ClosedCaseView() {
-  return (
-    <div data-testid="subview-closed">
-      <h2>Case Closed</h2>
-      <p>This case has been closed.</p>
-    </div>
-  );
-}
+/* ClosedCaseView — now handled by redirect to /cases/:caseId/closed */
 
 /* ---------- Invitee form ---------- */
 
@@ -258,7 +251,7 @@ function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElemen
       case "CLOSED_RESOLVED":
       case "CLOSED_UNRESOLVED":
       case "CLOSED_ABANDONED":
-        return <ClosedCaseView />;
+        return <Navigate to={`/cases/${caseId}/closed`} replace />;
       default:
         return <p>Unknown case status.</p>;
     }
