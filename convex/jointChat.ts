@@ -433,6 +433,7 @@ function parseClassification(raw: string): Classification {
   ) {
     return normalized as Classification;
   }
+  console.warn("generateCoachResponse: unexpected classification from Haiku, defaulting to NORMAL_EXCHANGE", { raw });
   return "NORMAL_EXCHANGE";
 }
 
@@ -499,17 +500,17 @@ export const generateCoachResponse = internalAction({
     } else {
       const apiKey = process.env.ANTHROPIC_API_KEY;
       if (!apiKey) {
-        console.error("generateCoachResponse: ANTHROPIC_API_KEY not set");
-        return;
+        throw new Error("generateCoachResponse: ANTHROPIC_API_KEY environment variable is not configured");
       }
 
       let haikuAttempt = 0;
       const maxHaikuAttempts = 2;
       let haikuResult: string | null = null;
 
+      const { default: Anthropic } = await import("@anthropic-ai/sdk");
+
       while (haikuAttempt < maxHaikuAttempts) {
         try {
-          const { default: Anthropic } = await import("@anthropic-ai/sdk");
           const client = new Anthropic({ apiKey });
 
           const haikuResponse = await client.messages.create({
@@ -547,7 +548,8 @@ export const generateCoachResponse = internalAction({
     if (classification === "NORMAL_EXCHANGE" && triggerType !== "mention") {
       // Timer override: respond if 5+ consecutive user exchanges with no Coach message
       if (triggerType === "timer") {
-        // Timer trigger always means threshold was met
+        // Timer caller is responsible for verifying the 5+ exchange threshold
+        // before scheduling this action — we trust the trigger and skip the count.
       } else {
         // Count consecutive user messages since last Coach message
         let consecutiveUserMessages = 0;
@@ -564,8 +566,11 @@ export const generateCoachResponse = internalAction({
     }
 
     // 8. Prepare prompt context
-    const actingPartySynthesis = partyStates[0]?.synthesisText;
-    const otherPartySynthesis = partyStates[1]?.synthesisText;
+    const actingUserId = lastUserMessage?.authorUserId ?? partyStates[0]?.userId;
+    const actingPartyState = partyStates.find((ps) => ps.userId === actingUserId);
+    const otherPartyState = partyStates.find((ps) => ps.userId !== actingUserId);
+    const actingPartySynthesis = actingPartyState?.synthesisText;
+    const otherPartySynthesis = otherPartyState?.synthesisText;
 
     const jointChatHistory: PromptMessage[] = sortedMessages
       .filter((m) => m.status === "COMPLETE")
@@ -618,7 +623,7 @@ export const generateCoachResponse = internalAction({
               if (apiAttempt < failCount) {
                 apiAttempt++;
                 if (apiAttempt < maxApiAttempts) {
-                  await sleep(failStatus === 429 ? 2000 : 2000);
+                  await sleep(failStatus === 429 ? 2000 * Math.pow(2, apiAttempt) : 2000);
                   continue;
                 } else {
                   await ctx.runMutation(internal.jointChat.markCoachMessageError, {
@@ -696,10 +701,21 @@ export const generateCoachResponse = internalAction({
               break;
             } catch (error: unknown) {
               attempt++;
-              const is429 =
-                error instanceof Error &&
-                "status" in error &&
-                (error as Record<string, unknown>).status === 429;
+              const statusCode = error instanceof Error && "status" in error
+                ? (error as Record<string, unknown>).status
+                : undefined;
+              const is429 = statusCode === 429;
+              const isContentFilter = statusCode === 400 &&
+                error instanceof Error && error.message.includes("content");
+
+              if (isContentFilter) {
+                // Content filtered — emit generic fallback per §6.5
+                await ctx.runMutation(internal.jointChat.finalizeCoachMessage, {
+                  messageId: coachMessageId,
+                  content: "I'm not able to respond to that right now.",
+                });
+                return;
+              }
 
               if (attempt < maxAttempts) {
                 const delay = is429 ? 2000 * Math.pow(2, attempt - 1) : 2000;
@@ -745,9 +761,8 @@ export const generateCoachResponse = internalAction({
         }
 
         // Filter failed — retry generation (continue loop)
-        console.error("generateCoachResponse: privacy filter rejected, retrying", {
+        console.warn("generateCoachResponse: privacy filter rejected, retrying", {
           attempt: filterAttempt + 1,
-          matchedSubstring: filterResult.matchedSubstring,
         });
       } catch (error: unknown) {
         console.error("generateCoachResponse: unexpected error in generation loop", {

@@ -8,7 +8,7 @@ The joint chat module is the real-time communication backend for the
 mediation session where both parties interact with each other and the AI
 Coach. It provides reactive queries for the live message feed and the
 per-party synthesis, mutations for sending messages and managing session
-closure, and an internal action stub for AI Coach response generation.
+closure, and an internal action for AI Coach response generation.
 
 All functions require authentication and verify that the caller is a party
 to the case (or uses `viewAsRole` in solo/demo mode).
@@ -90,8 +90,8 @@ machine. Either party can invoke this at any time during `JOINT_ACTIVE`.
 Scheduled by `sendUserMessage` after each user message. Implements a two-step
 pipeline:
 
-1. **Classification (Haiku)** — Sends the last user message plus recent
-   context to `claude-haiku-4-5-20251001`, which returns one of:
+1. **Classification (Haiku)** — Sends the last user message to
+   `claude-haiku-4-5-20251001`, which returns one of:
    `INFLAMMATORY`, `PROGRESS`, `QUESTION_TO_COACH`, or `NORMAL_EXCHANGE`.
 2. **Generation (Sonnet)** — For non-`NORMAL_EXCHANGE` classifications (or
    when triggered by an @-mention or a 5+ exchange silence timer), Sonnet

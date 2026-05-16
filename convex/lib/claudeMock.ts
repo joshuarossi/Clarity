@@ -33,6 +33,9 @@ A few things stand out from what you've described:
 
 Take your time with these. There's no rush to have all the answers right now. The goal is to help you feel prepared and grounded before you communicate with the other party.`,
 
+  // NOTE: The COACH mock text intentionally omits the period after "conversation" and
+  // uses "you have" instead of "you've" so that privacy filter tests can seed private
+  // message content matching 8+ consecutive tokens against this response.
   COACH: `## Joint Session Summary
 
 Thank you both for joining this conversation I can see you have each put thought into understanding the situation, which is a strong foundation.
