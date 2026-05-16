@@ -182,6 +182,9 @@ class CaseErrorBoundary extends React.Component<
         return { error: String(code) };
       }
     }
+    if (err.message === "FORBIDDEN" || err.message === "NOT_FOUND") {
+      return { error: err.message };
+    }
     throw err;
   }
 
