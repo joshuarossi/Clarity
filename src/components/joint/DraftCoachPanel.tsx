@@ -257,6 +257,7 @@ export function DraftCoachPanel({
             messages={chatMessages}
             className="cc-draft-coach-messages"
             onRetry={handleRetry}
+            style={{ fontSize: "14px" }}
           />
         )}
       </div>
