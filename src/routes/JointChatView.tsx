@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams, Navigate, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -12,6 +12,8 @@ import { PhaseHeader } from "../components/layout/PhaseHeader";
 import { PartyToggle } from "../components/layout/PartyToggle";
 import { useSoloActingParty } from "../hooks/useSoloActingParty";
 import { DraftCoachPanel } from "../components/joint/DraftCoachPanel";
+import { ClosureModal } from "../components/chat/ClosureModal";
+import { ClosureConfirmBanner } from "../components/chat/ClosureConfirmBanner";
 import {
   Dialog,
   DialogContent,
@@ -53,107 +55,6 @@ function SynthesisPanel({
   );
 }
 
-/* ---------- Closure Modal ---------- */
-
-function ClosureModal({
-  open,
-  onOpenChange,
-  onProposeClosure,
-  onUnilateralClose,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onProposeClosure: (summary: string) => Promise<void>;
-  onUnilateralClose: () => Promise<void>;
-}) {
-  const [summary, setSummary] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  const handlePropose = async () => {
-    if (!summary.trim()) return;
-    setLoading(true);
-    setError(null);
-    try {
-      await onProposeClosure(summary.trim());
-      onOpenChange(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to propose closure.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleWalkAway = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      await onUnilateralClose();
-      onOpenChange(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to close session.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogTitle>Close Session</DialogTitle>
-        <DialogDescription>
-          Propose a resolution summary or walk away from the session.
-        </DialogDescription>
-        <textarea
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-          placeholder="Summarize the resolution..."
-          rows={3}
-          aria-label="Closure summary"
-          style={{
-            width: "100%",
-            marginTop: 12,
-            padding: "8px 12px",
-            borderRadius: "var(--radius-md)",
-            border: "1px solid var(--border-default)",
-            background: "var(--bg-surface)",
-            color: "var(--text-primary)",
-            resize: "none",
-          }}
-        />
-        {error && (
-          <p style={{ color: "var(--danger)", fontSize: 13, marginTop: 8 }}>{error}</p>
-        )}
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            justifyContent: "flex-end",
-            marginTop: 16,
-          }}
-        >
-          <button
-            type="button"
-            className="cc-btn cc-btn-danger cc-btn-sm"
-            onClick={handleWalkAway}
-            disabled={loading}
-          >
-            Walk Away
-          </button>
-          <button
-            type="button"
-            className="cc-btn cc-btn-primary cc-btn-sm"
-            onClick={handlePropose}
-            disabled={loading || !summary.trim()}
-          >
-            Propose Resolution
-          </button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 /* ---------- Main Component ---------- */
 
 function JointChatViewInner({
@@ -162,6 +63,7 @@ function JointChatViewInner({
   caseId: Id<"cases">;
 }): React.ReactElement {
   const solo = useSoloActingParty(caseId);
+  const navigate = useNavigate();
 
   const queryArgs = solo.isSolo
     ? { caseId, viewAsRole: solo.actingRole }
@@ -170,10 +72,13 @@ function JointChatViewInner({
   const caseDoc = useQuery(api.cases.get, { caseId });
   const jointMessages = useQuery(api.jointChat.messages, queryArgs);
   const synthesis = useQuery(api.jointChat.mySynthesis, queryArgs);
+  const partyStates = useQuery(api.cases.partyStates, queryArgs);
 
   const sendUserMessage = useMutation(api.jointChat.sendUserMessage);
   const proposeClosure = useMutation(api.jointChat.proposeClosure);
   const unilateralClose = useMutation(api.jointChat.unilateralClose);
+  const confirmClosure = useMutation(api.jointChat.confirmClosure);
+  const rejectClosure = useMutation(api.jointChat.rejectClosure);
 
   const [synthesisOpen, setSynthesisOpen] = React.useState(false);
   const [closureOpen, setClosureOpen] = React.useState(false);
@@ -186,7 +91,8 @@ function JointChatViewInner({
   if (
     caseDoc === undefined ||
     jointMessages === undefined ||
-    synthesis === undefined
+    synthesis === undefined ||
+    partyStates === undefined
   ) {
     return <LoadingSpinner />;
   }
@@ -285,12 +191,36 @@ function JointChatViewInner({
     });
   };
 
-  const handleUnilateralClose = async () => {
+  const handleUnilateralClose = async (_reason?: string) => {
     await unilateralClose({
       caseId,
       ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
     });
   };
+
+  const handleConfirmClosure = async () => {
+    await confirmClosure({
+      caseId,
+      ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
+    });
+    navigate(`/cases/${caseId}/closed`);
+  };
+
+  const handleRejectClosure = async () => {
+    await rejectClosure({
+      caseId,
+      ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
+    });
+  };
+
+  // Derive other party name and banner visibility
+  const otherPartyName = solo.isSolo
+    ? solo.actingRole === "INITIATOR"
+      ? inviteeLabel
+      : initiatorLabel
+    : "the other party";
+
+  const showConfirmBanner = partyStates.other?.closureProposed === true;
 
   return (
     <main
@@ -347,6 +277,16 @@ function JointChatViewInner({
       <div style={{ flex: 1, overflow: "hidden" }}>
         <ChatWindow messages={messages} className="cc-joint-chat-messages" onRetry={handleRetry} />
       </div>
+
+      {/* Closure confirmation banner */}
+      {showConfirmBanner && (
+        <ClosureConfirmBanner
+          summary={caseDoc.closureSummary ?? ""}
+          proposerName={otherPartyName}
+          onConfirm={handleConfirmClosure}
+          onReject={handleRejectClosure}
+        />
+      )}
 
       {/* Send error feedback */}
       {sendError && (
@@ -413,6 +353,7 @@ function JointChatViewInner({
         onOpenChange={setClosureOpen}
         onProposeClosure={handleProposeClosure}
         onUnilateralClose={handleUnilateralClose}
+        otherPartyName={otherPartyName}
       />
     </main>
   );
