@@ -1,6 +1,6 @@
 # Private Coaching API
 
-> Module: `convex/privateCoaching.ts` · Ticket: WOR-117
+> Module: `convex/privateCoaching.ts` · Tickets: WOR-117, WOR-118
 
 ## Overview
 
@@ -8,9 +8,9 @@ Private coaching is the confidential, AI-guided conversation each party
 has before joint mediation. Messages sent during private coaching are
 visible **only** to the sender — the other party can never see them.
 
-The module exposes one query and two mutations. An internal action stub
-(`generateAIResponse`) is scheduled after each user message; the actual AI
-implementation ships in a separate ticket.
+The module exposes one query, two client-facing mutations, and an internal
+action (`generateAIResponse`) that streams AI responses back to the
+database in real time.
 
 ## Queries
 
@@ -66,3 +66,44 @@ will not re-trigger synthesis.
 All functions require authentication via `requireAuth`. `sendUserMessage`
 and `markComplete` additionally verify the caller is a party to the case
 via `requirePartyToCase`.
+
+## Internal Action — `generateAIResponse`
+
+Scheduled by `sendUserMessage`. Calls Claude Sonnet (`claude-sonnet-4-5`)
+with streaming to produce an AI coaching response.
+
+### Flow
+
+1. **Prompt assembly** — calls `assemblePrompt` with `role: "PRIVATE_COACH"`
+   and the acting user's ID. The prompt assembly module enforces privacy
+   isolation: only the acting user's form fields and message history are
+   included. The other party's private messages are **never** sent to
+   Claude.
+2. **Insert placeholder** — creates a `privateMessages` row with
+   `status=STREAMING` and empty content via `insertStreamingMessage`.
+3. **Stream tokens** — reads the Claude response stream and flushes
+   accumulated text to the database every ~50 ms via
+   `updateStreamingMessage`.
+4. **Finalize** — sets the row to `status=COMPLETE` and records the total
+   token count via `finalizeStreamingMessage`.
+
+### System prompt
+
+The system prompt follows TechSpec §6.3.1 verbatim — a calm, curious,
+non-judgmental listener that helps the user articulate their perspective.
+No template content is applied (per PRD US-06 AC).
+
+### Error handling & retries
+
+| Scenario            | Behaviour                                         |
+|---------------------|---------------------------------------------------|
+| Non-429 API failure | Retry once after 2 s backoff                      |
+| 429 rate limit      | Retry once with exponential backoff (per §6.5)    |
+| Persistent failure  | Mark message `status=ERROR` via `markMessageError` |
+
+### Test / mock mode
+
+Set the environment variable `CLAUDE_MOCK=true` to replace the real Claude
+API with a deterministic stub that returns canned tokens with a
+configurable delay. Useful for E2E and integration tests (see
+[testing.md](testing.md)).
