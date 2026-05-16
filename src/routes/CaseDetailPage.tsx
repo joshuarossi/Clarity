@@ -28,7 +28,7 @@ function statusToPhase(status: CaseStatus): { phaseName: string; subroute: strin
       return { phaseName: "Closed", subroute: "closed" };
     default: {
       const _exhaustive: never = status;
-      return { phaseName: "Unknown", subroute: "private" };
+      throw new Error(`Unhandled case status: ${_exhaustive}`);
     }
   }
 }
