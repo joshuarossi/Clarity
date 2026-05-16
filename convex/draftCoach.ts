@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { query, mutation, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { requireAuth, requirePartyToCase } from "./lib/auth";
-import { conflict, forbidden } from "./lib/errors";
+import { conflict, forbidden, notFound } from "./lib/errors";
 
 export const session = query({
   args: { caseId: v.id("cases") },
@@ -75,7 +75,7 @@ export const sendMessage = mutation({
 
     const session = await ctx.db.get(sessionId);
     if (!session) {
-      throw conflict("Draft session not found");
+      throw notFound("Draft session not found");
     }
 
     await requirePartyToCase(ctx, session.caseId, user._id);
@@ -112,7 +112,7 @@ export const sendFinalDraft = mutation({
 
     const session = await ctx.db.get(sessionId);
     if (!session) {
-      throw conflict("Draft session not found");
+      throw notFound("Draft session not found");
     }
 
     await requirePartyToCase(ctx, session.caseId, user._id);
@@ -163,7 +163,7 @@ export const discardSession = mutation({
 
     const session = await ctx.db.get(sessionId);
     if (!session) {
-      throw conflict("Draft session not found");
+      throw notFound("Draft session not found");
     }
 
     await requirePartyToCase(ctx, session.caseId, user._id);

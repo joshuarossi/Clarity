@@ -63,23 +63,24 @@ prompt.
 Inserts a `draftMessages` row with `role: "USER"`, `status: "COMPLETE"` and
 schedules the AI action.
 
-**Args:** `{ draftSessionId: Id<"draftSessions">, content: string }`
+**Args:** `{ sessionId: Id<"draftSessions">, content: string }`
 
 ### `draftCoach/sendFinalDraft` (mutation)
 
-Reads `session.finalDraft`, posts it into the joint chat via an internal call
-to `jointChat/sendUserMessage`, and marks the session `status: "SENT"` with
-`completedAt`. Throws a `ConvexError` with code `CONFLICT` if `finalDraft` is
-not yet populated.
+Reads `session.finalDraft`, inserts it directly into the `jointMessages` table
+(mutations cannot call other mutations in Convex), and marks the session
+`status: "SENT"` with `completedAt`. Also schedules the joint chat coach
+response via `generateCoachResponse`. Throws a `ConvexError` with code
+`CONFLICT` if `finalDraft` is not yet populated.
 
-**Args:** `{ draftSessionId: Id<"draftSessions"> }`
+**Args:** `{ sessionId: Id<"draftSessions"> }`
 
 ### `draftCoach/discardSession` (mutation)
 
 Marks the session `status: "DISCARDED"` with `completedAt`. No message is
 sent to the joint chat.
 
-**Args:** `{ draftSessionId: Id<"draftSessions"> }`
+**Args:** `{ sessionId: Id<"draftSessions"> }`
 
 ## Authorization
 
