@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams, Navigate, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -44,7 +44,7 @@ function statusToPhase(status: CaseStatus): { phaseName: string; subroute: strin
 function ReadyForJointView() {
   return (
     <div data-testid="subview-ready-for-joint">
-      <h2>Ready for Joint Session</h2>
+      <h2>Waiting for Joint Session</h2>
       <p>Both parties have completed private coaching. The joint session will begin soon.</p>
     </div>
   );
@@ -53,7 +53,7 @@ function ReadyForJointView() {
 function JointChatView() {
   return (
     <div data-testid="subview-joint-chat">
-      <h2>Joint Discussion</h2>
+      <h2>Joint Session Active</h2>
       <p>The joint discussion is in progress.</p>
     </div>
   );
@@ -165,6 +165,14 @@ function InviteeFormView({
 
 /* ---------- Error boundary for auth/access errors ---------- */
 
+function ForbiddenRedirect() {
+  const navigate = useNavigate();
+  React.useEffect(() => {
+    navigate("/dashboard");
+  }, [navigate]);
+  return null;
+}
+
 class CaseErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { error: string | null }
@@ -180,7 +188,7 @@ class CaseErrorBoundary extends React.Component<
 
   render() {
     if (this.state.error) {
-      return <Navigate to="/dashboard" replace />;
+      return <ForbiddenRedirect />;
     }
     return this.props.children;
   }
@@ -197,7 +205,7 @@ function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElemen
     : { caseId };
   const partyStates = useQuery(api.cases.partyStates, partyStatesArgs);
 
-  const headingRef = React.useRef<HTMLDivElement>(null);
+  const headingRef = React.useRef<HTMLElement>(null);
   const prevStatusRef = React.useRef<string | undefined>(undefined);
 
   // Handle FORBIDDEN / NOT_FOUND errors from the query
@@ -265,7 +273,7 @@ function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElemen
   };
 
   return (
-    <main data-testid="page-case-detail">
+    <main data-testid="page-case-detail" ref={headingRef} tabIndex={-1}>
       <PhaseHeader caseName={caseDoc.category} phaseName={phaseName}>
         {solo.isSolo && (
           <PartyToggle
@@ -276,15 +284,6 @@ function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElemen
           />
         )}
       </PhaseHeader>
-      <div
-        ref={headingRef}
-        tabIndex={-1}
-        className="sr-only"
-        role="status"
-        aria-live="polite"
-      >
-        {phaseName}
-      </div>
       {renderSubview()}
     </main>
   );
