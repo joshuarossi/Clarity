@@ -327,22 +327,8 @@ function JointChatViewInner({
 
       {/* Message list with auto-scroll */}
       <div style={{ flex: 1, overflow: "hidden" }}>
-        <ChatWindow messages={messages} className="cc-joint-chat-messages" />
+        <ChatWindow messages={messages} className="cc-joint-chat-messages" onRetry={handleRetry} />
       </div>
-
-      {/* Error retry for messages with ERROR status */}
-      {jointMessages.some((m) => m.status === "ERROR") && (
-        <div style={{ padding: "8px 16px", textAlign: "center" }}>
-          <button
-            type="button"
-            className="cc-btn cc-btn-danger cc-btn-sm"
-            onClick={handleRetry}
-            aria-label="Retry message"
-          >
-            Retry
-          </button>
-        </div>
-      )}
 
       {/* Input area */}
       <div style={{ padding: "0 16px 16px" }}>
