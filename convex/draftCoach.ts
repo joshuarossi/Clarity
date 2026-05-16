@@ -553,7 +553,13 @@ export const generateResponse = internalAction({
             process.env.CLAUDE_MOCK_DELAY_MS ?? "100",
             10,
           );
-          const mockResponse = getMockClaudeResponse("DRAFT_COACH");
+          let mockResponse = getMockClaudeResponse("DRAFT_COACH");
+          if (isReadyForDraft) {
+            // Simulate structured draft output that real Claude would produce
+            // when given the readiness system instruction
+            const mockDraft = "I'd like to talk about how we handle decisions that affect both of us. I've noticed that sometimes I feel left out of the process, and I think establishing a simple check-in habit could help us both feel more included. Would you be open to discussing what that might look like?";
+            mockResponse = `Here is your polished draft message:\n\n{ "draft": ${JSON.stringify(mockDraft)} }`;
+          }
           const chunkSize = Math.ceil(mockResponse.length / 5);
           let content = "";
 
