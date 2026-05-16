@@ -7,16 +7,12 @@ import { LoginPage } from "./routes/LoginPage";
 import { ProfilePage } from "./routes/ProfilePage";
 import { NewCasePage } from "./routes/NewCasePage";
 import { InviteSharingPage } from "./routes/InviteSharingPage";
+import { InviteAcceptPage } from "./routes/InviteAcceptPage";
 
 /* ---------- Stub page components ---------- */
 
 function HomePage() {
   return <main><h1 data-testid="page-home">Home</h1></main>;
-}
-
-function InvitePage() {
-  const { token } = useParams();
-  return <main><h1 data-testid="page-invite">Invite {token}</h1></main>;
 }
 
 function DashboardPage() {
@@ -89,7 +85,7 @@ function AppLayout() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={isAuthenticated && !isLoading ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
-        <Route path="/invite/:token" element={<InvitePage />} />
+        <Route path="/invite/:token" element={<InviteAcceptPage />} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/cases/new" element={<ProtectedRoute><NewCasePage /></ProtectedRoute>} />
