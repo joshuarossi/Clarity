@@ -86,6 +86,7 @@ export const partyStates = query({
           hasCompletedPC: Boolean(
             otherPartyState.privateCoachingCompletedAt,
           ),
+          closureProposed: Boolean(otherPartyState.closureProposed),
         }
       : null;
 

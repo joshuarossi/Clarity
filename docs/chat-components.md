@@ -125,6 +125,77 @@ import { StreamingIndicator } from "@/components/chat/StreamingIndicator";
 |------|------|---------|-------------|
 | `className` | `string` | — | Additional CSS class names |
 
+## ClosureModal
+
+Three-path dialog for ending a joint chat session. Opened via the "Close"
+button in the joint chat top nav.
+
+```tsx
+import { ClosureModal } from "@/components/chat/ClosureModal";
+
+<ClosureModal
+  open={showClosure}
+  onOpenChange={setShowClosure}
+  onProposeClosure={async (summary) => { /* call proposeClosure */ }}
+  onUnilateralClose={async (reason) => { /* call unilateralClose */ }}
+  otherPartyName="Jordan"
+/>
+```
+
+### Paths
+
+| Path | Behaviour |
+|------|-----------|
+| **Resolved** | Shows a required textarea ("Briefly describe what you agreed to"), then calls `onProposeClosure` with the summary. The other party must confirm via the `ClosureConfirmBanner`. |
+| **Not resolved** | Warning-styled view with an optional reason textarea. Calls `onUnilateralClose` to immediately close the case as CLOSED_UNRESOLVED. |
+| **Take a break** | Closes the modal and the browser tab. No mutation — the case stays JOINT_ACTIVE. |
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `open` | `boolean` | Controls dialog visibility |
+| `onOpenChange` | `(open: boolean) => void` | Called when the dialog wants to open/close |
+| `onProposeClosure` | `(summary: string) => Promise<void>` | Resolved path callback |
+| `onUnilateralClose` | `(reason?: string) => Promise<void>` | Not-resolved path callback |
+| `otherPartyName` | `string` | Name shown in confirmation copy |
+
+### Styling
+
+Max-width 480 px, padding 24 px, border-radius 20 px, 150 ms fade + scale
+animation per StyleGuide §6.12. Uses the shadcn/ui `Dialog` primitive.
+
+## ClosureConfirmBanner
+
+Inline banner rendered when the other party has proposed resolution.
+Displays the proposer's summary and provides **Confirm** / **Reject and
+keep talking** buttons.
+
+```tsx
+import { ClosureConfirmBanner } from "@/components/chat/ClosureConfirmBanner";
+
+<ClosureConfirmBanner
+  summary="We agreed to split the deposit 50/50."
+  proposerName="Jordan"
+  onConfirm={handleConfirm}
+  onReject={handleReject}
+/>
+```
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `summary` | `string` | The closure summary written by the proposer |
+| `proposerName` | `string` | Display name of the party who proposed |
+| `onConfirm` | `() => void` | Fires when the user confirms — should call `confirmClosure` |
+| `onReject` | `() => void` | Fires when the user rejects — should call `rejectClosure` |
+
+### Accessibility
+
+- Root element uses `role="status"` + `aria-live="polite"`.
+- The Confirm button receives focus automatically when the banner mounts.
+
 ## CSS classes
 
 All bubble and animation classes are defined in `src/styles/components.css`:

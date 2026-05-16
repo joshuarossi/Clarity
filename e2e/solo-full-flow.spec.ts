@@ -326,3 +326,255 @@ test.describe("Solo mode — ready page → joint session entry → synthesis ac
     await expect(heading).toBeVisible();
   });
 });
+
+// ── WOR-130: Closure UI — proposal modal + confirmation banner ────────
+// Covers:
+//   AC: Close button in joint chat top nav opens closure modal
+//   AC: "Propose Resolution" calls jointChat/proposeClosure mutation
+//   AC: "Close without resolution" calls jointChat/unilateralClose mutation
+//   AC: Confirmation banner shown to other party with summary + buttons
+//   AC: Confirm calls jointChat/confirmClosure → CLOSED_RESOLVED
+//   AC: Reject clears the closure proposal
+//   AC: Take a break — modal closes, case stays JOINT_ACTIVE
+
+test.describe("Solo mode — closure modal and confirmation banner", () => {
+  let caseId: string;
+
+  test.beforeAll(async () => {
+    const result = await createTestCase({
+      initiatorEmail: "testusera@example.com",
+      isSolo: true,
+      category: "workplace",
+      status: "JOINT_ACTIVE",
+    });
+    caseId = result.caseId;
+  });
+
+  test("AC: Close button in joint chat top nav opens the closure modal dialog", async ({
+    pageA,
+  }) => {
+    await pageA.goto(`/cases/${caseId}/joint?as=initiator`);
+
+    // Click the Close button in the top nav
+    const closeButton = pageA.getByRole("button", { name: /close/i });
+    await expect(closeButton).toBeVisible({ timeout: 10_000 });
+    await closeButton.click();
+
+    // Assert the Dialog is visible (Radix Dialog, not browser confirm)
+    const dialogContent = pageA.locator(".cc-dialog-content");
+    await expect(dialogContent).toBeVisible({ timeout: 5_000 });
+
+    // Assert three option buttons are present
+    await expect(
+      pageA.getByRole("button", { name: /^resolved$/i }),
+    ).toBeVisible();
+    await expect(
+      pageA.getByRole("button", { name: /not resolved/i }),
+    ).toBeVisible();
+    await expect(
+      pageA.getByRole("button", { name: /take a break/i }),
+    ).toBeVisible();
+  });
+
+  test("AC: Resolved path — fill summary, Propose Resolution, banner appears, Confirm closes case", async ({
+    pageA,
+  }) => {
+    await pageA.goto(`/cases/${caseId}/joint?as=initiator`);
+
+    // Open the closure modal
+    const closeButton = pageA.getByRole("button", { name: /close/i });
+    await expect(closeButton).toBeVisible({ timeout: 10_000 });
+    await closeButton.click();
+
+    const dialogContent = pageA.locator(".cc-dialog-content");
+    await expect(dialogContent).toBeVisible({ timeout: 5_000 });
+
+    // Select "Resolved"
+    await pageA.getByRole("button", { name: /^resolved$/i }).click();
+
+    // Fill the summary textarea
+    const textarea = pageA.getByRole("textbox");
+    await expect(textarea).toBeVisible();
+    await textarea.fill("We agreed to meet weekly to discuss progress.");
+
+    // Click "Propose Resolution"
+    await pageA.getByRole("button", { name: /propose resolution/i }).click();
+
+    // Modal should close after proposing
+    await expect(dialogContent).not.toBeVisible({ timeout: 5_000 });
+
+    // Toggle to the other party (invitee) to see the confirmation banner
+    const inviteeBtn = pageA.locator(
+      ".party-toggle .party-toggle-btn[data-active='false']",
+    );
+    await inviteeBtn.click();
+    await expect(pageA).toHaveURL(/[?&]as=invitee/);
+
+    // Confirmation banner should be visible with summary text
+    await expect(
+      pageA.getByText(/has proposed resolving this case/i),
+    ).toBeVisible({ timeout: 10_000 });
+    await expect(
+      pageA.getByText(/We agreed to meet weekly to discuss progress/),
+    ).toBeVisible();
+
+    // Click "Confirm" on the banner
+    const confirmBtn = pageA.getByRole("button", { name: /confirm/i });
+    await expect(confirmBtn).toBeVisible();
+    await confirmBtn.click();
+
+    // Case should transition to CLOSED_RESOLVED — redirected to closed page
+    await expect(pageA).toHaveURL(
+      new RegExp(`/cases/${caseId}/closed`),
+      { timeout: 10_000 },
+    );
+  });
+});
+
+test.describe("Solo mode — not resolved and take a break closure paths", () => {
+  let notResolvedCaseId: string;
+
+  test.beforeAll(async () => {
+    const result = await createTestCase({
+      initiatorEmail: "testusera@example.com",
+      isSolo: true,
+      category: "workplace",
+      status: "JOINT_ACTIVE",
+    });
+    notResolvedCaseId = result.caseId;
+  });
+
+  test("AC: Not resolved path — Close without resolution transitions to CLOSED_UNRESOLVED", async ({
+    pageA,
+  }) => {
+    await pageA.goto(`/cases/${notResolvedCaseId}/joint?as=initiator`);
+
+    // Open the closure modal
+    const closeButton = pageA.getByRole("button", { name: /close/i });
+    await expect(closeButton).toBeVisible({ timeout: 10_000 });
+    await closeButton.click();
+
+    const dialogContent = pageA.locator(".cc-dialog-content");
+    await expect(dialogContent).toBeVisible({ timeout: 5_000 });
+
+    // Select "Not resolved"
+    await pageA.getByRole("button", { name: /not resolved/i }).click();
+
+    // Verify warning message is displayed
+    await expect(
+      pageA.getByText(/this closes the case immediately for both of you/i),
+    ).toBeVisible();
+
+    // Click "Close without resolution"
+    await pageA
+      .getByRole("button", { name: /close without resolution/i })
+      .click();
+
+    // Case should transition to CLOSED_UNRESOLVED — page redirects away from joint chat
+    await expect(pageA).not.toHaveURL(
+      new RegExp(`/cases/${notResolvedCaseId}/joint`),
+      { timeout: 10_000 },
+    );
+  });
+});
+
+test.describe("Solo mode — take a break path", () => {
+  let breakCaseId: string;
+
+  test.beforeAll(async () => {
+    const result = await createTestCase({
+      initiatorEmail: "testusera@example.com",
+      isSolo: true,
+      category: "workplace",
+      status: "JOINT_ACTIVE",
+    });
+    breakCaseId = result.caseId;
+  });
+
+  test("AC: Take a break closes modal, case stays JOINT_ACTIVE", async ({
+    pageA,
+  }) => {
+    await pageA.goto(`/cases/${breakCaseId}/joint?as=initiator`);
+
+    // Open the closure modal
+    const closeButton = pageA.getByRole("button", { name: /close/i });
+    await expect(closeButton).toBeVisible({ timeout: 10_000 });
+    await closeButton.click();
+
+    const dialogContent = pageA.locator(".cc-dialog-content");
+    await expect(dialogContent).toBeVisible({ timeout: 5_000 });
+
+    // Click "Take a break"
+    await pageA.getByRole("button", { name: /take a break/i }).click();
+
+    // Modal should close
+    await expect(dialogContent).not.toBeVisible({ timeout: 5_000 });
+
+    // Should still be on the joint chat page (case remains JOINT_ACTIVE)
+    await expect(pageA).toHaveURL(
+      new RegExp(`/cases/${breakCaseId}/joint`),
+    );
+  });
+});
+
+test.describe("Solo mode — reject closure proposal", () => {
+  let rejectCaseId: string;
+
+  test.beforeAll(async () => {
+    const result = await createTestCase({
+      initiatorEmail: "testusera@example.com",
+      isSolo: true,
+      category: "workplace",
+      status: "JOINT_ACTIVE",
+    });
+    rejectCaseId = result.caseId;
+  });
+
+  test("AC: Reject clears the closure proposal, banner disappears, case stays JOINT_ACTIVE", async ({
+    pageA,
+  }) => {
+    await pageA.goto(`/cases/${rejectCaseId}/joint?as=initiator`);
+
+    // Open the closure modal and propose resolution
+    const closeButton = pageA.getByRole("button", { name: /close/i });
+    await expect(closeButton).toBeVisible({ timeout: 10_000 });
+    await closeButton.click();
+
+    const dialogContent = pageA.locator(".cc-dialog-content");
+    await expect(dialogContent).toBeVisible({ timeout: 5_000 });
+
+    await pageA.getByRole("button", { name: /^resolved$/i }).click();
+
+    const textarea = pageA.getByRole("textbox");
+    await textarea.fill("Let's try weekly check-ins.");
+
+    await pageA.getByRole("button", { name: /propose resolution/i }).click();
+    await expect(dialogContent).not.toBeVisible({ timeout: 5_000 });
+
+    // Toggle to invitee to see the banner
+    const inviteeBtn = pageA.locator(
+      ".party-toggle .party-toggle-btn[data-active='false']",
+    );
+    await inviteeBtn.click();
+    await expect(pageA).toHaveURL(/[?&]as=invitee/);
+
+    // Banner should be visible
+    const bannerText = pageA.getByText(/has proposed resolving this case/i);
+    await expect(bannerText).toBeVisible({ timeout: 10_000 });
+
+    // Click "Reject and keep talking"
+    const rejectBtn = pageA.getByRole("button", {
+      name: /reject and keep talking/i,
+    });
+    await expect(rejectBtn).toBeVisible();
+    await rejectBtn.click();
+
+    // Banner should disappear
+    await expect(bannerText).not.toBeVisible({ timeout: 5_000 });
+
+    // Case should remain JOINT_ACTIVE — still on the joint chat page
+    await expect(pageA).toHaveURL(
+      new RegExp(`/cases/${rejectCaseId}/joint`),
+    );
+  });
+});
