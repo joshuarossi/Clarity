@@ -134,6 +134,15 @@ function assembleSynthesis(opts: AssemblePromptOpts): AssemblePromptResult {
 
   const messages: PromptMessage[] = [];
 
+  // Include form fields context (intake data from partyStates)
+  const formContext = buildFormFieldsContext(opts.context.formFields);
+  if (formContext) {
+    messages.push({
+      role: "user",
+      content: `[Case intake context]\n${formContext}`,
+    });
+  }
+
   // Include acting party's private messages as context
   if (opts.context.actingPartyPrivateMessages?.length) {
     messages.push({
