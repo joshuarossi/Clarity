@@ -94,9 +94,21 @@ export async function requirePartyToCase(
 export async function requireAdmin(
   ctx: { auth: Auth; db: GenericDatabaseReader<DataModel> },
 ): Promise<Doc<"users">> {
-  const user = await requireAuth(ctx);
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new ConvexError({
+      code: "FORBIDDEN" as const,
+      message: "Admin access required",
+      httpStatus: 403,
+    });
+  }
 
-  if (user.role !== "ADMIN") {
+  const user = await ctx.db
+    .query("users")
+    .withIndex("by_email", (q) => q.eq("email", identity.email!))
+    .unique();
+
+  if (!user || user.role !== "ADMIN") {
     throw new ConvexError({
       code: "FORBIDDEN" as const,
       message: "Admin access required",
