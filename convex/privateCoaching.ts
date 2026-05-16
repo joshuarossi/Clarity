@@ -1,8 +1,16 @@
 import { v } from "convex/values";
-import { query, mutation, internalAction } from "./_generated/server";
+import { query, mutation, internalAction, internalMutation, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { requireAuth, requirePartyToCase } from "./lib/auth";
 import { conflict } from "./lib/errors";
+import {
+  assemblePrompt,
+  type PromptMessage,
+} from "./lib/prompts";
+import {
+  isClaudeMockEnabled,
+  getMockClaudeResponse,
+} from "./lib/claudeMock";
 
 export const myMessages = query({
   args: { caseId: v.id("cases") },
@@ -101,12 +109,305 @@ export const markComplete = mutation({
   },
 });
 
+// ---------------------------------------------------------------------------
+// Internal mutations for streaming writes
+// ---------------------------------------------------------------------------
+
+export const insertStreamingMessage = internalMutation({
+  args: {
+    caseId: v.id("cases"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("privateMessages", {
+      caseId: args.caseId,
+      userId: args.userId,
+      role: "AI",
+      content: "",
+      status: "STREAMING",
+      createdAt: Date.now(),
+    });
+  },
+});
+
+export const updateStreamingMessage = internalMutation({
+  args: {
+    messageId: v.id("privateMessages"),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.messageId, { content: args.content });
+  },
+});
+
+export const finalizeStreamingMessage = internalMutation({
+  args: {
+    messageId: v.id("privateMessages"),
+    content: v.string(),
+    tokens: v.number(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.messageId, {
+      content: args.content,
+      status: "COMPLETE",
+      tokens: args.tokens,
+    });
+  },
+});
+
+export const markMessageError = internalMutation({
+  args: {
+    messageId: v.id("privateMessages"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.messageId, { status: "ERROR" });
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Internal queries for reading acting user's messages and party state
+// ---------------------------------------------------------------------------
+
+export const getPrivateMessagesForUser = internalQuery({
+  args: {
+    caseId: v.id("cases"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("privateMessages")
+      .withIndex("by_case_and_user", (q) =>
+        q.eq("caseId", args.caseId).eq("userId", args.userId),
+      )
+      .collect();
+  },
+});
+
+export const getPartyState = internalQuery({
+  args: {
+    caseId: v.id("cases"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("partyStates")
+      .withIndex("by_case_and_user", (q) =>
+        q.eq("caseId", args.caseId).eq("userId", args.userId),
+      )
+      .unique();
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Main AI action
+// ---------------------------------------------------------------------------
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export const generateAIResponse = internalAction({
   args: {
     caseId: v.id("cases"),
     userId: v.id("users"),
   },
-  handler: async (_ctx, _args) => {
-    // Stub — AI response generation is a separate ticket.
+  handler: async (ctx, args) => {
+    // 1. Read party state for form fields
+    const partyState = await ctx.runQuery(
+      internal.privateCoaching.getPartyState,
+      { caseId: args.caseId, userId: args.userId },
+    );
+
+    const formFields = partyState
+      ? {
+          mainTopic: partyState.mainTopic,
+          description: partyState.description,
+          desiredOutcome: partyState.desiredOutcome,
+        }
+      : undefined;
+
+    // 2. Read acting user's prior messages (privacy: only by_case_and_user)
+    const allMessages = await ctx.runQuery(
+      internal.privateCoaching.getPrivateMessagesForUser,
+      { caseId: args.caseId, userId: args.userId },
+    );
+
+    const recentHistory: PromptMessage[] = allMessages
+      .filter((m) => m.status === "COMPLETE")
+      .sort((a, b) => a.createdAt - b.createdAt)
+      .map((m) => ({
+        role: m.role === "USER" ? ("user" as const) : ("assistant" as const),
+        content: m.content,
+      }));
+
+    // 3. Assemble prompt — PRIVATE_COACH role, no templateVersion
+    const prompt = assemblePrompt({
+      role: "PRIVATE_COACH",
+      caseId: args.caseId,
+      actingUserId: args.userId,
+      recentHistory,
+      context: {
+        formFields,
+      },
+    });
+
+    // 4. Insert STREAMING row before API call
+    const messageId = await ctx.runMutation(
+      internal.privateCoaching.insertStreamingMessage,
+      { caseId: args.caseId, userId: args.userId },
+    );
+
+    // 5. Unified retry loop for both mock and real API paths
+    const isMock = isClaudeMockEnabled();
+
+    if (!isMock) {
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+      if (!apiKey) {
+        console.error(
+          "generateAIResponse: ANTHROPIC_API_KEY is not set — cannot call Claude API",
+          { caseId: args.caseId, userId: args.userId, messageId },
+        );
+        await ctx.runMutation(internal.privateCoaching.markMessageError, {
+          messageId,
+        });
+        return;
+      }
+    }
+
+    let attempt = 0;
+    const maxAttempts = 2;
+
+    while (attempt < maxAttempts) {
+      try {
+        if (isMock) {
+          // Check mock failure simulation
+          const failCount = parseInt(
+            process.env.CLAUDE_MOCK_FAIL_COUNT ?? "0",
+            10,
+          );
+          const failStatus = parseInt(
+            process.env.CLAUDE_MOCK_FAIL_STATUS ?? "500",
+            10,
+          );
+          if (attempt < failCount) {
+            const err = new Error(
+              failStatus === 429 ? "Rate limited" : "Mock API error",
+            );
+            (err as unknown as Record<string, unknown>).status = failStatus;
+            throw err;
+          }
+
+          // Mock streaming — read delay at call time so env var changes
+          // between invocations are respected (unlike the module-level const)
+          const mockDelayMs = parseInt(
+            process.env.CLAUDE_MOCK_DELAY_MS ?? "100",
+            10,
+          );
+          const mockResponse = getMockClaudeResponse("PRIVATE_COACH");
+          const chunkSize = Math.ceil(mockResponse.length / 5);
+          let content = "";
+
+          for (let i = 0; i < mockResponse.length; i += chunkSize) {
+            content += mockResponse.slice(i, i + chunkSize);
+            await ctx.runMutation(
+              internal.privateCoaching.updateStreamingMessage,
+              { messageId, content },
+            );
+            if (i + chunkSize < mockResponse.length) {
+              await sleep(mockDelayMs);
+            }
+          }
+
+          const tokenCount = mockResponse.split(/\s+/).length;
+          await ctx.runMutation(
+            internal.privateCoaching.finalizeStreamingMessage,
+            { messageId, content, tokens: tokenCount },
+          );
+          return;
+        } else {
+          // Real API call
+          const { default: Anthropic } = await import("@anthropic-ai/sdk");
+          const client = new Anthropic({
+            apiKey: process.env.ANTHROPIC_API_KEY,
+          });
+
+          const stream = client.messages.stream({
+            model: "claude-sonnet-4-5",
+            max_tokens: 4096,
+            system: prompt.system,
+            messages: prompt.messages,
+          });
+
+          let content = "";
+          let lastFlush = Date.now();
+
+          stream.on("text", async (text) => {
+            content += text;
+            const now = Date.now();
+            if (now - lastFlush >= 50) {
+              lastFlush = now;
+              try {
+                await ctx.runMutation(
+                  internal.privateCoaching.updateStreamingMessage,
+                  { messageId, content },
+                );
+              } catch (flushErr) {
+                console.error(
+                  "generateAIResponse: failed to flush streaming update",
+                  { messageId, error: flushErr instanceof Error ? flushErr.message : String(flushErr) },
+                );
+              }
+            }
+          });
+
+          const finalMessage = await stream.finalMessage();
+
+          // Final flush
+          content = finalMessage.content
+            .filter((block) => block.type === "text")
+            .map((block) => block.text)
+            .join("");
+
+          const totalTokens =
+            (finalMessage.usage?.input_tokens ?? 0) +
+            (finalMessage.usage?.output_tokens ?? 0);
+
+          await ctx.runMutation(
+            internal.privateCoaching.finalizeStreamingMessage,
+            { messageId, content, tokens: totalTokens },
+          );
+          return;
+        }
+      } catch (error: unknown) {
+        attempt++;
+        const is429 =
+          error instanceof Error &&
+          "status" in error &&
+          (error as Record<string, unknown>).status === 429;
+
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const statusCode = error instanceof Error && "status" in error
+          ? (error as Record<string, unknown>).status
+          : undefined;
+
+        if (attempt < maxAttempts) {
+          const delay = is429 ? 2000 * Math.pow(2, attempt - 1) : 2000;
+          console.error(
+            `generateAIResponse: attempt ${attempt} failed (status=${statusCode ?? "unknown"}), retrying in ${delay}ms`,
+            { caseId: args.caseId, userId: args.userId, error: errorMessage },
+          );
+          await sleep(delay);
+        } else {
+          console.error(
+            `generateAIResponse: all ${maxAttempts} attempts failed, marking message as ERROR`,
+            { caseId: args.caseId, userId: args.userId, messageId, error: errorMessage },
+          );
+          await ctx.runMutation(internal.privateCoaching.markMessageError, {
+            messageId,
+          });
+          return;
+        }
+      }
+    }
   },
 });
