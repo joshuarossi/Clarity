@@ -10,15 +10,12 @@ import { InviteSharingPage } from "./routes/InviteSharingPage";
 import { InviteAcceptPage } from "./routes/InviteAcceptPage";
 import { DashboardPage } from "./routes/DashboardPage";
 import { CasePrivatePage } from "./routes/CasePrivatePage";
+import { CaseDetailPage } from "./routes/CaseDetailPage";
 
 /* ---------- Stub page components ---------- */
 
 function HomePage() {
   return <main><h1 data-testid="page-home">Home</h1></main>;
-}
-
-function CaseDetailPage() {
-  return <main><h1 data-testid="page-case-detail">Case Detail</h1></main>;
 }
 
 /* CasePrivatePage — imported from src/routes/CasePrivatePage.tsx */
