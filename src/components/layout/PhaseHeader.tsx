@@ -26,11 +26,11 @@ export function PhaseHeader({
         </Link>
       </div>
       <div className="cc-phase-header-center">
-        <span className="cc-phase-header-title">
+        <h1 className="cc-phase-header-title">
           {caseName}
           <span className="cc-phase-header-separator"> · </span>
           {phaseName}
-        </span>
+        </h1>
       </div>
       <div className="cc-phase-header-right">
         {children}

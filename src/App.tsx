@@ -13,6 +13,7 @@ import { CasePrivatePage } from "./routes/CasePrivatePage";
 import { CaseDetailPage } from "./routes/CaseDetailPage";
 import { ReadyForJointView } from "./routes/ReadyForJointView";
 import { JointChatView } from "./routes/JointChatView";
+import { ClosedCaseView } from "./routes/ClosedCaseView";
 
 /* ---------- Stub page components ---------- */
 
@@ -24,10 +25,7 @@ function HomePage() {
 
 /* JointChatView — imported from src/routes/JointChatView.tsx */
 
-function CaseClosedPage() {
-  const { caseId } = useParams();
-  return <main><h1 data-testid="page-case-closed">Closed</h1><span data-caseid={caseId} /></main>;
-}
+/* CaseClosedPage — replaced by imported ClosedCaseView */
 
 function AdminTemplatesPage() {
   return <main><h1 data-testid="page-admin-templates">Templates</h1></main>;
@@ -86,7 +84,7 @@ function AppLayout() {
         <Route path="/cases/:caseId/ready" element={<ProtectedRoute><ReadyForJointView /></ProtectedRoute>} />
         <Route path="/cases/:caseId/private" element={<ProtectedRoute><CasePrivatePage /></ProtectedRoute>} />
         <Route path="/cases/:caseId/joint" element={<ProtectedRoute><JointChatView /></ProtectedRoute>} />
-        <Route path="/cases/:caseId/closed" element={<ProtectedRoute><CaseClosedPage /></ProtectedRoute>} />
+        <Route path="/cases/:caseId/closed" element={<ProtectedRoute><ClosedCaseView /></ProtectedRoute>} />
         <Route path="/admin/templates" element={<AdminRoute><AdminTemplatesPage /></AdminRoute>} />
         <Route path="/admin/templates/:id" element={<AdminRoute><AdminTemplateDetailPage /></AdminRoute>} />
         <Route path="/admin/audit" element={<AdminRoute><AdminAuditPage /></AdminRoute>} />

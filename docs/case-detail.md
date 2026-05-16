@@ -51,3 +51,32 @@ completes), the view updates automatically without polling or page refresh.
 The `PhaseHeader` layout component is rendered at the top of the page with a
 phase name derived from the current status (e.g. "Private Coaching", "Joint
 Discussion", "Closed").
+
+## ClosedCaseView
+
+When the case status is `CLOSED_RESOLVED`, `CLOSED_UNRESOLVED`, or
+`CLOSED_ABANDONED`, the orchestrator renders the **ClosedCaseView**
+(`src/routes/ClosedCaseView.tsx`).
+
+### Layout
+
+- **Header:** Case name, category, closure date, and outcome badge
+  (Resolved / Not Resolved / Abandoned).
+- **Closure summary:** Shown only for `CLOSED_RESOLVED` cases; displayed
+  prominently below the header.
+- **Banner:** "This case is closed. No new messages can be added."
+- **Tabbed content:** Three tabs controlled via URL search param (`?tab=`):
+  - *Joint Chat* — full read-only transcript (no input bar or send button).
+  - *My Private Coaching* — the authenticated user's private coaching
+    messages only.
+  - *My Guidance* — the user's synthesis document.
+
+### Privacy
+
+The other party's private coaching and synthesis are never rendered or
+fetched. Server-side queries scope private data to the authenticated user;
+the UI does not expose tabs or links to the other party's data.
+
+### Accessibility
+
+Tab navigation uses ARIA tab roles and is fully keyboard-accessible.
