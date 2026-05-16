@@ -65,11 +65,12 @@ export function AdminTemplatesPage(): React.ReactElement {
           </thead>
           <tbody>
             {templates.map((template) => {
-              const isArchived = template.archivedAt !== undefined;
+              const isArchived = template.archivedAt != null;
               return (
                 <tr
                   key={template._id}
                   className={`border-b cursor-pointer hover:bg-gray-50 ${isArchived ? "archived-muted opacity-60" : ""}`}
+                  style={isArchived ? { opacity: 0.6 } : undefined}
                   onClick={() => navigate(`/admin/templates/${template._id}`)}
                   role="link"
                   tabIndex={0}
