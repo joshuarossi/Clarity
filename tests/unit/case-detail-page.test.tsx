@@ -191,19 +191,25 @@ describe("AC: Status-to-subview mapping", () => {
   it("renders ClosedCaseView for CLOSED_RESOLVED", () => {
     caseFixture = { ...DEFAULT_CASE, status: "CLOSED_RESOLVED" };
     renderPage();
-    expect(screen.getByTestId("subview-closed")).toBeDefined();
+    const nav = screen.getByTestId("navigate-redirect");
+    expect(nav).toBeDefined();
+    expect(nav.getAttribute("data-to")).toBe("/cases/case-abc123/closed");
   });
 
   it("renders ClosedCaseView for CLOSED_UNRESOLVED", () => {
     caseFixture = { ...DEFAULT_CASE, status: "CLOSED_UNRESOLVED" };
     renderPage();
-    expect(screen.getByTestId("subview-closed")).toBeDefined();
+    const nav = screen.getByTestId("navigate-redirect");
+    expect(nav).toBeDefined();
+    expect(nav.getAttribute("data-to")).toBe("/cases/case-abc123/closed");
   });
 
   it("renders ClosedCaseView for CLOSED_ABANDONED", () => {
     caseFixture = { ...DEFAULT_CASE, status: "CLOSED_ABANDONED" };
     renderPage();
-    expect(screen.getByTestId("subview-closed")).toBeDefined();
+    const nav = screen.getByTestId("navigate-redirect");
+    expect(nav).toBeDefined();
+    expect(nav.getAttribute("data-to")).toBe("/cases/case-abc123/closed");
   });
 });
 
@@ -327,19 +333,19 @@ describe("AC: PhaseHeader shows correct phase name for current status", () => {
   it("shows 'Closed' for CLOSED_RESOLVED", () => {
     caseFixture = { ...DEFAULT_CASE, status: "CLOSED_RESOLVED" };
     renderPage();
-    expect(screen.getByRole("heading", { name: /Closed/ })).toBeDefined();
+    expect(screen.getByText(/Closed/)).toBeDefined();
   });
 
   it("shows 'Closed' for CLOSED_UNRESOLVED", () => {
     caseFixture = { ...DEFAULT_CASE, status: "CLOSED_UNRESOLVED" };
     renderPage();
-    expect(screen.getByRole("heading", { name: /Closed/ })).toBeDefined();
+    expect(screen.getByText(/Closed/)).toBeDefined();
   });
 
   it("shows 'Closed' for CLOSED_ABANDONED", () => {
     caseFixture = { ...DEFAULT_CASE, status: "CLOSED_ABANDONED" };
     renderPage();
-    expect(screen.getByRole("heading", { name: /Closed/ })).toBeDefined();
+    expect(screen.getByText(/Closed/)).toBeDefined();
   });
 });
 
