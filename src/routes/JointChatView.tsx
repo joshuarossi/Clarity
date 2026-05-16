@@ -91,8 +91,7 @@ function JointChatViewInner({
   if (
     caseDoc === undefined ||
     jointMessages === undefined ||
-    synthesis === undefined ||
-    partyStates === undefined
+    synthesis === undefined
   ) {
     return <LoadingSpinner />;
   }
@@ -220,7 +219,7 @@ function JointChatViewInner({
       : initiatorLabel
     : "the other party";
 
-  const showConfirmBanner = partyStates.other?.closureProposed === true;
+  const showConfirmBanner = partyStates?.other?.closureProposed === true;
 
   return (
     <main
