@@ -14,10 +14,20 @@ export async function createTestCase(
     inviteeEmail?: string;
     category?: string;
     isSolo?: boolean;
+    status?: string;
   },
 ): Promise<{ caseId: string }> {
   // TODO: Wire to Convex dev backend when available
+  // The status parameter seeds the case at the specified status
   return { caseId: crypto.randomUUID() };
+}
+
+export async function transitionCaseStatus(
+  _caseId: string,
+  _newStatus: string,
+): Promise<void> {
+  // TODO: Wire to Convex dev backend when available
+  // Calls a test-only mutation to transition a case to the given status
 }
 
 export async function loginAs(_page: Page, _email: string): Promise<void> {
