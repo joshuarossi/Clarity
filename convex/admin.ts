@@ -237,42 +237,32 @@ export const listAuditLog = query({
   handler: async (ctx, args) => {
     await requireAdmin(ctx);
 
-    const results = await ctx.db
-      .query("auditLog")
-      .order("desc")
-      .paginate(args.paginationOpts);
+    let q = ctx.db.query("auditLog").order("desc");
 
-    // Post-filter for all filter combinations
-    let filteredPage = results.page;
-
+    // Apply filters on the query builder (pre-pagination)
     if (args.actor) {
-      filteredPage = filteredPage.filter(
-        (entry) => (entry.actorUserId as string) === args.actor
-      );
+      q = q.filter((q) => q.eq(q.field("actorUserId"), args.actor!));
     }
     if (args.action) {
-      filteredPage = filteredPage.filter(
-        (entry) => entry.action === args.action
-      );
+      q = q.filter((q) => q.eq(q.field("action"), args.action!));
     }
     if (args.dateFrom !== undefined) {
-      filteredPage = filteredPage.filter(
-        (entry) => entry.createdAt >= args.dateFrom!
-      );
+      q = q.filter((q) => q.gte(q.field("createdAt"), args.dateFrom!));
     }
     if (args.dateTo !== undefined) {
-      filteredPage = filteredPage.filter(
-        (entry) => entry.createdAt <= args.dateTo!
-      );
+      q = q.filter((q) => q.lte(q.field("createdAt"), args.dateTo!));
     }
+
+    const results = await q.paginate(args.paginationOpts);
 
     // Enrich with actor display names
     const enrichedPage = await Promise.all(
-      filteredPage.map(async (entry) => {
+      results.page.map(async (entry) => {
         const user = await ctx.db.get(entry.actorUserId);
         return {
           ...entry,
-          actorDisplayName: user?.displayName ?? user?.email ?? "Unknown",
+          actorDisplayName:
+            user?.displayName ?? user?.email ?? `Unknown (${entry.actorUserId})`,
         };
       })
     );

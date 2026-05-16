@@ -16,7 +16,7 @@ gate via `requireAdmin`.
 | Actor     | Display name or email of the admin who acted     |
 | Action    | Action code (e.g. `TEMPLATE_PUBLISHED`)          |
 | Target    | `targetType:targetId` of the affected resource   |
-| Timestamp | When the action occurred (`_creationTime`)       |
+| Timestamp | When the action occurred (`createdAt`)            |
 
 ## Filtering
 
@@ -26,7 +26,7 @@ Three filters are available above the table:
 - **Action type** — select from known action codes.
 - **Date range** — start and end date inputs to constrain results.
 
-Filters are combined with AND logic and applied per-page.
+Filters are combined with AND logic and applied server-side before pagination.
 
 ## Detail drawer
 
@@ -52,5 +52,7 @@ Audit log entries are stored in the `auditLog` Convex table:
 | `metadata`     | `any`     | Arbitrary JSON payload             |
 | `createdAt`    | `number`  | Epoch ms timestamp                 |
 
-An index `by_action` on `(action, createdAt)` supports efficient
-filtered queries.
+Indexes supporting efficient filtered queries:
+- `by_actor` on `["actorUserId"]`
+- `by_action` on `["action"]`
+- `by_createdAt` on `["createdAt"]`

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { usePaginatedQuery } from "convex/react";
+import * as RadixDialog from "@radix-ui/react-dialog";
 import { api } from "../../convex/_generated/api";
 
 type AuditEntry = {
@@ -176,80 +177,63 @@ export function AdminAuditLogPage(): React.ReactElement {
         </>
       )}
 
-      {/* Detail drawer (right-side sheet) */}
-      {selectedEntry && (
-        <div
-          className="fixed inset-0 z-50 flex"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Audit log entry detail"
-          data-testid="audit-detail-drawer"
-        >
-          {/* Backdrop */}
-          <div
-            className="flex-1 bg-black/50"
-            onClick={() => setSelectedEntry(null)}
-          />
-          {/* Sheet panel */}
-          <div
-            className="w-full max-w-md bg-white shadow-xl p-6 overflow-y-auto"
-            role="document"
+      {/* Detail drawer (right-side sheet) with focus trap via Radix Dialog */}
+      <RadixDialog.Root
+        open={selectedEntry !== null}
+        onOpenChange={(open) => { if (!open) setSelectedEntry(null); }}
+      >
+        <RadixDialog.Portal>
+          <RadixDialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
+          <RadixDialog.Content
+            className="fixed right-0 top-0 z-50 h-full w-full max-w-md bg-white shadow-xl p-6 overflow-y-auto"
+            aria-label="Audit log entry detail"
+            data-testid="audit-detail-drawer"
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Entry Detail</h2>
-              <button
-                onClick={() => setSelectedEntry(null)}
+              <RadixDialog.Title className="text-lg font-semibold">
+                Entry Detail
+              </RadixDialog.Title>
+              <RadixDialog.Close
                 aria-label="Close"
                 className="text-gray-500 hover:text-gray-700 text-xl"
                 data-testid="drawer-close"
-                autoFocus
               >
                 &times;
-              </button>
+              </RadixDialog.Close>
             </div>
-            <dl className="mb-4 text-sm space-y-2">
-              <div>
-                <dt className="font-medium text-gray-600">Actor</dt>
-                <dd>{selectedEntry.actorDisplayName}</dd>
-              </div>
-              <div>
-                <dt className="font-medium text-gray-600">Action</dt>
-                <dd>{selectedEntry.action}</dd>
-              </div>
-              <div>
-                <dt className="font-medium text-gray-600">Target</dt>
-                <dd>{selectedEntry.targetType}:{selectedEntry.targetId}</dd>
-              </div>
-              <div>
-                <dt className="font-medium text-gray-600">Timestamp</dt>
-                <dd>{new Date(selectedEntry.createdAt).toLocaleString()}</dd>
-              </div>
-            </dl>
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Metadata</h3>
-            <pre
-              className="bg-gray-100 p-4 rounded text-xs overflow-x-auto"
-              style={{ fontFamily: "'JetBrains Mono', monospace" }}
-              data-testid="metadata-json"
-            >
-              {JSON.stringify(selectedEntry.metadata, null, 2)}
-            </pre>
-          </div>
-        </div>
-      )}
-
-      {/* Keyboard handler for closing drawer with Escape */}
-      {selectedEntry && <EscapeHandler onEscape={() => setSelectedEntry(null)} />}
+            {selectedEntry && (
+              <>
+                <dl className="mb-4 text-sm space-y-2">
+                  <div>
+                    <dt className="font-medium text-gray-600">Actor</dt>
+                    <dd>{selectedEntry.actorDisplayName}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-gray-600">Action</dt>
+                    <dd>{selectedEntry.action}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-gray-600">Target</dt>
+                    <dd>{selectedEntry.targetType}:{selectedEntry.targetId}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-gray-600">Timestamp</dt>
+                    <dd>{new Date(selectedEntry.createdAt).toLocaleString()}</dd>
+                  </div>
+                </dl>
+                <h3 className="text-sm font-medium text-gray-600 mb-2">Metadata</h3>
+                <pre
+                  className="bg-gray-100 p-4 rounded text-xs overflow-x-auto"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  data-testid="metadata-json"
+                >
+                  {JSON.stringify(selectedEntry.metadata, null, 2)}
+                </pre>
+              </>
+            )}
+          </RadixDialog.Content>
+        </RadixDialog.Portal>
+      </RadixDialog.Root>
     </main>
   );
-}
-
-function EscapeHandler({ onEscape }: { onEscape: () => void }) {
-  React.useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onEscape();
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [onEscape]);
-  return null;
 }
