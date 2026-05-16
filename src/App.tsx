@@ -9,6 +9,7 @@ import { NewCasePage } from "./routes/NewCasePage";
 import { InviteSharingPage } from "./routes/InviteSharingPage";
 import { InviteAcceptPage } from "./routes/InviteAcceptPage";
 import { DashboardPage } from "./routes/DashboardPage";
+import { CasePrivatePage } from "./routes/CasePrivatePage";
 
 /* ---------- Stub page components ---------- */
 
@@ -20,10 +21,7 @@ function CaseDetailPage() {
   return <main><h1 data-testid="page-case-detail">Case Detail</h1></main>;
 }
 
-function CasePrivatePage() {
-  const { caseId } = useParams();
-  return <main><h1 data-testid="page-case-private">Private Coaching</h1><span data-caseid={caseId} /></main>;
-}
+/* CasePrivatePage — imported from src/routes/CasePrivatePage.tsx */
 
 function CaseJointPage() {
   const { caseId } = useParams();
