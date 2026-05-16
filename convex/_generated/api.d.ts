@@ -9,6 +9,7 @@
  */
 
 import type * as cases from "../cases.js";
+import type * as invites from "../invites.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_prompts from "../lib/prompts.js";
@@ -24,6 +25,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   cases: typeof cases;
+  invites: typeof invites;
   "lib/auth": typeof lib_auth;
   "lib/errors": typeof lib_errors;
   "lib/prompts": typeof lib_prompts;

@@ -6,6 +6,7 @@ import { TopNav } from "./components/layout/TopNav";
 import { LoginPage } from "./routes/LoginPage";
 import { ProfilePage } from "./routes/ProfilePage";
 import { NewCasePage } from "./routes/NewCasePage";
+import { InviteSharingPage } from "./routes/InviteSharingPage";
 
 /* ---------- Stub page components ---------- */
 
@@ -92,6 +93,7 @@ function AppLayout() {
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/cases/new" element={<ProtectedRoute><NewCasePage /></ProtectedRoute>} />
+        <Route path="/cases/:caseId/invite" element={<ProtectedRoute><InviteSharingPage /></ProtectedRoute>} />
         <Route path="/cases/:caseId" element={<ProtectedRoute><CaseDetailPage /></ProtectedRoute>} />
         <Route path="/cases/:caseId/private" element={<ProtectedRoute><CasePrivatePage /></ProtectedRoute>} />
         <Route path="/cases/:caseId/joint" element={<ProtectedRoute><CaseJointPage /></ProtectedRoute>} />
