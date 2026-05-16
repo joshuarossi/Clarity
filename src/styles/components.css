@@ -117,6 +117,15 @@
   animation: cc-bubble-enter var(--dur-fast) var(--ease-out) both;
 }
 
+/* ─── Bubble avatar (Coach ⟡ glyph) ─── */
+.cc-bubble-avatar {
+  display: block;
+  font-size: var(--font-size-meta);
+  color: var(--coach-accent);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
 /* ─── Bubble timestamp (hover reveal) ─── */
 .cc-bubble-timestamp {
   color: var(--text-tertiary);

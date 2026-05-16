@@ -5,11 +5,13 @@ import type { ChatMessage } from "./MessageBubble";
 export interface ChatWindowProps {
   messages: ChatMessage[];
   className?: string;
+  onRetry?: () => void;
 }
 
 export function ChatWindow({
   messages,
   className,
+  onRetry,
 }: ChatWindowProps): React.ReactElement {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const isAtBottomRef = React.useRef(true);
@@ -51,6 +53,7 @@ export function ChatWindow({
             content={msg.content}
             authorName={msg.authorName}
             createdAt={msg.createdAt}
+            onRetry={msg.status === "ERROR" ? onRetry : undefined}
           />
         </div>
       ))}

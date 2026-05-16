@@ -51,6 +51,7 @@ export function MessageBubble({
   variant,
   status,
   content,
+  authorName,
   createdAt,
   onRetry,
   onCopy,
@@ -77,6 +78,7 @@ export function MessageBubble({
       className={[bubbleClass, className].filter(Boolean).join(" ")}
       data-status={status}
     >
+      {authorName && <span className="cc-bubble-avatar">{authorName}</span>}
       <span>{content}</span>
       {status === "STREAMING" && <StreamingIndicator />}
       {status === "COMPLETE" && (
