@@ -1,4 +1,5 @@
 import { v, ConvexError } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { query, mutation } from "./_generated/server";
 import { requireAdmin } from "./lib/auth";
 
@@ -222,5 +223,64 @@ export const archive = mutation({
     });
 
     return null;
+  },
+});
+
+export const listAuditLog = query({
+  args: {
+    actor: v.optional(v.string()),
+    action: v.optional(v.string()),
+    dateFrom: v.optional(v.number()),
+    dateTo: v.optional(v.number()),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
+    const results = await ctx.db
+      .query("auditLog")
+      .order("desc")
+      .paginate(args.paginationOpts);
+
+    // Post-filter for all filter combinations
+    let filteredPage = results.page;
+
+    if (args.actor) {
+      filteredPage = filteredPage.filter(
+        (entry) => (entry.actorUserId as string) === args.actor
+      );
+    }
+    if (args.action) {
+      filteredPage = filteredPage.filter(
+        (entry) => entry.action === args.action
+      );
+    }
+    if (args.dateFrom !== undefined) {
+      filteredPage = filteredPage.filter(
+        (entry) => entry.createdAt >= args.dateFrom!
+      );
+    }
+    if (args.dateTo !== undefined) {
+      filteredPage = filteredPage.filter(
+        (entry) => entry.createdAt <= args.dateTo!
+      );
+    }
+
+    // Enrich with actor display names
+    const enrichedPage = await Promise.all(
+      filteredPage.map(async (entry) => {
+        const user = await ctx.db.get(entry.actorUserId);
+        return {
+          ...entry,
+          actorDisplayName: user?.displayName ?? user?.email ?? "Unknown",
+        };
+      })
+    );
+
+    return {
+      page: enrichedPage,
+      isDone: results.isDone,
+      continueCursor: results.continueCursor,
+    };
   },
 });

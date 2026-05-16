@@ -16,6 +16,7 @@ import { JointChatView } from "./routes/JointChatView";
 import { ClosedCaseView } from "./routes/ClosedCaseView";
 import { AdminTemplatesPage } from "./routes/AdminTemplatesPage";
 import { AdminTemplateEditPage } from "./routes/AdminTemplateEditPage";
+import { AdminAuditLogPage } from "./routes/AdminAuditLogPage";
 
 /* ---------- Stub page components ---------- */
 
@@ -31,9 +32,7 @@ function HomePage() {
 
 /* AdminTemplateDetailPage — replaced by imported AdminTemplateEditPage */
 
-function AdminAuditPage() {
-  return <main><h1 data-testid="page-admin-audit">Audit Log</h1></main>;
-}
+/* AdminAuditPage — replaced by imported AdminAuditLogPage */
 
 function NotFoundPage() {
   return (
@@ -82,7 +81,7 @@ function AppLayout() {
         <Route path="/cases/:caseId/closed" element={<ProtectedRoute><ClosedCaseView /></ProtectedRoute>} />
         <Route path="/admin/templates" element={<AdminRoute><AdminTemplatesPage /></AdminRoute>} />
         <Route path="/admin/templates/:id" element={<AdminRoute><AdminTemplateEditPage /></AdminRoute>} />
-        <Route path="/admin/audit" element={<AdminRoute><AdminAuditPage /></AdminRoute>} />
+        <Route path="/admin/audit" element={<AdminRoute><AdminAuditLogPage /></AdminRoute>} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>
