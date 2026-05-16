@@ -26,6 +26,7 @@ import { ChatWindow } from "@/components/chat/ChatWindow";
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `messages` | `ChatMessage[]` | — | Array of messages to render |
+| `onRetry` | `() => void` | — | Callback passed to the Retry button on messages with `ERROR` status |
 | `className` | `string` | — | Additional CSS class names |
 
 ## MessageBubble
@@ -62,7 +63,7 @@ import { MessageBubble } from "@/components/chat/MessageBubble";
 | Status | Behavior |
 |--------|----------|
 | `STREAMING` | Shows content + blinking streaming cursor; no copy button |
-| `COMPLETE` | Shows full content + timestamp (on hover) + Copy button |
+| `COMPLETE` | Shows full content + timestamp (hidden by default, visible on hover via `.cc-timestamp-hidden`) + Copy button |
 | `ERROR` | Error styling + optional Retry button (when `onRetry` provided) |
 
 ### Props
@@ -72,7 +73,7 @@ import { MessageBubble } from "@/components/chat/MessageBubble";
 | `variant` | `BubbleVariant` | — | Visual variant (see table above) |
 | `status` | `MessageStatus` | — | `"STREAMING"`, `"COMPLETE"`, or `"ERROR"` |
 | `content` | `string` | — | Message text |
-| `authorName` | `string` | — | Display name of the message author |
+| `authorName` | `string` | — | Display name rendered as an avatar/label above the message (`.cc-bubble-avatar`) |
 | `createdAt` | `number` | — | Unix timestamp (ms) for the message |
 | `onRetry` | `() => void` | — | Callback for Retry button (ERROR status only) |
 | `onCopy` | `() => void` | — | Callback fired after copy-to-clipboard |
@@ -130,6 +131,8 @@ All bubble and animation classes are defined in `src/styles/components.css`:
   `.cc-bubble-party-invitee`, `.cc-bubble-error` — bubble variants
 - `.cc-bubble-enter` — 150 ms fade-in + 8 px translate entry animation
 - `.cc-bubble-timestamp` — hover-revealed timestamp
+- `.cc-timestamp-hidden` — hides the timestamp by default; visible on hover
+- `.cc-bubble-avatar` — author name/glyph label above the message content
 - `.cc-streaming-cursor` — blinking cursor bar
 - `.cc-message-input` — input container
 
