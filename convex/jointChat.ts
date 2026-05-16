@@ -491,8 +491,11 @@ export const generateCoachResponse = internalAction({
     let classification: Classification;
 
     if (isMock) {
-      // In mock mode, default to QUESTION_TO_COACH to ensure Sonnet step fires
-      classification = "QUESTION_TO_COACH";
+      // In mock mode, read CLAUDE_MOCK_CLASSIFICATION env var for test control
+      const mockClassificationRaw = process.env.CLAUDE_MOCK_CLASSIFICATION;
+      classification = mockClassificationRaw
+        ? parseClassification(mockClassificationRaw)
+        : "QUESTION_TO_COACH";
     } else {
       const apiKey = process.env.ANTHROPIC_API_KEY;
       if (!apiKey) {

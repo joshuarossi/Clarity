@@ -35,7 +35,7 @@ Take your time with these. There's no rush to have all the answers right now. Th
 
   COACH: `## Joint Session Summary
 
-Thank you both for joining this conversation. I can see you've each put thought into understanding the situation, which is a strong foundation.
+Thank you both for joining this conversation I can see you have each put thought into understanding the situation, which is a strong foundation.
 
 **What I'm hearing from both of you:**
 - There's a shared desire to resolve this constructively
