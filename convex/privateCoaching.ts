@@ -10,7 +10,6 @@ import {
 import {
   isClaudeMockEnabled,
   getMockClaudeResponse,
-  MOCK_DELAY_MS,
 } from "./lib/claudeMock";
 
 export const myMessages = query({
@@ -295,7 +294,12 @@ export const generateAIResponse = internalAction({
             throw err;
           }
 
-          // Mock streaming
+          // Mock streaming — read delay at call time so env var changes
+          // between invocations are respected (unlike the module-level const)
+          const mockDelayMs = parseInt(
+            process.env.CLAUDE_MOCK_DELAY_MS ?? "100",
+            10,
+          );
           const mockResponse = getMockClaudeResponse("PRIVATE_COACH");
           const chunkSize = Math.ceil(mockResponse.length / 5);
           let content = "";
@@ -307,7 +311,7 @@ export const generateAIResponse = internalAction({
               { messageId, content },
             );
             if (i + chunkSize < mockResponse.length) {
-              await sleep(MOCK_DELAY_MS);
+              await sleep(mockDelayMs);
             }
           }
 
