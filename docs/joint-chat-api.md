@@ -1,6 +1,6 @@
 # Joint Chat API
 
-> Module: `convex/jointChat.ts` · Ticket: WOR-124
+> Module: `convex/jointChat.ts` · Tickets: WOR-124, WOR-125
 
 ## Overview
 
@@ -85,11 +85,34 @@ machine. Either party can invoke this at any time during `JOINT_ACTIVE`.
 
 ## Internal Actions
 
-### `generateCoachResponse` (placeholder)
+### `generateCoachResponse`
 
-Scheduled by `sendUserMessage` after each user message. The real
-implementation will arrive in a follow-up ticket; the current version is a
-no-op stub.
+Scheduled by `sendUserMessage` after each user message. Implements a two-step
+pipeline:
+
+1. **Classification (Haiku)** — Sends the last user message plus recent
+   context to `claude-haiku-4-5-20251001`, which returns one of:
+   `INFLAMMATORY`, `PROGRESS`, `QUESTION_TO_COACH`, or `NORMAL_EXCHANGE`.
+2. **Generation (Sonnet)** — For non-`NORMAL_EXCHANGE` classifications (or
+   when triggered by an @-mention or a 5+ exchange silence timer), Sonnet
+   generates a response using a category-specific or baseline template.
+
+The response is streamed: a `jointMessages` row is inserted with
+`authorType: "COACH"` and `status: "STREAMING"`, content is batch-updated as
+tokens arrive, and the row transitions to `status: "COMPLETE"` on finish.
+
+A **privacy response filter** checks the final output against both parties'
+raw private messages before emitting. On rejection the action retries up to
+2 times; on third failure a hardcoded fallback message is posted.
+
+Messages classified as `INFLAMMATORY` are flagged with `isIntervention: true`
+for distinct UI styling.
+
+| Trigger type | Behaviour |
+|--------------|-----------|
+| New user message | Haiku gate decides |
+| @-mention | Always generates (bypasses gate) |
+| Silence timer (5+ exchanges) | Always generates |
 
 ## Error Codes
 
