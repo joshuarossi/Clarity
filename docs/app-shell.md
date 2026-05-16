@@ -27,7 +27,7 @@ Defined in `src/App.tsx`:
 | `/login`                      | public      | Login (redirects to dashboard if already signed in) |
 | `/invite/:token`              | public      | Party invite acceptance   |
 | `/profile`                    | auth        | User profile / sign-out   |
-| `/dashboard`                  | auth        | User dashboard            |
+| `/dashboard`                  | auth        | Case list with status indicators (post-login home) |
 | `/cases/new`                  | auth        | Create a new case         |
 | `/cases/:caseId`              | auth        | Case detail               |
 | `/cases/:caseId/private`      | auth        | Private coaching session  |
