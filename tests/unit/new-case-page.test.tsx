@@ -379,7 +379,7 @@ describe("AC: Submit calls mutation and routes to post-create invite page", () =
     expect(callArgs.isSolo).toBe(true);
   });
 
-  it("still navigates to invite page when isSolo is true", async () => {
+  it("navigates to private coaching when isSolo is true", async () => {
     mockMutate.mockResolvedValueOnce({
       caseId: "solo789",
       inviteUrl: null,
@@ -411,10 +411,7 @@ describe("AC: Submit calls mutation and routes to post-create invite page", () =
     fireEvent.click(screen.getByRole("button", { name: /create|submit/i }));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(
-        "/cases/solo789/invite",
-        expect.objectContaining({ state: expect.objectContaining({}) }),
-      );
+      expect(mockNavigate).toHaveBeenCalledWith("/cases/solo789/private");
     });
   });
 
