@@ -175,10 +175,11 @@ describe("AC: Status-to-subview mapping", () => {
     expect(nav.getAttribute("data-to")).toContain("/private");
   });
 
-  it("renders ReadyForJointView for READY_FOR_JOINT", () => {
+  it("renders Navigate to /ready for READY_FOR_JOINT", () => {
     caseFixture = { ...DEFAULT_CASE, status: "READY_FOR_JOINT" };
     renderPage();
-    expect(screen.getByTestId("subview-ready-for-joint")).toBeDefined();
+    const nav = screen.getByTestId("navigate-redirect");
+    expect(nav.getAttribute("data-to")).toContain("/ready");
   });
 
   it("renders JointChatView for JOINT_ACTIVE", () => {
@@ -391,7 +392,8 @@ describe("AC: Reactively updates when case status changes", () => {
   it("re-renders correct subview when case status transitions", () => {
     caseFixture = { ...DEFAULT_CASE, status: "READY_FOR_JOINT" };
     const { rerender } = renderPage();
-    expect(screen.getByTestId("subview-ready-for-joint")).toBeDefined();
+    const nav = screen.getByTestId("navigate-redirect");
+    expect(nav.getAttribute("data-to")).toContain("/ready");
 
     // Simulate status transition
     caseFixture = { ...DEFAULT_CASE, status: "JOINT_ACTIVE" };

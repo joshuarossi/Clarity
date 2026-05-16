@@ -19,7 +19,7 @@ function statusToPhase(status: CaseStatus): { phaseName: string; subroute: strin
     case "BOTH_PRIVATE_COACHING":
       return { phaseName: "Private Coaching", subroute: "private" };
     case "READY_FOR_JOINT":
-      return { phaseName: "Ready for Joint Session", subroute: "joint" };
+      return { phaseName: "Ready for Joint Session", subroute: "ready" };
     case "JOINT_ACTIVE":
       return { phaseName: "Joint Discussion", subroute: "joint" };
     case "CLOSED_RESOLVED":
@@ -34,15 +34,6 @@ function statusToPhase(status: CaseStatus): { phaseName: string; subroute: strin
 }
 
 /* ---------- Placeholder subviews ---------- */
-
-function ReadyForJointView() {
-  return (
-    <div data-testid="subview-ready-for-joint">
-      <h2>Waiting for Joint Session</h2>
-      <p>Both parties have completed private coaching. The joint session will begin soon.</p>
-    </div>
-  );
-}
 
 function JointChatView() {
   return (
@@ -257,7 +248,11 @@ function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElemen
       case "BOTH_PRIVATE_COACHING":
         return <Navigate to={`/cases/${caseId}/private`} replace />;
       case "READY_FOR_JOINT":
-        return <ReadyForJointView />;
+        return (
+          <div data-testid="subview-ready-for-joint">
+            <Navigate to={`/cases/${caseId}/ready`} replace />
+          </div>
+        );
       case "JOINT_ACTIVE":
         return <JointChatView />;
       case "CLOSED_RESOLVED":

@@ -285,6 +285,32 @@
   outline-offset: 2px;
 }
 
+/* ─── Synthesis card ─── */
+.cc-synthesis-banner {
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-bottom: none;
+}
+
+.cc-synthesis-card {
+  background: var(--private-tint);
+  padding: 32px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.cc-synthesis-card h3 {
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+.cc-synthesis-card h3:first-child {
+  margin-top: 0;
+}
+
+.cc-synthesis-card p {
+  margin: 0 0 8px;
+  line-height: 1.6;
+}
+
 /* ─── Status pill ─── */
 .cc-status-pill {
   display: inline-flex;

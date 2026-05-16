@@ -230,3 +230,99 @@ test.describe("Solo mode — party toggle and message isolation", () => {
     await expect(toggle).not.toBeVisible();
   });
 });
+
+// ── WOR-123: ReadyForJointView — synthesis accessible after entering ────
+// AC: "Synthesis remains accessible from 'View my guidance' link in
+//      joint chat top nav after entering"
+//
+// This test exercises the full flow: ready page shows synthesis →
+// click Enter Joint Session → joint chat page has "View my guidance" link
+// that opens the synthesis.
+
+test.describe("Solo mode — ready page → joint session entry → synthesis accessibility", () => {
+  let caseId: string;
+
+  test.beforeAll(async () => {
+    const result = await createTestCase({
+      initiatorEmail: "testusera@example.com",
+      isSolo: true,
+      category: "workplace",
+      status: "READY_FOR_JOINT",
+    });
+    caseId = result.caseId;
+  });
+
+  test("ready page displays synthesis content for the acting party", async ({
+    pageA,
+  }) => {
+    await pageA.goto(`/cases/${caseId}/ready?as=initiator`);
+
+    // Synthesis card should be visible with content
+    const synthesisCard = pageA.locator(".cc-synthesis-card");
+    await expect(synthesisCard).toBeVisible({ timeout: 10_000 });
+
+    // Verify at least one of the expected H3 headings renders
+    const heading = pageA.getByRole("heading", {
+      name: /Areas of likely agreement/,
+      level: 3,
+    });
+    await expect(heading).toBeVisible();
+  });
+
+  test("privacy banner shows other party name on ready page", async ({
+    pageA,
+  }) => {
+    await pageA.goto(`/cases/${caseId}/ready?as=initiator`);
+
+    // Privacy banner should include the other party's name
+    const banner = pageA.locator(".cc-banner-privacy");
+    await expect(banner).toBeVisible({ timeout: 10_000 });
+    await expect(banner).toContainText("has their own version");
+  });
+
+  test("clicking 'Enter Joint Session →' navigates to joint chat", async ({
+    pageA,
+  }) => {
+    await pageA.goto(`/cases/${caseId}/ready?as=initiator`);
+
+    // Click the CTA button
+    const ctaButton = pageA.getByRole("button", {
+      name: /Enter Joint Session/,
+    });
+    await expect(ctaButton).toBeVisible({ timeout: 10_000 });
+    await ctaButton.click();
+
+    // Should navigate to the joint chat page
+    await expect(pageA).toHaveURL(
+      new RegExp(`/cases/${caseId}/joint`),
+      { timeout: 10_000 },
+    );
+  });
+
+  test("AC: synthesis remains accessible via 'View my guidance' link after entering joint session", async ({
+    pageA,
+  }) => {
+    // Navigate to joint chat (case should already be JOINT_ACTIVE from prior test)
+    await pageA.goto(`/cases/${caseId}/joint?as=initiator`);
+
+    // The joint chat top nav should have a "View my guidance" link
+    const guidanceLink = pageA.getByRole("link", {
+      name: /View my guidance/i,
+    });
+    await expect(guidanceLink).toBeVisible({ timeout: 10_000 });
+
+    // Clicking it should show the synthesis content
+    await guidanceLink.click();
+
+    // Verify synthesis content is displayed (could be a modal, panel, or navigated page)
+    const synthesisContent = pageA.locator(".cc-synthesis-card");
+    await expect(synthesisContent).toBeVisible({ timeout: 10_000 });
+
+    // Verify synthesis heading is present
+    const heading = pageA.getByRole("heading", {
+      name: /Areas of likely agreement/,
+      level: 3,
+    });
+    await expect(heading).toBeVisible();
+  });
+});

@@ -11,6 +11,7 @@ import { InviteAcceptPage } from "./routes/InviteAcceptPage";
 import { DashboardPage } from "./routes/DashboardPage";
 import { CasePrivatePage } from "./routes/CasePrivatePage";
 import { CaseDetailPage } from "./routes/CaseDetailPage";
+import { ReadyForJointView } from "./routes/ReadyForJointView";
 
 /* ---------- Stub page components ---------- */
 
@@ -57,10 +58,11 @@ function NotFoundPage() {
 function AppLayout() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const location = useLocation();
-  const caseMatch = location.pathname.match(/^\/cases\/([^/]+)\/(private|joint|closed)$/);
+  const caseMatch = location.pathname.match(/^\/cases\/([^/]+)\/(private|ready|joint|closed)$/);
 
   const phaseMap: Record<string, string> = {
     private: "Private Coaching",
+    ready: "Ready for Joint Session",
     joint: "Joint Session",
     closed: "Closed",
   };
@@ -83,6 +85,7 @@ function AppLayout() {
         <Route path="/cases/new" element={<ProtectedRoute><NewCasePage /></ProtectedRoute>} />
         <Route path="/cases/:caseId/invite" element={<ProtectedRoute><InviteSharingPage /></ProtectedRoute>} />
         <Route path="/cases/:caseId" element={<ProtectedRoute><CaseDetailPage /></ProtectedRoute>} />
+        <Route path="/cases/:caseId/ready" element={<ProtectedRoute><ReadyForJointView /></ProtectedRoute>} />
         <Route path="/cases/:caseId/private" element={<ProtectedRoute><CasePrivatePage /></ProtectedRoute>} />
         <Route path="/cases/:caseId/joint" element={<ProtectedRoute><CaseJointPage /></ProtectedRoute>} />
         <Route path="/cases/:caseId/closed" element={<ProtectedRoute><CaseClosedPage /></ProtectedRoute>} />
