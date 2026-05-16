@@ -29,6 +29,17 @@ export function ClosureModal({
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  // Reset state when open prop transitions to false (covers parent-driven closures)
+  React.useEffect(() => {
+    if (!open) {
+      setView("idle");
+      setSummary("");
+      setReason("");
+      setError(null);
+      setLoading(false);
+    }
+  }, [open]);
+
   // Reset state when modal closes
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
