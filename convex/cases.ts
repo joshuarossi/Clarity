@@ -325,11 +325,17 @@ export const updateMyForm = mutation({
       });
     }
 
-    await ctx.db.patch(partyState._id, {
+    const patch: Record<string, unknown> = {
       mainTopic: args.mainTopic,
       description: args.description,
       desiredOutcome: args.desiredOutcome,
-    });
+    };
+
+    if (!partyState.formCompletedAt) {
+      patch.formCompletedAt = Date.now();
+    }
+
+    await ctx.db.patch(partyState._id, patch);
 
     await ctx.db.patch(args.caseId, {
       updatedAt: Date.now(),
