@@ -15,6 +15,14 @@ export async function createTestCase(
     category?: string;
     isSolo?: boolean;
     status?: string;
+    privateCoachingMessages?: {
+      partyA?: string[];
+      partyB?: string[];
+    };
+    synthesisText?: {
+      partyA?: string;
+      partyB?: string;
+    };
   },
 ): Promise<{ caseId: string }> {
   // TODO: Wire to Convex dev backend when available
