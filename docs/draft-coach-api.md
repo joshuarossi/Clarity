@@ -1,0 +1,92 @@
+# Draft Coach API
+
+> Module: `convex/draftCoach.ts` · Ticket: WOR-127
+
+## Overview
+
+The Draft Coach is a private, short-lived AI conversation that helps a party
+craft a polished message before sending it into the joint chat. Unlike private
+coaching (which is a free-form session spanning the entire case), a Draft Coach
+session is tightly scoped: it starts when the user wants help composing a
+single message and ends when the draft is sent or discarded.
+
+Draft Coach conversations are **invisible to the other party** — only the
+final, approved message appears in the joint chat.
+
+## Schema
+
+### `draftSessions`
+
+| Field         | Type                              | Description                          |
+|---------------|-----------------------------------|--------------------------------------|
+| `caseId`      | Id\<"cases"\>                     | The case this session belongs to     |
+| `userId`      | Id\<"users"\>                     | The party who owns the session       |
+| `status`      | `"ACTIVE" \| "SENT" \| "DISCARDED"` | Session lifecycle state           |
+| `createdAt`   | number                            | Epoch ms when session was started    |
+| `completedAt` | number \| undefined               | Epoch ms when session ended          |
+| `finalDraft`  | string \| undefined               | The AI-produced draft text           |
+
+Index: `by_case_and_user` — (`caseId`, `userId`)
+
+### `draftMessages`
+
+| Field            | Type                                   | Description                       |
+|------------------|----------------------------------------|-----------------------------------|
+| `draftSessionId` | Id\<"draftSessions"\>                 | Parent session                    |
+| `role`           | `"USER" \| "AI"`                      | Who sent the message              |
+| `content`        | string                                 | Message body                      |
+| `status`         | `"STREAMING" \| "COMPLETE" \| "ERROR"` | Delivery state                   |
+| `createdAt`      | number                                 | Epoch ms                          |
+
+Index: `by_draft_session` — (`draftSessionId`)
+
+## Public Functions
+
+### `draftCoach/session` (query)
+
+Returns `{ session, messages }` for the caller's active draft session on the
+given case, or `null` if no active session exists. Enforces that
+`session.userId` matches the authenticated caller (privacy constraint).
+
+**Args:** `{ caseId: Id<"cases"> }`
+
+### `draftCoach/startSession` (mutation)
+
+Creates a new `draftSessions` row with `status: "ACTIVE"` and schedules
+the Draft Coach AI action (`draftCoach/generateResponse`) for the initial
+prompt.
+
+**Args:** `{ caseId: Id<"cases"> }`
+
+### `draftCoach/sendMessage` (mutation)
+
+Inserts a `draftMessages` row with `role: "USER"`, `status: "COMPLETE"` and
+schedules the AI action.
+
+**Args:** `{ draftSessionId: Id<"draftSessions">, content: string }`
+
+### `draftCoach/sendFinalDraft` (mutation)
+
+Reads `session.finalDraft`, posts it into the joint chat via an internal call
+to `jointChat/sendUserMessage`, and marks the session `status: "SENT"` with
+`completedAt`. Throws a `ConvexError` with code `CONFLICT` if `finalDraft` is
+not yet populated.
+
+**Args:** `{ draftSessionId: Id<"draftSessions"> }`
+
+### `draftCoach/discardSession` (mutation)
+
+Marks the session `status: "DISCARDED"` with `completedAt`. No message is
+sent to the joint chat.
+
+**Args:** `{ draftSessionId: Id<"draftSessions"> }`
+
+## Authorization
+
+All public functions require:
+
+1. **Authentication** — a valid session token (via the shared auth helper).
+2. **Party-to-case check** — the authenticated user must be a party on the
+   referenced case.
+3. **Privacy** — the session query additionally filters by `userId` so a
+   party can never read another party's draft coach sessions.
