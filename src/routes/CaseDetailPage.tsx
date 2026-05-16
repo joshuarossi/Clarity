@@ -163,6 +163,29 @@ function InviteeFormView({
   );
 }
 
+/* ---------- Error boundary for auth/access errors ---------- */
+
+class CaseErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { error: string | null }
+> {
+  state = { error: null as string | null };
+
+  static getDerivedStateFromError(err: Error) {
+    if (err.message === "FORBIDDEN" || err.message === "NOT_FOUND") {
+      return { error: err.message };
+    }
+    throw err;
+  }
+
+  render() {
+    if (this.state.error) {
+      return <Navigate to="/dashboard" replace />;
+    }
+    return this.props.children;
+  }
+}
+
 /* ---------- Inner orchestrator ---------- */
 
 function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElement {
@@ -174,7 +197,7 @@ function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElemen
     : { caseId };
   const partyStates = useQuery(api.cases.partyStates, partyStatesArgs);
 
-  const headingRef = React.useRef<HTMLHeadingElement>(null);
+  const headingRef = React.useRef<HTMLDivElement>(null);
   const prevStatusRef = React.useRef<string | undefined>(undefined);
 
   // Handle FORBIDDEN / NOT_FOUND errors from the query
@@ -253,13 +276,15 @@ function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElemen
           />
         )}
       </PhaseHeader>
-      <h1
+      <div
         ref={headingRef}
         tabIndex={-1}
         className="sr-only"
+        role="status"
+        aria-live="polite"
       >
         {phaseName}
-      </h1>
+      </div>
       {renderSubview()}
     </main>
   );
@@ -280,5 +305,9 @@ export function CaseDetailPage(): React.ReactElement {
 
   const typedCaseId = caseId as Id<"cases">;
 
-  return <CaseDetailInner caseId={typedCaseId} />;
+  return (
+    <CaseErrorBoundary>
+      <CaseDetailInner caseId={typedCaseId} />
+    </CaseErrorBoundary>
+  );
 }
