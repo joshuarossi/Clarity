@@ -5,6 +5,7 @@ import { AdminRoute } from "./components/layout/AdminRoute";
 import { TopNav } from "./components/layout/TopNav";
 import { LoginPage } from "./routes/LoginPage";
 import { ProfilePage } from "./routes/ProfilePage";
+import { NewCasePage } from "./routes/NewCasePage";
 
 /* ---------- Stub page components ---------- */
 
@@ -19,10 +20,6 @@ function InvitePage() {
 
 function DashboardPage() {
   return <main><h1 data-testid="page-dashboard">Dashboard</h1></main>;
-}
-
-function NewCasePage() {
-  return <main><h1 data-testid="page-new-case">New Case</h1></main>;
 }
 
 function CaseDetailPage() {

@@ -135,6 +135,12 @@
   opacity: 1;
 }
 
+/* ─── Radio card (NewCasePage) ─── */
+.cc-radio-card:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* ─── Button base ─── */
 .cc-btn {
   display: inline-flex;
