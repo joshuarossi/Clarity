@@ -1,6 +1,6 @@
 # Draft Coach API
 
-> Module: `convex/draftCoach.ts` · Ticket: WOR-127
+> Module: `convex/draftCoach.ts` · Tickets: WOR-127, WOR-128
 
 ## Overview
 
@@ -79,6 +79,71 @@ response via `generateCoachResponse`. Throws a `ConvexError` with code
 
 Marks the session `status: "DISCARDED"` with `completedAt`. No message is
 sent to the joint chat.
+
+**Args:** `{ sessionId: Id<"draftSessions"> }`
+
+## AI Generation
+
+### `draftCoach/generateResponse` (internalAction)
+
+The core AI action behind the Draft Coach experience. It is scheduled
+automatically by `startSession` (for the opening coaching message) and by
+`sendMessage` (after each user turn). It is **not** callable from the client.
+
+**Args:** `{ sessionId: Id<"draftSessions">, userId: Id<"users"> }`
+
+#### Context assembly
+
+The action builds a prompt using `assemblePrompt` with `role: "DRAFT_COACH"`.
+The context window includes:
+
+- **Joint-chat history** — all `COMPLETE` joint messages for the case
+  (visible to both parties).
+- **Acting user's synthesis** — from their `partyState.synthesisText`.
+- **Category-specific template** — `draftCoachInstructions` from the case's
+  pinned `templateVersion`, falling back to `globalGuidance` when absent.
+- **Draft conversation history** — all prior draft messages in the session.
+
+**Privacy boundary:** the other party's synthesis, private coaching messages,
+and party state are never queried.
+
+#### Readiness detection
+
+Before calling the AI, the action checks the latest USER draft message against
+a set of canonical readiness signals (case-insensitive, trimmed):
+
+- `"i'm ready"`
+- `"draft it"`
+- `"write the message"`
+- `"looks good, write it"`
+- `"Generate Draft"` (exact — sent by the UI button)
+
+When readiness is detected, the prompt instructs the AI to respond with a
+structured `{ "draft": "..." }` JSON block. The extracted text is persisted
+to `draftSession.finalDraft` via `setSessionFinalDraft`. If parsing fails,
+the response is stored as a normal message (graceful degradation).
+
+**The draft is never auto-sent.** The user must explicitly approve it through
+the `sendFinalDraft` mutation (see above).
+
+#### Streaming
+
+Follows the same lifecycle as the private coaching and joint chat AI actions:
+
+1. Insert a `draftMessages` row with `status: "STREAMING"` and empty content.
+2. Batch content updates every ~50 ms via `updateStreamingDraftMessage`.
+3. Finalize with `status: "COMPLETE"` and log the total token count.
+
+#### Error handling
+
+On API failure the action retries once after a 2 s backoff. On a second
+failure the draft message is marked `status: "ERROR"`. No further retries are
+attempted automatically.
+
+### `draftCoach/retryLastDraftAIResponse` (mutation)
+
+Deletes the last `ERROR` draft message in the session and re-schedules
+`generateResponse`. Requires auth + session ownership.
 
 **Args:** `{ sessionId: Id<"draftSessions"> }`
 
