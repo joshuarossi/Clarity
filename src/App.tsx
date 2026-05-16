@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useParams, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useConvexAuth } from "@convex-dev/auth/react";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { AdminRoute } from "./components/layout/AdminRoute";
@@ -15,6 +15,7 @@ import { ReadyForJointView } from "./routes/ReadyForJointView";
 import { JointChatView } from "./routes/JointChatView";
 import { ClosedCaseView } from "./routes/ClosedCaseView";
 import { AdminTemplatesPage } from "./routes/AdminTemplatesPage";
+import { AdminTemplateEditPage } from "./routes/AdminTemplateEditPage";
 
 /* ---------- Stub page components ---------- */
 
@@ -28,10 +29,7 @@ function HomePage() {
 
 /* CaseClosedPage — replaced by imported ClosedCaseView */
 
-function AdminTemplateDetailPage() {
-  const { id } = useParams();
-  return <main><h1 data-testid="page-admin-template-detail">Template {id}</h1></main>;
-}
+/* AdminTemplateDetailPage — replaced by imported AdminTemplateEditPage */
 
 function AdminAuditPage() {
   return <main><h1 data-testid="page-admin-audit">Audit Log</h1></main>;
@@ -83,7 +81,7 @@ function AppLayout() {
         <Route path="/cases/:caseId/joint" element={<ProtectedRoute><JointChatView /></ProtectedRoute>} />
         <Route path="/cases/:caseId/closed" element={<ProtectedRoute><ClosedCaseView /></ProtectedRoute>} />
         <Route path="/admin/templates" element={<AdminRoute><AdminTemplatesPage /></AdminRoute>} />
-        <Route path="/admin/templates/:id" element={<AdminRoute><AdminTemplateDetailPage /></AdminRoute>} />
+        <Route path="/admin/templates/:id" element={<AdminRoute><AdminTemplateEditPage /></AdminRoute>} />
         <Route path="/admin/audit" element={<AdminRoute><AdminAuditPage /></AdminRoute>} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
