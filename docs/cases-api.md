@@ -29,6 +29,11 @@ coaching data is exposed.
 | Argument | Type | Description |
 |----------|------|-------------|
 | `caseId` | `Id<"cases">` | The case to query |
+| `viewAsRole` | `"INITIATOR" \| "INVITEE"` (optional) | Solo-mode override: determines which partyState is `self` and which is `other` |
+
+**Solo mode:** In solo cases, both parties share the same `userId`. Pass
+`viewAsRole` to select which role's partyState is returned as `self`. When
+absent in solo mode, defaults to INITIATOR.
 
 ### `cases/listForDashboard`
 

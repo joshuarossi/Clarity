@@ -20,15 +20,21 @@ export const myMessages = query({
   handler: async (ctx, { caseId, partyRole }) => {
     const user = await requireAuth(ctx);
 
-    let messages = await ctx.db
-      .query("privateMessages")
-      .withIndex("by_case_and_user", (q) =>
-        q.eq("caseId", caseId).eq("userId", user._id),
-      )
-      .collect();
-
+    let messages;
     if (partyRole) {
-      messages = messages.filter((m) => m.partyRole === partyRole);
+      messages = await ctx.db
+        .query("privateMessages")
+        .withIndex("by_case_user_role", (q) =>
+          q.eq("caseId", caseId).eq("userId", user._id).eq("partyRole", partyRole),
+        )
+        .collect();
+    } else {
+      messages = await ctx.db
+        .query("privateMessages")
+        .withIndex("by_case_and_user", (q) =>
+          q.eq("caseId", caseId).eq("userId", user._id),
+        )
+        .collect();
     }
 
     messages.sort((a, b) => a.createdAt - b.createdAt);
@@ -78,17 +84,31 @@ export const sendUserMessage = mutation({
 });
 
 export const markComplete = mutation({
-  args: { caseId: v.id("cases") },
+  args: {
+    caseId: v.id("cases"),
+    viewAsRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
+  },
   handler: async (ctx, args) => {
     const user = await requireAuth(ctx);
-    await requirePartyToCase(ctx, args.caseId, user._id);
+    const caseDoc = await requirePartyToCase(ctx, args.caseId, user._id);
 
-    const callerPartyState = await ctx.db
-      .query("partyStates")
-      .withIndex("by_case_and_user", (q) =>
-        q.eq("caseId", args.caseId).eq("userId", user._id),
-      )
-      .unique();
+    let callerPartyState;
+    if (caseDoc.isSolo && args.viewAsRole) {
+      const allForUser = await ctx.db
+        .query("partyStates")
+        .withIndex("by_case_and_user", (q) =>
+          q.eq("caseId", args.caseId).eq("userId", user._id),
+        )
+        .collect();
+      callerPartyState = allForUser.find((ps) => ps.role === args.viewAsRole);
+    } else {
+      callerPartyState = await ctx.db
+        .query("partyStates")
+        .withIndex("by_case_and_user", (q) =>
+          q.eq("caseId", args.caseId).eq("userId", user._id),
+        )
+        .unique();
+    }
 
     if (!callerPartyState) {
       throw conflict("Party state not found");
@@ -145,11 +165,14 @@ export const retryLastAIResponse = mutation({
       .filter(m => m.role === "AI" && m.status === "ERROR")
       .sort((a, b) => b.createdAt - a.createdAt)[0];
     if (!errorMsg) throw conflict("No error message to retry");
+    const errorPartyRole = errorMsg.partyRole;
     // Delete the error row
     await ctx.db.delete(errorMsg._id);
     // Schedule new AI response
     await ctx.scheduler.runAfter(0, internal.privateCoaching.generateAIResponse, {
-      caseId: args.caseId, userId: user._id,
+      caseId: args.caseId,
+      userId: user._id,
+      ...(errorPartyRole ? { partyRole: errorPartyRole } : {}),
     });
   },
 });
@@ -222,15 +245,21 @@ export const getPrivateMessagesForUser = internalQuery({
     partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
   },
   handler: async (ctx, args) => {
-    let messages = await ctx.db
-      .query("privateMessages")
-      .withIndex("by_case_and_user", (q) =>
-        q.eq("caseId", args.caseId).eq("userId", args.userId),
-      )
-      .collect();
-
+    let messages;
     if (args.partyRole) {
-      messages = messages.filter((m) => m.partyRole === args.partyRole);
+      messages = await ctx.db
+        .query("privateMessages")
+        .withIndex("by_case_user_role", (q) =>
+          q.eq("caseId", args.caseId).eq("userId", args.userId).eq("partyRole", args.partyRole),
+        )
+        .collect();
+    } else {
+      messages = await ctx.db
+        .query("privateMessages")
+        .withIndex("by_case_and_user", (q) =>
+          q.eq("caseId", args.caseId).eq("userId", args.userId),
+        )
+        .collect();
     }
 
     return messages;
@@ -281,7 +310,7 @@ export const generateAIResponse = internalAction({
         }
       : undefined;
 
-    // 2. Read acting user's prior messages (privacy: only by_case_and_user)
+    // 2. Read acting user's prior messages (privacy: by_case_user_role when partyRole set, else by_case_and_user)
     const allMessages = await ctx.runQuery(
       internal.privateCoaching.getPrivateMessagesForUser,
       {

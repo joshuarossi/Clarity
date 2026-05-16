@@ -1,6 +1,6 @@
 # Private Coaching API
 
-> Module: `convex/privateCoaching.ts` · Tickets: WOR-117, WOR-118, WOR-119
+> Module: `convex/privateCoaching.ts` · Tickets: WOR-117, WOR-118, WOR-119, WOR-120
 
 ## Overview
 
@@ -45,11 +45,15 @@ information about message existence.
 | Argument | Type        | Description            |
 |----------|-------------|------------------------|
 | `caseId` | `Id<"cases">` | The case to query    |
+| `partyRole` | `"INITIATOR" \| "INVITEE"` (optional) | Solo-mode filter: when provided, only messages tagged with this role are returned |
 
-**Privacy:** Uses the `by_case_and_user` index on `privateMessages` to
-filter at the database level. The `by_case` index (which includes all
-parties' messages) is reserved for server-side AI context assembly and is
-never exposed through a client-facing query.
+**Privacy:** Uses the `by_case_user_role` index when `partyRole` is
+provided, or `by_case_and_user` otherwise. The `by_case` index (which
+includes all parties' messages) is reserved for server-side AI context
+assembly and is never exposed through a client-facing query.
+
+**Solo mode:** In solo cases, both parties share the same `userId`. Pass
+`partyRole` to isolate messages for the selected role.
 
 ## Mutations
 
@@ -62,6 +66,7 @@ schedules the `generateAIResponse` internal action.
 |-----------|----------------|------------------------------|
 | `caseId`  | `Id<"cases">`  | The case to send a message in |
 | `content` | `string`       | The message text             |
+| `partyRole` | `"INITIATOR" \| "INVITEE"` (optional) | Solo-mode tag: stored on the message and propagated to the AI response |
 
 **Status guard:** The case must be in `DRAFT_PRIVATE_COACHING` or
 `BOTH_PRIVATE_COACHING` status. If not, a `CONFLICT` error (HTTP 409) is

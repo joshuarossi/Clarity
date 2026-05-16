@@ -160,10 +160,10 @@ function CasePrivatePageInner({
   const caseDoc = useQuery(api.cases.get, { caseId });
 
   const messagesArgs = solo.isSolo
-    ? { caseId, partyRole: solo.actingRole as "INITIATOR" | "INVITEE" }
+    ? { caseId, partyRole: solo.actingRole }
     : { caseId };
   const partyStatesArgs = solo.isSolo
-    ? { caseId, viewAsRole: solo.actingRole as "INITIATOR" | "INVITEE" }
+    ? { caseId, viewAsRole: solo.actingRole }
     : { caseId };
 
   const messages = useQuery(api.privateCoaching.myMessages, messagesArgs);
@@ -260,7 +260,10 @@ function CasePrivatePageInner({
     setMarkCompleteLoading(true);
     setMarkCompleteError(null);
     try {
-      await markComplete({ caseId });
+      await markComplete({
+        caseId,
+        ...(solo.isSolo ? { viewAsRole: solo.actingRole } : {}),
+      });
       setConfirmOpen(false);
     } catch (err) {
       console.error("Failed to mark coaching complete:", err);
