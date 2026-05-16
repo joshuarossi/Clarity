@@ -158,9 +158,14 @@ export const proposeClosure = mutation({
         .unique();
     }
 
-    if (callerPartyState) {
-      await ctx.db.patch(callerPartyState._id, { closureProposed: true });
+    if (!callerPartyState) {
+      throw new ConvexError({
+        code: "NOT_FOUND" as const,
+        message: "Could not find party state for caller",
+        httpStatus: 404,
+      });
     }
+    await ctx.db.patch(callerPartyState._id, { closureProposed: true });
 
     await ctx.db.patch(caseId, { closureSummary: summary });
   },
@@ -207,24 +212,32 @@ export const confirmClosure = mutation({
     }
 
     // Set both parties' closureProposed and closureConfirmed
-    if (callerPartyState) {
-      await ctx.db.patch(callerPartyState._id, {
-        closureProposed: true,
-        closureConfirmed: true,
+    if (!callerPartyState) {
+      throw new ConvexError({
+        code: "NOT_FOUND" as const,
+        message: "Could not find party state for caller",
+        httpStatus: 404,
       });
     }
+    await ctx.db.patch(callerPartyState._id, {
+      closureProposed: true,
+      closureConfirmed: true,
+    });
     await ctx.db.patch(otherPartyState._id, {
       closureConfirmed: true,
     });
 
-    // Validate transition with updated context
-    const updatedPartyStates = allPartyStates.map(() => ({
-      closureProposed: true,
-      closureConfirmed: true,
-    }));
+    // Re-read actual party states for state machine validation
+    const updatedPartyStates = await ctx.db
+      .query("partyStates")
+      .withIndex("by_case", (q) => q.eq("caseId", caseId))
+      .collect();
 
     const newStatus = validateTransition(caseDoc.status, "RESOLVE", {
-      partyStates: updatedPartyStates,
+      partyStates: updatedPartyStates.map((ps) => ({
+        closureProposed: ps.closureProposed,
+        closureConfirmed: ps.closureConfirmed,
+      })),
     });
 
     await ctx.db.patch(caseId, {
@@ -266,6 +279,14 @@ export const rejectClosure = mutation({
   handler: async (ctx, { caseId, viewAsRole }) => {
     const user = await requireAuth(ctx);
     const caseDoc = await requirePartyToCase(ctx, caseId, user._id);
+
+    if (caseDoc.status !== "JOINT_ACTIVE") {
+      throw new ConvexError({
+        code: "CONFLICT" as const,
+        message: "Case is not in JOINT_ACTIVE status",
+        httpStatus: 409,
+      });
+    }
 
     const allPartyStates = await ctx.db
       .query("partyStates")
