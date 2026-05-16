@@ -317,7 +317,7 @@ function CasePrivatePageInner({
                 status={msg.status}
                 content={content}
                 createdAt={msg.createdAt}
-                onRetry={msg.status === "ERROR" ? handleRetry : undefined}
+                onRetry={msg.status === "ERROR" && !retryLoading ? handleRetry : undefined}
                 onCopy={msg.status === "COMPLETE" ? () => handleCopy(msg.content) : undefined}
               />
             </div>
