@@ -34,7 +34,7 @@ export function DraftReadyCard({
           onClick={onSend}
           disabled={isSending}
         >
-          {isSending ? "Sending..." : "Send this message"}
+          Send this message{isSending ? "…" : ""}
         </button>
         <button
           type="button"

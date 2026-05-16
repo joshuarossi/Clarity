@@ -249,7 +249,7 @@ export function DraftCoachPanel({
       </div>
 
       {/* Chat area */}
-      <div style={{ flex: 1, overflow: "hidden" }}>
+      <div style={{ flex: 1, overflow: "hidden", fontSize: "14px" }}>
         {sessionData === undefined || startingSession ? (
           <LoadingSpinner />
         ) : (
