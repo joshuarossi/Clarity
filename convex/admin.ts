@@ -1,4 +1,5 @@
 import { v, ConvexError } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { query, mutation } from "./_generated/server";
 import { requireAdmin } from "./lib/auth";
 
@@ -222,5 +223,54 @@ export const archive = mutation({
     });
 
     return null;
+  },
+});
+
+export const listAuditLog = query({
+  args: {
+    actor: v.optional(v.string()),
+    action: v.optional(v.string()),
+    dateFrom: v.optional(v.number()),
+    dateTo: v.optional(v.number()),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
+    let q = ctx.db.query("auditLog").order("desc");
+
+    // Apply filters on the query builder (pre-pagination)
+    if (args.actor) {
+      q = q.filter((q) => q.eq(q.field("actorUserId"), args.actor!));
+    }
+    if (args.action) {
+      q = q.filter((q) => q.eq(q.field("action"), args.action!));
+    }
+    if (args.dateFrom !== undefined) {
+      q = q.filter((q) => q.gte(q.field("createdAt"), args.dateFrom!));
+    }
+    if (args.dateTo !== undefined) {
+      q = q.filter((q) => q.lte(q.field("createdAt"), args.dateTo!));
+    }
+
+    const results = await q.paginate(args.paginationOpts);
+
+    // Enrich with actor display names
+    const enrichedPage = await Promise.all(
+      results.page.map(async (entry) => {
+        const user = await ctx.db.get(entry.actorUserId);
+        return {
+          ...entry,
+          actorDisplayName:
+            user?.displayName ?? user?.email ?? `Unknown (${entry.actorUserId})`,
+        };
+      })
+    );
+
+    return {
+      page: enrichedPage,
+      isDone: results.isDone,
+      continueCursor: results.continueCursor,
+    };
   },
 });

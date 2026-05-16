@@ -145,5 +145,8 @@ export default defineSchema({
     targetId: v.string(),
     metadata: v.optional(v.any()),
     createdAt: v.number(),
-  }).index("by_actor", ["actorUserId"]),
+  })
+    .index("by_actor", ["actorUserId"])
+    .index("by_action", ["action"])
+    .index("by_createdAt", ["createdAt"]),
 });
