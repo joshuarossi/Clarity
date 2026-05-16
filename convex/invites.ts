@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { requireAuth } from "./lib/auth";
 import { tokenInvalid, conflict, forbidden } from "./lib/errors";
+import { validateTransition } from "./lib/stateMachine";
 
 const URL_SAFE_ALPHABET =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
@@ -26,6 +27,121 @@ export function generateToken(): string {
 export function buildInviteUrl(token: string): string {
   return `${process.env.SITE_URL ?? "http://localhost:5173"}/invite/${token}`;
 }
+
+/**
+ * Returns invite preview data for a given token string.
+ * No auth required — logged-out users need the initiator's name for the heading.
+ * Returns ACTIVE with preview fields, CONSUMED for used tokens, null for invalid tokens.
+ * NEVER returns description, desiredOutcome, or any private data.
+ */
+export const getByToken = query({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const inviteToken = await ctx.db
+      .query("inviteTokens")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+
+    if (!inviteToken) {
+      return null;
+    }
+
+    if (inviteToken.status === "CONSUMED") {
+      return { status: "CONSUMED" as const };
+    }
+
+    if (inviteToken.status !== "ACTIVE") {
+      return null;
+    }
+
+    // Load the case
+    const caseDoc = await ctx.db.get(inviteToken.caseId);
+    if (!caseDoc) {
+      return null;
+    }
+
+    // Load the initiator user for displayName
+    const initiatorUser = await ctx.db.get(caseDoc.initiatorUserId);
+    const initiatorName = initiatorUser?.displayName ?? "Someone";
+
+    // Load the initiator's partyState for mainTopic
+    const initiatorPartyState = await ctx.db
+      .query("partyStates")
+      .withIndex("by_case", (q) => q.eq("caseId", inviteToken.caseId))
+      .filter((q) => q.eq(q.field("role"), "INITIATOR"))
+      .first();
+
+    const mainTopic = initiatorPartyState?.mainTopic ?? "";
+
+    return {
+      status: "ACTIVE" as const,
+      initiatorName,
+      mainTopic,
+      category: caseDoc.category,
+      caseId: inviteToken.caseId,
+    };
+  },
+});
+
+/**
+ * Declines an invite: transitions the case to CLOSED_ABANDONED and marks the token CONSUMED.
+ * Auth required. Prevents self-decline (initiator cannot decline own invite).
+ */
+export const decline = mutation({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const user = await requireAuth(ctx);
+
+    // 1. Look up token via by_token index
+    const inviteToken = await ctx.db
+      .query("inviteTokens")
+      .withIndex("by_token", (q) => q.eq("token", token))
+      .unique();
+
+    // 2. Validate status is ACTIVE
+    if (!inviteToken || inviteToken.status !== "ACTIVE") {
+      throw tokenInvalid(
+        "Invite token is invalid or has already been used",
+      );
+    }
+
+    // 3. Load the case
+    const caseDoc = await ctx.db.get(inviteToken.caseId);
+    if (!caseDoc) {
+      throw tokenInvalid(
+        "Invite token is invalid or has already been used",
+      );
+    }
+
+    // 4. Prevent self-decline
+    if (caseDoc.initiatorUserId === user._id) {
+      throw conflict(
+        "Cannot decline your own invite — you are the initiator of this case",
+      );
+    }
+
+    // 5. Validate state machine transition
+    const newStatus = validateTransition(caseDoc.status, "DECLINE_INVITE");
+
+    const now = Date.now();
+
+    // 6. Patch case: transition to CLOSED_ABANDONED
+    await ctx.db.patch(inviteToken.caseId, {
+      status: newStatus,
+      closedAt: now,
+      updatedAt: now,
+    });
+
+    // 7. Mark token as consumed
+    await ctx.db.patch(inviteToken._id, {
+      status: "CONSUMED",
+      consumedAt: now,
+      consumedByUserId: user._id,
+    });
+
+    return null;
+  },
+});
 
 /**
  * Returns the active invite token URL for a case.
