@@ -17,6 +17,32 @@ fresh invite token when a standard case is created.
 Returns the full invite URL: `{SITE_URL}/invite/{token}`. Falls back to
 `http://localhost:5173` when `SITE_URL` is not set.
 
+## Queries
+
+### `invites/getForCase`
+
+Returns the active invite token and its full URL for a given case. Only the
+case initiator is allowed to call this query; all other callers receive a
+`FORBIDDEN` error.
+
+| Argument | Type         | Description          |
+|----------|--------------|----------------------|
+| `caseId` | `Id<"cases">` | The case to look up |
+
+**Returns:** `{ token: string, url: string }` if an active invite token
+exists for the case, or `null` if no active token is found (e.g. the token
+has already been consumed or the case does not exist).
+
+**Error codes:**
+
+| Code        | When                                        |
+|-------------|---------------------------------------------|
+| `FORBIDDEN` | The caller is not the case initiator         |
+| `UNAUTHENTICATED` | No authenticated user session          |
+
+This query is used by the Invite Sharing page (`/cases/:caseId/invite`) to
+display the invite link and power the copy/share actions.
+
 ## Mutations
 
 ### `invites/redeem`

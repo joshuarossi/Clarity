@@ -1,7 +1,7 @@
 import { v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { requireAuth } from "./lib/auth";
-import { tokenInvalid, conflict } from "./lib/errors";
+import { tokenInvalid, conflict, forbidden } from "./lib/errors";
 
 const URL_SAFE_ALPHABET =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
@@ -26,6 +26,39 @@ export function generateToken(): string {
 export function buildInviteUrl(token: string): string {
   return `${process.env.SITE_URL ?? "http://localhost:5173"}/invite/${token}`;
 }
+
+/**
+ * Returns the active invite token URL for a case.
+ * Only the case initiator may call this query.
+ * Returns { token, url } or null if no active token exists.
+ */
+export const getForCase = query({
+  args: { caseId: v.id("cases") },
+  handler: async (ctx, { caseId }) => {
+    const user = await requireAuth(ctx);
+
+    const caseDoc = await ctx.db.get(caseId);
+    if (!caseDoc) {
+      return null;
+    }
+
+    if (caseDoc.initiatorUserId !== user._id) {
+      throw forbidden("Only the case initiator can view the invite link");
+    }
+
+    const inviteToken = await ctx.db
+      .query("inviteTokens")
+      .withIndex("by_case", (q) => q.eq("caseId", caseId))
+      .filter((q) => q.eq(q.field("status"), "ACTIVE"))
+      .first();
+
+    if (!inviteToken) {
+      return null;
+    }
+
+    return { token: inviteToken.token, url: buildInviteUrl(inviteToken.token) };
+  },
+});
 
 /**
  * Atomically redeems an invite token: binds the caller to the case,

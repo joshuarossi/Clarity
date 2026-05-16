@@ -86,9 +86,13 @@ export function NewCasePage(): React.ReactElement {
         desiredOutcome: desiredOutcome.trim(),
         ...(isSolo ? { isSolo: true } : {}),
       });
-      navigate(`/cases/${result.caseId}/invite`, {
-        state: { otherPartyName },
-      });
+      if (isSolo) {
+        navigate(`/cases/${result.caseId}/private`);
+      } else {
+        navigate(`/cases/${result.caseId}/invite`, {
+          state: { otherPartyName },
+        });
+      }
     } catch (err) {
       console.error("Case creation failed:", err);
       setSubmitError(
