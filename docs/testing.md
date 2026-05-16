@@ -59,6 +59,17 @@ are always identical for a given role — no randomness.
 **`CLAUDE_MOCK_DELAY_MS`** — optional. Controls simulated streaming
 latency in milliseconds (default: `100`).
 
+**`CLAUDE_MOCK_CLASSIFICATION`** — optional. Overrides the Haiku
+classification result in Coach AI mock mode. Must be one of:
+`INFLAMMATORY`, `PROGRESS`, `QUESTION_TO_COACH`, `NORMAL_EXCHANGE`
+(default: `QUESTION_TO_COACH`).
+
+**`CLAUDE_MOCK_FAIL_COUNT`** — optional. Number of simulated API
+failures before a successful response in mock mode (default: `0`).
+
+**`CLAUDE_MOCK_FAIL_STATUS`** — optional. HTTP status code for
+simulated failures, e.g. `429` for rate-limit testing (default: `500`).
+
 ### CI pipeline
 
 The GitHub Actions workflow (`.github/workflows/ci.yml`) runs four
