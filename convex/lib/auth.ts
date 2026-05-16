@@ -97,9 +97,9 @@ export async function requireAdmin(
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) {
     throw new ConvexError({
-      code: "FORBIDDEN" as const,
-      message: "Admin access required",
-      httpStatus: 403,
+      code: "UNAUTHENTICATED" as const,
+      message: "No authenticated session",
+      httpStatus: 401,
     });
   }
 
