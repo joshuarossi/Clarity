@@ -6,7 +6,38 @@ export const listAll = query({
   args: {},
   handler: async (ctx) => {
     await requireAdmin(ctx);
-    return await ctx.db.query("templates").collect();
+    const templates = await ctx.db.query("templates").collect();
+
+    const enriched = await Promise.all(
+      templates.map(async (template) => {
+        // Resolve current version number
+        let currentVersion: number | null = null;
+        if (template.currentVersionId) {
+          const versionDoc = await ctx.db.get(template.currentVersionId);
+          currentVersion = versionDoc ? versionDoc.version : null;
+        }
+
+        // Count cases pinned to any version of this template
+        const versions = await ctx.db
+          .query("templateVersions")
+          .withIndex("by_template", (q) => q.eq("templateId", template._id))
+          .collect();
+        const versionIds = new Set(versions.map((v) => v._id));
+
+        const allCases = await ctx.db.query("cases").collect();
+        const pinnedCasesCount = allCases.filter((c) =>
+          versionIds.has(c.templateVersionId)
+        ).length;
+
+        return {
+          ...template,
+          currentVersion,
+          pinnedCasesCount,
+        };
+      })
+    );
+
+    return enriched;
   },
 });
 

@@ -14,6 +14,7 @@ import { CaseDetailPage } from "./routes/CaseDetailPage";
 import { ReadyForJointView } from "./routes/ReadyForJointView";
 import { JointChatView } from "./routes/JointChatView";
 import { ClosedCaseView } from "./routes/ClosedCaseView";
+import { AdminTemplatesPage } from "./routes/AdminTemplatesPage";
 
 /* ---------- Stub page components ---------- */
 
@@ -26,10 +27,6 @@ function HomePage() {
 /* JointChatView — imported from src/routes/JointChatView.tsx */
 
 /* CaseClosedPage — replaced by imported ClosedCaseView */
-
-function AdminTemplatesPage() {
-  return <main><h1 data-testid="page-admin-templates">Templates</h1></main>;
-}
 
 function AdminTemplateDetailPage() {
   const { id } = useParams();
