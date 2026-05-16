@@ -281,6 +281,19 @@ export const listForDashboard = query({
   },
 });
 
+export const otherPartyName = query({
+  args: { caseId: v.id("cases") },
+  handler: async (ctx, { caseId }) => {
+    const user = await requireAuth(ctx);
+    const caseDoc = await requirePartyToCase(ctx, caseId, user._id);
+    const callerIsInitiator = caseDoc.initiatorUserId === user._id;
+    const otherUserId = callerIsInitiator ? caseDoc.inviteeUserId : caseDoc.initiatorUserId;
+    if (!otherUserId) return { displayName: null };
+    const otherUser = await ctx.db.get(otherUserId);
+    return { displayName: otherUser?.displayName ?? otherUser?.name ?? null };
+  },
+});
+
 export const updateMyForm = mutation({
   args: {
     caseId: v.id("cases"),

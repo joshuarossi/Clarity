@@ -5,6 +5,7 @@ export interface MessageInputProps {
   isAiResponding?: boolean;
   placeholder?: string;
   className?: string;
+  autoFocus?: boolean;
 }
 
 export function MessageInput({
@@ -12,6 +13,7 @@ export function MessageInput({
   isAiResponding = false,
   placeholder = "Type a message...",
   className,
+  autoFocus,
 }: MessageInputProps): React.ReactElement {
   const [text, setText] = React.useState("");
 
@@ -49,6 +51,7 @@ export function MessageInput({
         placeholder={placeholder}
         rows={1}
         aria-label="Message input"
+        autoFocus={autoFocus}
         style={{
           flex: 1,
           resize: "none",

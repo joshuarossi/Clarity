@@ -109,6 +109,38 @@ export const markComplete = mutation({
   },
 });
 
+export const retryLastAIResponse = mutation({
+  args: { caseId: v.id("cases") },
+  handler: async (ctx, args) => {
+    const user = await requireAuth(ctx);
+    const caseDoc = await requirePartyToCase(ctx, args.caseId, user._id);
+
+    if (
+      caseDoc.status !== "DRAFT_PRIVATE_COACHING" &&
+      caseDoc.status !== "BOTH_PRIVATE_COACHING"
+    ) {
+      throw conflict("Case is not in private coaching phase");
+    }
+
+    // Find the last AI message with ERROR status for this user
+    const messages = await ctx.db
+      .query("privateMessages")
+      .withIndex("by_case_and_user", (q) =>
+        q.eq("caseId", args.caseId).eq("userId", user._id))
+      .collect();
+    const errorMsg = messages
+      .filter(m => m.role === "AI" && m.status === "ERROR")
+      .sort((a, b) => b.createdAt - a.createdAt)[0];
+    if (!errorMsg) throw conflict("No error message to retry");
+    // Delete the error row
+    await ctx.db.delete(errorMsg._id);
+    // Schedule new AI response
+    await ctx.scheduler.runAfter(0, internal.privateCoaching.generateAIResponse, {
+      caseId: args.caseId, userId: user._id,
+    });
+  },
+});
+
 // ---------------------------------------------------------------------------
 // Internal mutations for streaming writes
 // ---------------------------------------------------------------------------
