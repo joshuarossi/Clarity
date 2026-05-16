@@ -259,93 +259,117 @@ export const generateAIResponse = internalAction({
       { caseId: args.caseId, userId: args.userId },
     );
 
-    // 5. Mock mode
-    if (isClaudeMockEnabled()) {
-      const mockResponse = getMockClaudeResponse("PRIVATE_COACH");
-      const chunkSize = Math.ceil(mockResponse.length / 5);
-      let content = "";
+    // 5. Unified retry loop for both mock and real API paths
+    const isMock = isClaudeMockEnabled();
 
-      for (let i = 0; i < mockResponse.length; i += chunkSize) {
-        content += mockResponse.slice(i, i + chunkSize);
-        await ctx.runMutation(
-          internal.privateCoaching.updateStreamingMessage,
-          { messageId, content },
-        );
-        if (i + chunkSize < mockResponse.length) {
-          await sleep(MOCK_DELAY_MS);
-        }
+    if (!isMock) {
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+      if (!apiKey) {
+        await ctx.runMutation(internal.privateCoaching.markMessageError, {
+          messageId,
+        });
+        return;
       }
-
-      const tokenCount = mockResponse.split(/\s+/).length;
-      await ctx.runMutation(
-        internal.privateCoaching.finalizeStreamingMessage,
-        { messageId, content, tokens: tokenCount },
-      );
-      return;
     }
-
-    // 6. Real API call
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      await ctx.runMutation(internal.privateCoaching.markMessageError, {
-        messageId,
-      });
-      return;
-    }
-
-    const { default: Anthropic } = await import("@anthropic-ai/sdk");
-    const client = new Anthropic({ apiKey });
 
     let attempt = 0;
     const maxAttempts = 2;
 
     while (attempt < maxAttempts) {
       try {
-        const stream = client.messages.stream({
-          model: "claude-sonnet-4-5",
-          max_tokens: 4096,
-          system: prompt.system,
-          messages: prompt.messages,
-        });
+        if (isMock) {
+          // Check mock failure simulation
+          const failCount = parseInt(
+            process.env.CLAUDE_MOCK_FAIL_COUNT ?? "0",
+            10,
+          );
+          const failStatus = parseInt(
+            process.env.CLAUDE_MOCK_FAIL_STATUS ?? "500",
+            10,
+          );
+          if (attempt < failCount) {
+            const err = new Error(
+              failStatus === 429 ? "Rate limited" : "Mock API error",
+            );
+            (err as unknown as Record<string, unknown>).status = failStatus;
+            throw err;
+          }
 
-        let content = "";
-        let lastFlush = Date.now();
+          // Mock streaming
+          const mockResponse = getMockClaudeResponse("PRIVATE_COACH");
+          const chunkSize = Math.ceil(mockResponse.length / 5);
+          let content = "";
 
-        stream.on("text", async (text) => {
-          content += text;
-          const now = Date.now();
-          if (now - lastFlush >= 50) {
-            lastFlush = now;
+          for (let i = 0; i < mockResponse.length; i += chunkSize) {
+            content += mockResponse.slice(i, i + chunkSize);
             await ctx.runMutation(
               internal.privateCoaching.updateStreamingMessage,
               { messageId, content },
             );
+            if (i + chunkSize < mockResponse.length) {
+              await sleep(MOCK_DELAY_MS);
+            }
           }
-        });
 
-        const finalMessage = await stream.finalMessage();
+          const tokenCount = mockResponse.split(/\s+/).length;
+          await ctx.runMutation(
+            internal.privateCoaching.finalizeStreamingMessage,
+            { messageId, content, tokens: tokenCount },
+          );
+          return;
+        } else {
+          // Real API call
+          const { default: Anthropic } = await import("@anthropic-ai/sdk");
+          const client = new Anthropic({
+            apiKey: process.env.ANTHROPIC_API_KEY,
+          });
 
-        // Final flush
-        content = finalMessage.content
-          .filter((block) => block.type === "text")
-          .map((block) => block.text)
-          .join("");
+          const stream = client.messages.stream({
+            model: "claude-sonnet-4-5",
+            max_tokens: 4096,
+            system: prompt.system,
+            messages: prompt.messages,
+          });
 
-        const totalTokens =
-          (finalMessage.usage?.input_tokens ?? 0) +
-          (finalMessage.usage?.output_tokens ?? 0);
+          let content = "";
+          let lastFlush = Date.now();
 
-        await ctx.runMutation(
-          internal.privateCoaching.finalizeStreamingMessage,
-          { messageId, content, tokens: totalTokens },
-        );
-        return;
+          stream.on("text", async (text) => {
+            content += text;
+            const now = Date.now();
+            if (now - lastFlush >= 50) {
+              lastFlush = now;
+              await ctx.runMutation(
+                internal.privateCoaching.updateStreamingMessage,
+                { messageId, content },
+              );
+            }
+          });
+
+          const finalMessage = await stream.finalMessage();
+
+          // Final flush
+          content = finalMessage.content
+            .filter((block) => block.type === "text")
+            .map((block) => block.text)
+            .join("");
+
+          const totalTokens =
+            (finalMessage.usage?.input_tokens ?? 0) +
+            (finalMessage.usage?.output_tokens ?? 0);
+
+          await ctx.runMutation(
+            internal.privateCoaching.finalizeStreamingMessage,
+            { messageId, content, tokens: totalTokens },
+          );
+          return;
+        }
       } catch (error: unknown) {
         attempt++;
         const is429 =
           error instanceof Error &&
           "status" in error &&
-          (error as { status: number }).status === 429;
+          (error as Record<string, unknown>).status === 429;
 
         if (attempt < maxAttempts) {
           const delay = is429 ? 2000 * Math.pow(2, attempt - 1) : 2000;
