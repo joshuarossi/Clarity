@@ -30,6 +30,15 @@ coaching data is exposed.
 |----------|------|-------------|
 | `caseId` | `Id<"cases">` | The case to query |
 
+### `cases/listForDashboard`
+
+Returns all cases where the caller is a party (initiator or invitee), enriched
+with display-ready fields for the dashboard. Each entry includes the other
+party's resolved name (or `null` if the invitee hasn't joined), a
+`statusVariant` (`pill-turn`, `pill-waiting`, `pill-ready`, `pill-closed`), a
+human-readable `statusLabel`, and a `isSolo` flag. Results are sorted by
+`updatedAt` descending. Takes no arguments.
+
 ## Mutations
 
 ### `cases/create`
