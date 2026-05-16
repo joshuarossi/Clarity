@@ -46,6 +46,42 @@ export const listAll = query({
   },
 });
 
+export const get = query({
+  args: { templateId: v.id("templates") },
+  handler: async (ctx, { templateId }) => {
+    await requireAdmin(ctx);
+
+    const template = await ctx.db.get(templateId);
+    if (!template) {
+      return null;
+    }
+
+    // Resolve current version content for form pre-population
+    let currentVersion = null;
+    if (template.currentVersionId) {
+      currentVersion = await ctx.db.get(template.currentVersionId);
+    }
+
+    // Count cases pinned to any version of this template
+    const versions = await ctx.db
+      .query("templateVersions")
+      .withIndex("by_template", (q) => q.eq("templateId", templateId))
+      .collect();
+    const versionIds = new Set(versions.map((ver) => ver._id));
+
+    const allCases = await ctx.db.query("cases").collect();
+    const pinnedCasesCount = allCases.filter((c) =>
+      versionIds.has(c.templateVersionId)
+    ).length;
+
+    return {
+      ...template,
+      currentVersion,
+      pinnedCasesCount,
+    };
+  },
+});
+
 export const listVersions = query({
   args: { templateId: v.id("templates") },
   handler: async (ctx, { templateId }) => {
@@ -55,7 +91,19 @@ export const listVersions = query({
       .withIndex("by_template", (q) => q.eq("templateId", templateId))
       .collect();
     versions.sort((a, b) => b.version - a.version);
-    return versions;
+
+    // Enrich with admin display names
+    const enriched = await Promise.all(
+      versions.map(async (ver) => {
+        const user = await ctx.db.get(ver.publishedByUserId);
+        return {
+          ...ver,
+          publishedByDisplayName: user?.displayName ?? user?.email ?? "Unknown",
+        };
+      })
+    );
+
+    return enriched;
   },
 });
 
