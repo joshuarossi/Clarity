@@ -11,6 +11,7 @@ import { LoadingSpinner } from "../components/layout/LoadingSpinner";
 import { PhaseHeader } from "../components/layout/PhaseHeader";
 import { PartyToggle } from "../components/layout/PartyToggle";
 import { useSoloActingParty } from "../hooks/useSoloActingParty";
+import { DraftCoachPanel } from "../components/joint/DraftCoachPanel";
 import {
   Dialog,
   DialogContent,
@@ -177,6 +178,7 @@ function JointChatViewInner({
   const [synthesisOpen, setSynthesisOpen] = React.useState(false);
   const [closureOpen, setClosureOpen] = React.useState(false);
   const [draftCoachOpen, setDraftCoachOpen] = React.useState(false);
+  const [draftInputText, setDraftInputText] = React.useState<string | null>(null);
   const [sendError, setSendError] = React.useState<string | null>(null);
 
   // Loading state
@@ -357,10 +359,12 @@ function JointChatViewInner({
         <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
           <div style={{ flex: 1 }}>
             <MessageInput
+              key={draftInputText ?? "default"}
               onSend={handleSend}
               isAiResponding={isCoachStreaming}
               placeholder="Type a message..."
               autoFocus
+              defaultValue={draftInputText ?? undefined}
             />
           </div>
           <button
@@ -374,8 +378,25 @@ function JointChatViewInner({
         </div>
       </div>
 
-      {/* Draft Coach mount point (panel built in sibling task) */}
-      {draftCoachOpen && <div id="draft-coach-mount" data-testid="draft-coach-mount" />}
+      {/* Draft Coach Panel */}
+      {draftCoachOpen && (
+        <DraftCoachPanel
+          caseId={caseId}
+          otherPartyName={
+            solo.isSolo
+              ? solo.actingRole === "INITIATOR"
+                ? inviteeLabel
+                : initiatorLabel
+              : "the other party"
+          }
+          onClose={() => setDraftCoachOpen(false)}
+          onEditBeforeSending={(draftText) => {
+            setDraftInputText(draftText);
+            setDraftCoachOpen(false);
+          }}
+          viewAsRole={solo.isSolo ? solo.actingRole : undefined}
+        />
+      )}
 
       {/* Synthesis side panel */}
       <SynthesisPanel
