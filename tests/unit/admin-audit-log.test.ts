@@ -92,14 +92,14 @@ describe("admin/listAuditLog query — admin gate", () => {
     );
   });
 
-  it("throws UNAUTHENTICATED when called without authentication", async () => {
+  it("throws FORBIDDEN when called without authentication", async () => {
     const t = convexTest(schema);
 
     await expectConvexError(
       t.query(api.admin.listAuditLog, {
         paginationOpts: { numItems: 25, cursor: null },
       }),
-      "UNAUTHENTICATED",
+      "FORBIDDEN",
     );
   });
 
