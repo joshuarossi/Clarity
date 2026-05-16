@@ -248,7 +248,11 @@ function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElemen
       case "BOTH_PRIVATE_COACHING":
         return <Navigate to={`/cases/${caseId}/private`} replace />;
       case "READY_FOR_JOINT":
-        return <Navigate to={`/cases/${caseId}/ready`} replace />;
+        return (
+          <div data-testid="subview-ready-for-joint">
+            <Navigate to={`/cases/${caseId}/ready`} replace />
+          </div>
+        );
       case "JOINT_ACTIVE":
         return <JointChatView />;
       case "CLOSED_RESOLVED":
