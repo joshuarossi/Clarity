@@ -63,7 +63,7 @@ const mockWriteText = vi.fn(() => Promise.resolve());
 // ── Setup / Teardown ─────────────────────────────────────────────────────
 
 beforeEach(() => {
-  vi.useFakeTimers();
+  vi.useFakeTimers({ shouldAdvanceTime: true });
   mockNavigate.mockReset();
   mockUseQuery.mockReset();
   mockUseConvexAuth.mockReturnValue({
@@ -88,8 +88,8 @@ beforeEach(() => {
 
   // Default query returns: case (non-solo), partyStates, invite URL
   const FN_NAME = Symbol.for("functionName");
-  mockUseQuery.mockImplementation((queryRef: any) => {
-    const name: string = queryRef?.[FN_NAME] ?? "";
+  mockUseQuery.mockImplementation((queryRef: Record<string | symbol, unknown>) => {
+    const name: string = (queryRef?.[FN_NAME] as string) ?? "";
     if (name.includes("cases:get") || name.includes("cases.get")) {
       return {
         _id: "case123",
@@ -329,8 +329,8 @@ describe("AC: Copy button shows 'Copied!' feedback for 2 seconds", () => {
 describe("AC: Solo mode cases redirect to private coaching", () => {
   it("redirects to /cases/:caseId/private when case.isSolo is true", async () => {
     const FN_NAME = Symbol.for("functionName");
-    mockUseQuery.mockImplementation((queryRef: any) => {
-      const name: string = queryRef?.[FN_NAME] ?? "";
+    mockUseQuery.mockImplementation((queryRef: Record<string | symbol, unknown>) => {
+      const name: string = (queryRef?.[FN_NAME] as string) ?? "";
       if (name.includes("cases:get") || name.includes("cases.get")) {
         return {
           _id: "case123",
@@ -365,8 +365,8 @@ describe("AC: Solo mode cases redirect to private coaching", () => {
 
   it("does not render any invite sharing UI when case.isSolo is true", async () => {
     const FN_NAME = Symbol.for("functionName");
-    mockUseQuery.mockImplementation((queryRef: any) => {
-      const name: string = queryRef?.[FN_NAME] ?? "";
+    mockUseQuery.mockImplementation((queryRef: Record<string | symbol, unknown>) => {
+      const name: string = (queryRef?.[FN_NAME] as string) ?? "";
       if (name.includes("cases:get") || name.includes("cases.get")) {
         return {
           _id: "case123",
@@ -433,8 +433,8 @@ describe("Edge case: Fallback name when router state is missing", () => {
 describe("Edge case: Token already consumed", () => {
   it("shows a message when getForCase returns null (token consumed)", () => {
     const FN_NAME = Symbol.for("functionName");
-    mockUseQuery.mockImplementation((queryRef: any) => {
-      const name: string = queryRef?.[FN_NAME] ?? "";
+    mockUseQuery.mockImplementation((queryRef: Record<string | symbol, unknown>) => {
+      const name: string = (queryRef?.[FN_NAME] as string) ?? "";
       if (name.includes("cases:get") || name.includes("cases.get")) {
         return {
           _id: "case123",
