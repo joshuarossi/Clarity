@@ -51,7 +51,7 @@ function hashContent(messages: CompressibleMessage[]): string {
     h1 = Math.imul(h1 ^ ch, 0x01000193);
     h2 = Math.imul(h2 ^ (ch >>> 0), 0x01000193 + 0x100);
   }
-  return (((h1 >>> 0) * 0x100000000 + (h2 >>> 0)).toString(36));
+  return ((h1 >>> 0) * 0x100000000 + (h2 >>> 0)).toString(36);
 }
 
 /**
