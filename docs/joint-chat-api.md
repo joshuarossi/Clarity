@@ -1,6 +1,6 @@
 # Joint Chat API
 
-> Module: `convex/jointChat.ts` · Tickets: WOR-124, WOR-125, WOR-144
+> Module: `convex/jointChat.ts` · Tickets: WOR-124, WOR-125, WOR-144, WOR-145
 
 ## Overview
 
@@ -50,8 +50,11 @@ so duplicate opening messages cannot be generated.
 
 Inserts a `jointMessages` row with `authorType: "USER"` and
 `status: "COMPLETE"`, then schedules the `generateCoachResponse` internal
-action to produce the AI Coach reply. Throws `CONFLICT` if the case is not
-in `JOINT_ACTIVE` status.
+action to produce the AI Coach reply. If the message contains an `@Coach`
+mention (case-insensitive, word-boundary match via `detectCoachMention`
+in `convex/lib/mentionDetect.ts`), `triggerType: "mention"` is passed to
+the action so the Coach always responds regardless of Haiku classification.
+Throws `CONFLICT` if the case is not in `JOINT_ACTIVE` status.
 
 | Arg | Type | Description |
 |-----|------|-------------|
