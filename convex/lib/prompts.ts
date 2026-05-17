@@ -169,7 +169,7 @@ function assembleSynthesis(opts: AssemblePromptOpts): AssemblePromptResult {
   return { system, messages };
 }
 
-function assembleCoach(opts: AssemblePromptOpts): AssemblePromptResult {
+function assembleCoach(opts: AssemblePromptOpts & { summaryMode?: boolean }): AssemblePromptResult {
   // COACH: joint chat history + both synthesis texts. No raw private messages.
   // Anti-quotation rule included. Template applied if available.
   let system = [
@@ -179,6 +179,11 @@ function assembleCoach(opts: AssemblePromptOpts): AssemblePromptResult {
   ].join("\n");
 
   system = appendTemplate(system, "COACH", opts.templateVersion);
+
+  // Append summary instruction when in summary mode (US-10b)
+  if (opts.summaryMode) {
+    system += "\n\n" + COACH_SUMMARY_INSTRUCTION;
+  }
 
   const messages: PromptMessage[] = [];
 
@@ -241,10 +246,17 @@ function assembleDraftCoach(opts: AssemblePromptOpts): AssemblePromptResult {
 }
 
 // ---------------------------------------------------------------------------
+// Summary-mode instruction (US-10b)
+// ---------------------------------------------------------------------------
+
+export const COACH_SUMMARY_INSTRUCTION =
+  "You are now in SUMMARY mode. Your task is to identify and summarize points of agreement that have emerged in the conversation so far. Structure your response as:\n- 2-4 bullet points of specific areas where the parties agree or are making progress\n- Optionally note areas where progress is being made but agreement is not yet reached\n- Use neutral, encouraging language\n- Keep it concise — this is a progress check-in, not a full analysis\n- NEVER quote or closely paraphrase either party's private coaching content";
+
+// ---------------------------------------------------------------------------
 // Main entry point
 // ---------------------------------------------------------------------------
 
-export function assemblePrompt(opts: AssemblePromptOpts): AssemblePromptResult {
+export function assemblePrompt(opts: AssemblePromptOpts & { summaryMode?: boolean }): AssemblePromptResult {
   switch (opts.role) {
     case "PRIVATE_COACH":
       return assemblePrivateCoach(opts);
@@ -256,3 +268,4 @@ export function assemblePrompt(opts: AssemblePromptOpts): AssemblePromptResult {
       return assembleDraftCoach(opts);
   }
 }
+
