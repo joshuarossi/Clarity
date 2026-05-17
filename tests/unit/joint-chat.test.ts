@@ -964,6 +964,129 @@ describe("jointChat/unilateralClose mutation", () => {
       "CONFLICT",
     );
   });
+
+  // ── WOR-148: Notification on unilateral close ───────────────────────────
+
+  it("AC1: inserts a notification record addressed to the other party on unilateral close", async () => {
+    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+
+    // Party A closes unilaterally — Party B should be notified
+    await t
+      .withIdentity({ email: "partyA@test.com" })
+      .run(async (ctx) =>
+        ctx.runMutation(jointChatApi.unilateralClose, { caseId }),
+      );
+
+    const notifications = await t.run(async (ctx) =>
+      ctx.db
+        .query("notifications")
+        .filter((q) => q.eq(q.field("caseId"), caseId))
+        .collect(),
+    );
+
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0].userId).toEqual(userBId);
+    expect(notifications[0].caseId).toEqual(caseId);
+    expect(notifications[0].type).toBe("CASE_CLOSED_UNRESOLVED");
+    expect(notifications[0].read).toBe(false);
+  });
+
+  it("AC2: notification record shape matches abandonedCases pattern (userId, caseId, type, read, createdAt)", async () => {
+    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+
+    await t
+      .withIdentity({ email: "partyA@test.com" })
+      .run(async (ctx) =>
+        ctx.runMutation(jointChatApi.unilateralClose, { caseId }),
+      );
+
+    const notifications = await t.run(async (ctx) =>
+      ctx.db
+        .query("notifications")
+        .filter((q) => q.eq(q.field("caseId"), caseId))
+        .collect(),
+    );
+
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0]).toHaveProperty("userId");
+    expect(notifications[0]).toHaveProperty("caseId");
+    expect(notifications[0]).toHaveProperty("type", "CASE_CLOSED_UNRESOLVED");
+    expect(notifications[0]).toHaveProperty("read", false);
+    expect(notifications[0].createdAt).toBeGreaterThan(0);
+  });
+
+  it("AC3: no notification inserted when inviteeUserId is null (invitee never joined)", async () => {
+    const { t, userAId, versionId } = await seedJointActiveEnv();
+
+    // Create a case where invitee never joined (no inviteeUserId)
+    const soloStartCaseId = await t.run(async (ctx) => {
+      const cId = await ctx.db.insert("cases", {
+        schemaVersion: 1,
+        status: "JOINT_ACTIVE",
+        isSolo: false,
+        category: "workplace",
+        templateVersionId: versionId,
+        initiatorUserId: userAId,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      await ctx.db.insert("partyStates", {
+        caseId: cId,
+        userId: userAId,
+        role: "INITIATOR",
+        mainTopic: "Topic",
+        description: "Desc",
+        desiredOutcome: "Outcome",
+        formCompletedAt: Date.now(),
+        privateCoachingCompletedAt: Date.now(),
+      });
+      return cId;
+    });
+
+    await t
+      .withIdentity({ email: "partyA@test.com" })
+      .run(async (ctx) =>
+        ctx.runMutation(jointChatApi.unilateralClose, {
+          caseId: soloStartCaseId,
+        }),
+      );
+
+    // Verify case closed successfully
+    const caseDoc = await t.run(async (ctx) => ctx.db.get(soloStartCaseId));
+    expect(caseDoc!.status).toBe("CLOSED_UNRESOLVED");
+
+    // Verify no notification was inserted
+    const notifications = await t.run(async (ctx) =>
+      ctx.db
+        .query("notifications")
+        .filter((q) => q.eq(q.field("caseId"), soloStartCaseId))
+        .collect(),
+    );
+
+    expect(notifications).toHaveLength(0);
+  });
+
+  it("AC4: notification is addressed to the other party (not the caller) — fulfills UI promise", async () => {
+    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+
+    // Party A closes — notification should go to B, not A
+    await t
+      .withIdentity({ email: "partyA@test.com" })
+      .run(async (ctx) =>
+        ctx.runMutation(jointChatApi.unilateralClose, { caseId }),
+      );
+
+    const notifications = await t.run(async (ctx) =>
+      ctx.db
+        .query("notifications")
+        .filter((q) => q.eq(q.field("caseId"), caseId))
+        .collect(),
+    );
+
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0].userId).toEqual(userBId);
+    expect(notifications[0].userId).not.toEqual(userAId);
+  });
 });
 
 // ── AC 8: Rejecting a closure proposal ──────────────────────────────────
