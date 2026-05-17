@@ -63,11 +63,14 @@ export function MessageBubble({
 
   const handleCopy = React.useCallback(() => {
     if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(content).then(() => {
-        onCopy?.();
-      }).catch(() => {
-        // Fail silently per contract
-      });
+      navigator.clipboard
+        .writeText(content)
+        .then(() => {
+          onCopy?.();
+        })
+        .catch(() => {
+          // Fail silently per contract
+        });
     } else {
       // Clipboard API unavailable — still invoke callback
       onCopy?.();

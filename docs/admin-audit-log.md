@@ -11,12 +11,12 @@ gate via `requireAdmin`.
 
 ## Table columns
 
-| Column    | Description                                      |
-| --------- | ------------------------------------------------ |
-| Actor     | Display name or email of the admin who acted     |
-| Action    | Action code (e.g. `TEMPLATE_PUBLISHED`)          |
-| Target    | `targetType:targetId` of the affected resource   |
-| Timestamp | When the action occurred (`createdAt`)            |
+| Column    | Description                                    |
+| --------- | ---------------------------------------------- |
+| Actor     | Display name or email of the admin who acted   |
+| Action    | Action code (e.g. `TEMPLATE_PUBLISHED`)        |
+| Target    | `targetType:targetId` of the affected resource |
+| Timestamp | When the action occurred (`createdAt`)         |
 
 ## Filtering
 
@@ -43,16 +43,17 @@ controls appear below the table when additional pages exist.
 
 Audit log entries are stored in the `auditLog` Convex table:
 
-| Field          | Type      | Description                        |
-| -------------- | --------- | ---------------------------------- |
-| `actorUserId`  | `Id<"users">` | The admin who performed the action |
-| `action`       | `string`  | Action code                        |
-| `targetType`   | `string`  | Type of the affected entity        |
-| `targetId`     | `string`  | ID of the affected entity          |
-| `metadata`     | `any`     | Arbitrary JSON payload             |
-| `createdAt`    | `number`  | Epoch ms timestamp                 |
+| Field         | Type          | Description                        |
+| ------------- | ------------- | ---------------------------------- |
+| `actorUserId` | `Id<"users">` | The admin who performed the action |
+| `action`      | `string`      | Action code                        |
+| `targetType`  | `string`      | Type of the affected entity        |
+| `targetId`    | `string`      | ID of the affected entity          |
+| `metadata`    | `any`         | Arbitrary JSON payload             |
+| `createdAt`   | `number`      | Epoch ms timestamp                 |
 
 Indexes supporting efficient filtered queries:
+
 - `by_actor` on `["actorUserId"]`
 - `by_action` on `["action"]`
 - `by_createdAt` on `["createdAt"]`

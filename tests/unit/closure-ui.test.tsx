@@ -30,8 +30,12 @@ describe("ClosureModal — three-path closure flow", () => {
 
   beforeEach(() => {
     defaultProps.onOpenChange.mockReset();
-    defaultProps.onProposeClosure.mockReset().mockReturnValue(Promise.resolve());
-    defaultProps.onUnilateralClose.mockReset().mockReturnValue(Promise.resolve());
+    defaultProps.onProposeClosure
+      .mockReset()
+      .mockReturnValue(Promise.resolve());
+    defaultProps.onUnilateralClose
+      .mockReset()
+      .mockReturnValue(Promise.resolve());
   });
 
   // AC: Modal options: "Resolved" (primary flow), "Not resolved" (warning),
@@ -98,9 +102,7 @@ describe("ClosureModal — three-path closure flow", () => {
       expect(
         screen.getByRole("button", { name: /propose resolution/i }),
       ).toBeDefined();
-      expect(
-        screen.getByRole("button", { name: /cancel/i }),
-      ).toBeDefined();
+      expect(screen.getByRole("button", { name: /cancel/i })).toBeDefined();
     });
 
     it("Propose Resolution button is disabled when textarea is empty", () => {
@@ -190,14 +192,10 @@ describe("ClosureModal — three-path closure flow", () => {
     it("shows warning message after selecting Not resolved", () => {
       render(<ClosureModal {...defaultProps} />);
 
-      fireEvent.click(
-        screen.getByRole("button", { name: /not resolved/i }),
-      );
+      fireEvent.click(screen.getByRole("button", { name: /not resolved/i }));
 
       expect(
-        screen.getByText(
-          /this closes the case immediately for both of you/i,
-        ),
+        screen.getByText(/this closes the case immediately for both of you/i),
       ).toBeDefined();
       expect(screen.getByText(/Jordan will be notified/i)).toBeDefined();
     });
@@ -205,9 +203,7 @@ describe("ClosureModal — three-path closure flow", () => {
     it("shows an optional textarea", () => {
       render(<ClosureModal {...defaultProps} />);
 
-      fireEvent.click(
-        screen.getByRole("button", { name: /not resolved/i }),
-      );
+      fireEvent.click(screen.getByRole("button", { name: /not resolved/i }));
 
       const textarea = screen.getByRole("textbox");
       expect(textarea).toBeDefined();
@@ -216,24 +212,18 @@ describe("ClosureModal — three-path closure flow", () => {
     it("shows Close without resolution and Cancel buttons", () => {
       render(<ClosureModal {...defaultProps} />);
 
-      fireEvent.click(
-        screen.getByRole("button", { name: /not resolved/i }),
-      );
+      fireEvent.click(screen.getByRole("button", { name: /not resolved/i }));
 
       expect(
         screen.getByRole("button", { name: /close without resolution/i }),
       ).toBeDefined();
-      expect(
-        screen.getByRole("button", { name: /cancel/i }),
-      ).toBeDefined();
+      expect(screen.getByRole("button", { name: /cancel/i })).toBeDefined();
     });
 
     it("Close without resolution button is enabled even when textarea is empty", () => {
       render(<ClosureModal {...defaultProps} />);
 
-      fireEvent.click(
-        screen.getByRole("button", { name: /not resolved/i }),
-      );
+      fireEvent.click(screen.getByRole("button", { name: /not resolved/i }));
 
       const closeBtn = screen.getByRole("button", {
         name: /close without resolution/i,
@@ -244,9 +234,7 @@ describe("ClosureModal — three-path closure flow", () => {
     it("clicking Close without resolution calls onUnilateralClose", async () => {
       render(<ClosureModal {...defaultProps} />);
 
-      fireEvent.click(
-        screen.getByRole("button", { name: /not resolved/i }),
-      );
+      fireEvent.click(screen.getByRole("button", { name: /not resolved/i }));
 
       fireEvent.click(
         screen.getByRole("button", { name: /close without resolution/i }),
@@ -260,9 +248,7 @@ describe("ClosureModal — three-path closure flow", () => {
     it("Cancel returns to the three-option view", () => {
       render(<ClosureModal {...defaultProps} />);
 
-      fireEvent.click(
-        screen.getByRole("button", { name: /not resolved/i }),
-      );
+      fireEvent.click(screen.getByRole("button", { name: /not resolved/i }));
 
       // Verify we're in Not resolved sub-view
       expect(
@@ -347,18 +333,14 @@ describe("ClosureConfirmBanner — confirmation banner for proposed closure", ()
       render(<ClosureConfirmBanner {...defaultBannerProps} />);
 
       expect(
-        screen.getByText(
-          /We agreed to meet weekly to discuss progress/,
-        ),
+        screen.getByText(/We agreed to meet weekly to discuss progress/),
       ).toBeDefined();
     });
 
     it("renders Confirm button", () => {
       render(<ClosureConfirmBanner {...defaultBannerProps} />);
 
-      expect(
-        screen.getByRole("button", { name: /confirm/i }),
-      ).toBeDefined();
+      expect(screen.getByRole("button", { name: /confirm/i })).toBeDefined();
     });
 
     it("renders Reject and keep talking button", () => {

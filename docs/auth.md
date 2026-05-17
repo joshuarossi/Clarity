@@ -5,10 +5,10 @@
 Clarity uses [Convex Auth](https://labs.convex.dev/auth) for
 authentication. Two providers are configured in `convex/auth.config.ts`:
 
-| Provider     | How it works                                       | Config env vars                                              |
-|--------------|----------------------------------------------------|--------------------------------------------------------------|
-| Magic link   | Sends a one-time sign-in link via Resend email     | `RESEND_API_KEY`, `AUTH_EMAIL_FROM` (optional, has default)  |
-| Google OAuth | Standard OAuth 2.0 redirect flow                   | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`      |
+| Provider     | How it works                                   | Config env vars                                             |
+| ------------ | ---------------------------------------------- | ----------------------------------------------------------- |
+| Magic link   | Sends a one-time sign-in link via Resend email | `RESEND_API_KEY`, `AUTH_EMAIL_FROM` (optional, has default) |
+| Google OAuth | Standard OAuth 2.0 redirect flow               | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`      |
 
 Password-based registration is intentionally excluded.
 
@@ -89,20 +89,20 @@ original path instead of the default `/dashboard`.
 
 The profile page is minimal (no avatar upload). It shows:
 
-| Field        | Editable? | Notes                                       |
-|--------------|-----------|---------------------------------------------|
-| Display name | Yes       | Saved via the `updateDisplayName` mutation   |
-| Email        | No        | Read-only, sourced from the auth identity    |
+| Field        | Editable? | Notes                                      |
+| ------------ | --------- | ------------------------------------------ |
+| Display name | Yes       | Saved via the `updateDisplayName` mutation |
+| Email        | No        | Read-only, sourced from the auth identity  |
 
 A **Sign out** button logs the user out and redirects to the login page.
 
 ## Error codes
 
-| Code              | HTTP Status | When                              |
-|-------------------|-------------|-----------------------------------|
-| UNAUTHENTICATED   | 401         | No session or unknown email       |
-| FORBIDDEN         | 403         | Insufficient role or not a party  |
-| NOT_FOUND         | 404         | Case ID does not exist            |
+| Code            | HTTP Status | When                             |
+| --------------- | ----------- | -------------------------------- |
+| UNAUTHENTICATED | 401         | No session or unknown email      |
+| FORBIDDEN       | 403         | Insufficient role or not a party |
+| NOT_FOUND       | 404         | Case ID does not exist           |
 
 All errors are thrown as `ConvexError` with the `{ code, message,
 httpStatus }` shape defined in `convex/lib/errors.ts`.

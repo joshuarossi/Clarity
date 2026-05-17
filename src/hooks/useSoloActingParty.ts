@@ -19,10 +19,7 @@ export function useSoloActingParty(
   caseId: Id<"cases"> | undefined,
 ): SoloActingParty {
   const [searchParams, setSearchParams] = useSearchParams();
-  const caseDoc = useQuery(
-    api.cases.get,
-    caseId ? { caseId } : "skip",
-  );
+  const caseDoc = useQuery(api.cases.get, caseId ? { caseId } : "skip");
 
   const actingRole = parseAsParam(searchParams.get("as"));
 

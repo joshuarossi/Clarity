@@ -1,43 +1,43 @@
 /* ─── Components ─── */
-@import './components.css';
+@import "./components.css";
 
 /* ─── Base tokens (light theme) ─── */
 :root {
   /* Neutrals */
-  --bg-canvas: #FAF8F5;
-  --bg-surface: #FFFFFF;
-  --bg-surface-subtle: #F3EFE9;
-  --text-primary: #1F1D1A;
-  --text-secondary: #5C5952;
-  --text-tertiary: #8A8680;
-  --border-default: #E5E0D8;
-  --border-strong: #CBC4B8;
+  --bg-canvas: #faf8f5;
+  --bg-surface: #ffffff;
+  --bg-surface-subtle: #f3efe9;
+  --text-primary: #1f1d1a;
+  --text-secondary: #5c5952;
+  --text-tertiary: #8a8680;
+  --border-default: #e5e0d8;
+  --border-strong: #cbc4b8;
 
   /* Accent — Sage */
-  --accent: #6B8E7F;
-  --accent-hover: #5A7A6C;
-  --accent-subtle: #DCE7E0;
-  --accent-on: #FFFFFF;
+  --accent: #6b8e7f;
+  --accent-hover: #5a7a6c;
+  --accent-subtle: #dce7e0;
+  --accent-on: #ffffff;
 
   /* Coach — Dusty Lavender */
-  --coach-accent: #8B7AB5;
-  --coach-subtle: #EAE4F2;
+  --coach-accent: #8b7ab5;
+  --coach-subtle: #eae4f2;
 
   /* Party colors */
-  --party-initiator: #6B85A8;
-  --party-initiator-subtle: #DFE5EF;
-  --party-invitee: #B07A8F;
-  --party-invitee-subtle: #EFE0E4;
+  --party-initiator: #6b85a8;
+  --party-initiator-subtle: #dfe5ef;
+  --party-invitee: #b07a8f;
+  --party-invitee-subtle: #efe0e4;
 
   /* Feedback */
-  --danger: #B5594D;
-  --danger-subtle: #F2DCD8;
-  --warning: #B58B4D;
-  --warning-subtle: #F2E5D4;
-  --success: #6B8E7F;
+  --danger: #b5594d;
+  --danger-subtle: #f2dcd8;
+  --warning: #b58b4d;
+  --warning-subtle: #f2e5d4;
+  --success: #6b8e7f;
 
   /* Tints */
-  --private-tint: #F0E9E0;
+  --private-tint: #f0e9e0;
 
   /* Radius */
   --radius-sm: 6px;
@@ -50,7 +50,7 @@
   --shadow-0: none;
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.06);
-  --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.10);
+  --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.1);
 
   /* Motion */
   --ease-out: cubic-bezier(0.2, 0.7, 0.3, 1);
@@ -59,8 +59,10 @@
   --dur-slow: 300ms;
 
   /* Font families */
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-sans:
+    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   /* Typography scale */
   --font-size-display: 32px;
@@ -112,46 +114,46 @@
 /* ─── Dark theme ─── */
 [data-theme="dark"] {
   /* Neutrals */
-  --bg-canvas: #1A1816;
+  --bg-canvas: #1a1816;
   --bg-surface: #242220;
-  --bg-surface-subtle: #2E2B28;
-  --text-primary: #F2EFE9;
-  --text-secondary: #A8A39A;
-  --text-tertiary: #7A766E;
-  --border-default: #3A3632;
-  --border-strong: #4A4640;
+  --bg-surface-subtle: #2e2b28;
+  --text-primary: #f2efe9;
+  --text-secondary: #a8a39a;
+  --text-tertiary: #7a766e;
+  --border-default: #3a3632;
+  --border-strong: #4a4640;
 
   /* Accent — Sage */
-  --accent: #89A99B;
-  --accent-hover: #9ABAAC;
-  --accent-subtle: #2E3A35;
-  --accent-on: #1A1816;
+  --accent: #89a99b;
+  --accent-hover: #9abaac;
+  --accent-subtle: #2e3a35;
+  --accent-on: #1a1816;
 
   /* Coach — Dusty Lavender */
-  --coach-accent: #A797CC;
-  --coach-subtle: #342E42;
+  --coach-accent: #a797cc;
+  --coach-subtle: #342e42;
 
   /* Party colors */
-  --party-initiator: #8BA3C2;
-  --party-initiator-subtle: #2C3542;
-  --party-invitee: #CC96A9;
-  --party-invitee-subtle: #3E2E34;
+  --party-initiator: #8ba3c2;
+  --party-initiator-subtle: #2c3542;
+  --party-invitee: #cc96a9;
+  --party-invitee-subtle: #3e2e34;
 
   /* Feedback */
-  --danger: #CC786D;
-  --danger-subtle: #3E2A27;
-  --warning: #CC9F6D;
-  --warning-subtle: #3E3228;
-  --success: #89A99B;
+  --danger: #cc786d;
+  --danger-subtle: #3e2a27;
+  --warning: #cc9f6d;
+  --warning-subtle: #3e3228;
+  --success: #89a99b;
 
   /* Tints */
-  --private-tint: #2D2924;
+  --private-tint: #2d2924;
 
   /* Shadow (higher alpha for dark) */
   --shadow-0: none;
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.20);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.28);
-  --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.40);
+  --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.4);
 
   /* Radius */
   --radius-sm: 6px;
@@ -167,8 +169,10 @@
   --dur-slow: 300ms;
 
   /* Font families */
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-sans:
+    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   /* Typography scale */
   --font-size-display: 32px;

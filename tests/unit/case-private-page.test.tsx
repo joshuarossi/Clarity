@@ -26,9 +26,7 @@ const {
   mockUseMutation: vi.fn(),
   mockUseParams: vi.fn(() => ({ caseId: "case-abc123" })),
   mockSendUserMessage: vi.fn(() => Promise.resolve(null)),
-  mockMarkComplete: vi.fn(() =>
-    Promise.resolve({ synthesisScheduled: false }),
-  ),
+  mockMarkComplete: vi.fn(() => Promise.resolve({ synthesisScheduled: false })),
   mockRetryLastAIResponse: vi.fn(() => Promise.resolve(null)),
 }));
 
@@ -38,9 +36,10 @@ vi.mock("convex/react", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom",
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -102,7 +101,11 @@ const DEFAULT_CASE: CaseDoc = {
 };
 
 const DEFAULT_PARTY_STATES: PartyStates = {
-  self: { role: "INITIATOR", formCompletedAt: NOW - 100_000, privateCoachingCompletedAt: null },
+  self: {
+    role: "INITIATOR",
+    formCompletedAt: NOW - 100_000,
+    privateCoachingCompletedAt: null,
+  },
   other: { role: "INVITEE", hasCompletedPC: false },
 };
 
@@ -254,9 +257,7 @@ function renderPage() {
 describe("AC: Privacy banner at top with other party name", () => {
   it("renders privacy banner text including other party name", () => {
     renderPage();
-    expect(
-      screen.getByText(/jordan will never see any of it/i),
-    ).toBeDefined();
+    expect(screen.getByText(/jordan will never see any of it/i)).toBeDefined();
   });
 
   it("renders the lock icon button for learning more about privacy", () => {
@@ -287,9 +288,9 @@ describe("AC: Coach messages rendered in --accent-subtle bubbles, left-aligned, 
 
   it("renders AI message with COMPLETE status data attribute", () => {
     renderPage();
-    const bubble = screen.getByText(AI_MSG_COMPLETE.content).closest(
-      "[data-status]",
-    );
+    const bubble = screen
+      .getByText(AI_MSG_COMPLETE.content)
+      .closest("[data-status]");
     expect(bubble).not.toBeNull();
     expect(bubble!.getAttribute("data-status")).toBe("COMPLETE");
   });
@@ -314,8 +315,7 @@ describe("AC: Streaming behavior — blinking cursor while STREAMING, copy butto
     messagesFixture = [USER_MSG, AI_MSG_STREAMING];
     const { container } = renderPage();
     // StreamingIndicator renders a blinking cursor element
-    const streamingEl =
-      container.querySelector("[data-status='STREAMING']");
+    const streamingEl = container.querySelector("[data-status='STREAMING']");
     expect(streamingEl).not.toBeNull();
   });
 
@@ -399,16 +399,14 @@ describe("AC: Input — Shift+Enter for newline, Enter to send, Send disabled wh
 describe("AC: 'Mark private coaching complete' is a footer CTA, not a prominent button", () => {
   it("renders 'Mark private coaching complete' text", () => {
     renderPage();
-    expect(
-      screen.getByText(/mark private coaching complete/i),
-    ).toBeDefined();
+    expect(screen.getByText(/mark private coaching complete/i)).toBeDefined();
   });
 
   it("uses ghost or secondary button styling (not primary)", () => {
     renderPage();
-    const cta = screen.getByText(/mark private coaching complete/i).closest(
-      "button",
-    );
+    const cta = screen
+      .getByText(/mark private coaching complete/i)
+      .closest("button");
     expect(cta).not.toBeNull();
     // Should NOT have primary styling
     expect(cta!.className).not.toMatch(/cc-btn-primary/);
@@ -429,9 +427,7 @@ describe("AC: Mark Complete opens confirmation dialog with message count and par
 
     await waitFor(() => {
       // Dialog should mention message count — 1 USER message in default fixtures
-      expect(
-        screen.getByText(/you.?ve had 1 message/i),
-      ).toBeDefined();
+      expect(screen.getByText(/you.?ve had 1 message/i)).toBeDefined();
     });
   });
 
@@ -480,9 +476,7 @@ describe("AC: Mark Complete opens confirmation dialog with message count and par
       ).toBeDefined();
     });
 
-    fireEvent.click(
-      screen.getByRole("button", { name: /continue coaching/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /continue coaching/i }));
 
     await waitFor(() => {
       expect(
@@ -541,7 +535,11 @@ describe("AC: Mark Complete opens confirmation dialog with message count and par
 describe("AC: After marking complete, view shows read-only state with status message", () => {
   beforeEach(() => {
     partyStatesFixture = {
-      self: { role: "INITIATOR", formCompletedAt: NOW - 100_000, privateCoachingCompletedAt: NOW },
+      self: {
+        role: "INITIATOR",
+        formCompletedAt: NOW - 100_000,
+        privateCoachingCompletedAt: NOW,
+      },
       other: { role: "invitee", hasCompletedPC: false },
     };
   });
@@ -556,16 +554,12 @@ describe("AC: After marking complete, view shows read-only state with status mes
 
   it("does not render mark-complete footer when completed", () => {
     renderPage();
-    expect(
-      screen.queryByText(/mark private coaching complete/i),
-    ).toBeNull();
+    expect(screen.queryByText(/mark private coaching complete/i)).toBeNull();
   });
 
   it("shows a read-only status message", () => {
     renderPage();
-    expect(
-      screen.getByText(/completed private coaching/i),
-    ).toBeDefined();
+    expect(screen.getByText(/completed private coaching/i)).toBeDefined();
   });
 
   it("still renders existing chat messages in read-only state", () => {
@@ -576,13 +570,15 @@ describe("AC: After marking complete, view shows read-only state with status mes
 
   it("shows 'both complete' message when other party also completed", () => {
     partyStatesFixture = {
-      self: { role: "INITIATOR", formCompletedAt: NOW - 100_000, privateCoachingCompletedAt: NOW },
+      self: {
+        role: "INITIATOR",
+        formCompletedAt: NOW - 100_000,
+        privateCoachingCompletedAt: NOW,
+      },
       other: { role: "invitee", hasCompletedPC: true },
     };
     renderPage();
-    expect(
-      screen.getByText(/both parties have completed/i),
-    ).toBeDefined();
+    expect(screen.getByText(/both parties have completed/i)).toBeDefined();
   });
 });
 
@@ -645,9 +641,7 @@ describe("AC: AI error messages render inline with ERROR styling and Retry butto
   it("shows fallback text when error message content is empty", () => {
     renderPage();
     // The bubble should show a fallback message for empty-content ERROR
-    expect(
-      screen.getByText(/encountered an error/i),
-    ).toBeDefined();
+    expect(screen.getByText(/encountered an error/i)).toBeDefined();
   });
 });
 
@@ -656,7 +650,11 @@ describe("AC: AI error messages render inline with ERROR styling and Retry butto
 describe("AC: CasePrivatePage redirects invitees who have not submitted the intake form", () => {
   it("redirects invitee without formCompletedAt to /cases/:caseId", () => {
     partyStatesFixture = {
-      self: { role: "INVITEE", formCompletedAt: null, privateCoachingCompletedAt: null },
+      self: {
+        role: "INVITEE",
+        formCompletedAt: null,
+        privateCoachingCompletedAt: null,
+      },
       other: { role: "INITIATOR", hasCompletedPC: false },
     };
     renderPage();
@@ -666,7 +664,11 @@ describe("AC: CasePrivatePage redirects invitees who have not submitted the inta
 
   it("does NOT redirect invitee when formCompletedAt is set", () => {
     partyStatesFixture = {
-      self: { role: "INVITEE", formCompletedAt: NOW - 50_000, privateCoachingCompletedAt: null },
+      self: {
+        role: "INVITEE",
+        formCompletedAt: NOW - 50_000,
+        privateCoachingCompletedAt: null,
+      },
       other: { role: "INITIATOR", hasCompletedPC: false },
     };
     renderPage();
@@ -677,7 +679,11 @@ describe("AC: CasePrivatePage redirects invitees who have not submitted the inta
 
   it("does NOT redirect initiator even without formCompletedAt check", () => {
     partyStatesFixture = {
-      self: { role: "INITIATOR", formCompletedAt: NOW - 100_000, privateCoachingCompletedAt: null },
+      self: {
+        role: "INITIATOR",
+        formCompletedAt: NOW - 100_000,
+        privateCoachingCompletedAt: null,
+      },
       other: { role: "INVITEE", hasCompletedPC: false },
     };
     renderPage();
@@ -696,9 +702,7 @@ describe("Edge: Phase gating — read-only when case is not in private coaching 
     expect(
       screen.queryByRole("textbox", { name: /message input/i }),
     ).toBeNull();
-    expect(
-      screen.queryByText(/mark private coaching complete/i),
-    ).toBeNull();
+    expect(screen.queryByText(/mark private coaching complete/i)).toBeNull();
   });
 
   it("still shows chat history in read-only phase-gated state", () => {

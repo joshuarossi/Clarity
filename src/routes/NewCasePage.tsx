@@ -68,7 +68,9 @@ export function NewCasePage(): React.ReactElement {
     if (Object.keys(errs).length > 0) {
       // Focus first invalid field
       if (errs.category) {
-        categoryRef.current?.querySelector<HTMLInputElement>('input[type="radio"]')?.focus();
+        categoryRef.current
+          ?.querySelector<HTMLInputElement>('input[type="radio"]')
+          ?.focus();
       } else if (errs.mainTopic) {
         mainTopicRef.current?.focus();
       } else if (errs.description) {
@@ -106,9 +108,7 @@ export function NewCasePage(): React.ReactElement {
   }
 
   const counterClass =
-    mainTopic.length > MAIN_TOPIC_SOFT_LIMIT
-      ? "cc-text-warning"
-      : undefined;
+    mainTopic.length > MAIN_TOPIC_SOFT_LIMIT ? "cc-text-warning" : undefined;
 
   return (
     <main
@@ -167,7 +167,12 @@ export function NewCasePage(): React.ReactElement {
                     value={cat.value}
                     checked={category === cat.value}
                     onChange={() => setCategory(cat.value)}
-                    style={{ position: "absolute", opacity: 0, width: 0, height: 0 }}
+                    style={{
+                      position: "absolute",
+                      opacity: 0,
+                      width: 0,
+                      height: 0,
+                    }}
                   />
                   <span>{cat.label}</span>
                 </label>
@@ -243,7 +248,9 @@ export function NewCasePage(): React.ReactElement {
 
           {/* --- Description (private) --- */}
           <div style={{ marginBottom: "1.5rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+            >
               <label htmlFor="description" style={{ fontWeight: 600 }}>
                 Private to you
               </label>
@@ -257,7 +264,14 @@ export function NewCasePage(): React.ReactElement {
                 <Lock size={16} aria-hidden="true" />
                 <span
                   id="description-privacy-tooltip"
-                  style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}
+                  style={{
+                    position: "absolute",
+                    width: 1,
+                    height: 1,
+                    overflow: "hidden",
+                    clip: "rect(0,0,0,0)",
+                    whiteSpace: "nowrap",
+                  }}
                 >
                   Only you and the AI coach will see this.
                 </span>
@@ -308,7 +322,9 @@ export function NewCasePage(): React.ReactElement {
 
           {/* --- Desired outcome (private) --- */}
           <div style={{ marginBottom: "1.5rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+            >
               <label htmlFor="desired-outcome" style={{ fontWeight: 600 }}>
                 Private to you
               </label>
@@ -322,7 +338,14 @@ export function NewCasePage(): React.ReactElement {
                 <Lock size={16} aria-hidden="true" />
                 <span
                   id="outcome-privacy-tooltip"
-                  style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}
+                  style={{
+                    position: "absolute",
+                    width: 1,
+                    height: 1,
+                    overflow: "hidden",
+                    clip: "rect(0,0,0,0)",
+                    whiteSpace: "nowrap",
+                  }}
                 >
                   Only you and the AI coach will see this.
                 </span>

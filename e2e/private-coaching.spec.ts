@@ -95,9 +95,9 @@ test.describe("Private coaching — full E2E flow", () => {
     await dialog.getByRole("button", { name: /mark complete/i }).click();
 
     // Page should transition to read-only state
-    await expect(
-      pageA.getByText(/completed private coaching/i),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(pageA.getByText(/completed private coaching/i)).toBeVisible({
+      timeout: 10_000,
+    });
 
     // Message input should no longer be visible
     await expect(
@@ -122,9 +122,7 @@ test.describe("Private coaching — full E2E flow", () => {
 
     // Party B should NOT see the initiator's message
     await expect(
-      pageB.getByText(
-        "I want to talk about our team communication issues.",
-      ),
+      pageB.getByText("I want to talk about our team communication issues."),
     ).not.toBeVisible();
 
     // Party B should see an empty chat or their own messages only

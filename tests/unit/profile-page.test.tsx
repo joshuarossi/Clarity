@@ -24,7 +24,7 @@ const {
   return {
     mockSignOut: vi.fn(() => Promise.resolve()),
     mockUseConvexAuth: vi.fn(
-      () => ({ isLoading: false, isAuthenticated: true } as const),
+      () => ({ isLoading: false, isAuthenticated: true }) as const,
     ),
     mockUseQuery: vi.fn(() => ({
       _id: "user123",
@@ -135,9 +135,7 @@ describe("AC: Display name update", () => {
 describe("AC: Sign-out functionality", () => {
   it("clicking sign-out calls signOut from auth actions", async () => {
     renderProfilePage();
-    fireEvent.click(
-      screen.getByRole("button", { name: /sign out|log out/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /sign out|log out/i }));
 
     await waitFor(() => {
       expect(mockSignOut).toHaveBeenCalled();

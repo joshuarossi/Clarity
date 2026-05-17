@@ -24,18 +24,18 @@ npx playwright test --headed
 Import `test` and `expect` from `e2e/fixtures` (not from
 `@playwright/test` directly) to use the shared fixtures:
 
-| Fixture              | Description                                                         |
-| -------------------- | ------------------------------------------------------------------- |
-| `authenticatedPage`  | A `Page` pre-logged-in as a freshly created test user.              |
-| `pageA` / `pageB`    | Two separate authenticated browser contexts for multi-user tests.   |
+| Fixture             | Description                                                       |
+| ------------------- | ----------------------------------------------------------------- |
+| `authenticatedPage` | A `Page` pre-logged-in as a freshly created test user.            |
+| `pageA` / `pageB`   | Two separate authenticated browser contexts for multi-user tests. |
 
 ### Test helpers (`e2e/helpers.ts`)
 
-| Helper            | Purpose                                                           |
-| ----------------- | ----------------------------------------------------------------- |
-| `createTestUser`  | Creates a test user; accepts optional `email` and `role`.         |
-| `createTestCase`  | Creates a test mediation case for a given initiator.              |
-| `loginAs`         | Programmatically authenticates a `Page` as the given user.        |
+| Helper           | Purpose                                                    |
+| ---------------- | ---------------------------------------------------------- |
+| `createTestUser` | Creates a test user; accepts optional `email` and `role`.  |
+| `createTestCase` | Creates a test mediation case for a given initiator.       |
+| `loginAs`        | Programmatically authenticates a `Page` as the given user. |
 
 > **Note:** The helpers currently return stubs. They will be wired to
 > the Convex dev backend in a follow-up task.

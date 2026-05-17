@@ -169,9 +169,7 @@ describe("draftCoach/session query", () => {
 
     const result = await t
       .withIdentity({ email: "partyA@test.com" })
-      .run(async (ctx) =>
-        ctx.runQuery(draftCoachApi.session, { caseId }),
-      );
+      .run(async (ctx) => ctx.runQuery(draftCoachApi.session, { caseId }));
 
     expect(result).not.toBeNull();
     expect(result!.session._id).toEqual(sessionId);
@@ -184,9 +182,7 @@ describe("draftCoach/session query", () => {
 
     const result = await t
       .withIdentity({ email: "partyA@test.com" })
-      .run(async (ctx) =>
-        ctx.runQuery(draftCoachApi.session, { caseId }),
-      );
+      .run(async (ctx) => ctx.runQuery(draftCoachApi.session, { caseId }));
 
     expect(result).toBeNull();
   });
@@ -206,9 +202,7 @@ describe("draftCoach/session query", () => {
 
     const result = await t
       .withIdentity({ email: "partyA@test.com" })
-      .run(async (ctx) =>
-        ctx.runQuery(draftCoachApi.session, { caseId }),
-      );
+      .run(async (ctx) => ctx.runQuery(draftCoachApi.session, { caseId }));
 
     expect(result).toBeNull();
   });
@@ -228,9 +222,7 @@ describe("draftCoach/session query", () => {
 
     const result = await t
       .withIdentity({ email: "partyA@test.com" })
-      .run(async (ctx) =>
-        ctx.runQuery(draftCoachApi.session, { caseId }),
-      );
+      .run(async (ctx) => ctx.runQuery(draftCoachApi.session, { caseId }));
 
     expect(result).toBeNull();
   });
@@ -338,9 +330,7 @@ describe("draftCoach/sendMessage mutation", () => {
     const messages = await t.run(async (ctx) =>
       ctx.db
         .query("draftMessages")
-        .withIndex("by_draft_session", (q) =>
-          q.eq("draftSessionId", sessionId),
-        )
+        .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
         .collect(),
     );
     expect(messages).toHaveLength(1);
@@ -383,14 +373,12 @@ describe("draftCoach/sendMessage mutation", () => {
     );
 
     await expectConvexError(
-      t
-        .withIdentity({ email: "partyA@test.com" })
-        .run(async (ctx) =>
-          ctx.runMutation(draftCoachApi.sendMessage, {
-            sessionId,
-            content: "Should fail",
-          }),
-        ),
+      t.withIdentity({ email: "partyA@test.com" }).run(async (ctx) =>
+        ctx.runMutation(draftCoachApi.sendMessage, {
+          sessionId,
+          content: "Should fail",
+        }),
+      ),
       "CONFLICT",
     );
   });
@@ -608,9 +596,7 @@ describe("draftCoach privacy — session query enforces userId match", () => {
     // User B (also a party on the case) queries — should get null
     const result = await t
       .withIdentity({ email: "partyB@test.com" })
-      .run(async (ctx) =>
-        ctx.runQuery(draftCoachApi.session, { caseId }),
-      );
+      .run(async (ctx) => ctx.runQuery(draftCoachApi.session, { caseId }));
 
     expect(result).toBeNull();
   });
@@ -630,14 +616,12 @@ describe("draftCoach privacy — session query enforces userId match", () => {
 
     // User B tries to send a message on User A's session
     await expectConvexError(
-      t
-        .withIdentity({ email: "partyB@test.com" })
-        .run(async (ctx) =>
-          ctx.runMutation(draftCoachApi.sendMessage, {
-            sessionId,
-            content: "Trying to hijack",
-          }),
-        ),
+      t.withIdentity({ email: "partyB@test.com" }).run(async (ctx) =>
+        ctx.runMutation(draftCoachApi.sendMessage, {
+          sessionId,
+          content: "Trying to hijack",
+        }),
+      ),
       "FORBIDDEN",
     );
   });
@@ -698,9 +682,7 @@ describe("all draftCoach functions enforce auth + party-to-case check", () => {
       const { t, caseId } = await seedJointActiveEnv();
 
       await expectConvexError(
-        t.run(async (ctx) =>
-          ctx.runQuery(draftCoachApi.session, { caseId }),
-        ),
+        t.run(async (ctx) => ctx.runQuery(draftCoachApi.session, { caseId })),
         "UNAUTHENTICATED",
       );
     });
@@ -791,9 +773,7 @@ describe("all draftCoach functions enforce auth + party-to-case check", () => {
       await expectConvexError(
         t
           .withIdentity({ email: "stranger@test.com" })
-          .run(async (ctx) =>
-            ctx.runQuery(draftCoachApi.session, { caseId }),
-          ),
+          .run(async (ctx) => ctx.runQuery(draftCoachApi.session, { caseId })),
         "FORBIDDEN",
       );
     });
@@ -826,14 +806,12 @@ describe("all draftCoach functions enforce auth + party-to-case check", () => {
       );
 
       await expectConvexError(
-        t
-          .withIdentity({ email: "stranger@test.com" })
-          .run(async (ctx) =>
-            ctx.runMutation(draftCoachApi.sendMessage, {
-              sessionId,
-              content: "Test",
-            }),
-          ),
+        t.withIdentity({ email: "stranger@test.com" }).run(async (ctx) =>
+          ctx.runMutation(draftCoachApi.sendMessage, {
+            sessionId,
+            content: "Test",
+          }),
+        ),
         "FORBIDDEN",
       );
     });

@@ -10,7 +10,11 @@ interface TopNavProps {
 export function TopNav({ variant, casePhase, caseId }: TopNavProps) {
   if (variant === "case-detail") {
     return (
-      <nav className="cc-topnav" data-testid="topnav-case-detail" aria-label="Case navigation">
+      <nav
+        className="cc-topnav"
+        data-testid="topnav-case-detail"
+        aria-label="Case navigation"
+      >
         <div className="cc-topnav-inner">
           <Link
             to={caseId ? `/cases/${caseId}` : "/dashboard"}
@@ -30,7 +34,11 @@ export function TopNav({ variant, casePhase, caseId }: TopNavProps) {
   }
 
   return (
-    <nav className="cc-topnav" data-testid="topnav-logged-in" aria-label="Main navigation">
+    <nav
+      className="cc-topnav"
+      data-testid="topnav-logged-in"
+      aria-label="Main navigation"
+    >
       <div className="cc-topnav-inner">
         <Link to="/dashboard" className="cc-topnav-brand">
           Clarity

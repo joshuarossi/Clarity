@@ -1,16 +1,16 @@
 import { v } from "convex/values";
-import { query, mutation, internalAction, internalMutation, internalQuery } from "./_generated/server";
+import {
+  query,
+  mutation,
+  internalAction,
+  internalMutation,
+  internalQuery,
+} from "./_generated/server";
 import { internal } from "./_generated/api";
 import { requireAuth, requirePartyToCase } from "./lib/auth";
 import { conflict, forbidden, notFound } from "./lib/errors";
-import {
-  assemblePrompt,
-  type PromptMessage,
-} from "./lib/prompts";
-import {
-  isClaudeMockEnabled,
-  getMockClaudeResponse,
-} from "./lib/claudeMock";
+import { assemblePrompt, type PromptMessage } from "./lib/prompts";
+import { isClaudeMockEnabled, getMockClaudeResponse } from "./lib/claudeMock";
 
 // ---------------------------------------------------------------------------
 // Public queries and mutations (WOR-127 — preserved as-is)
@@ -138,7 +138,9 @@ export const sendFinalDraft = mutation({
     }
 
     if (!session.finalDraft) {
-      throw conflict("No final draft available — the Coach has not produced a draft yet");
+      throw conflict(
+        "No final draft available — the Coach has not produced a draft yet",
+      );
     }
 
     // Insert directly into jointMessages (mutations cannot call other mutations)
@@ -152,11 +154,10 @@ export const sendFinalDraft = mutation({
     });
 
     // Schedule coach response in joint chat
-    await ctx.scheduler.runAfter(
-      0,
-      internal.jointChat.generateCoachResponse,
-      { caseId: session.caseId, messageId },
-    );
+    await ctx.scheduler.runAfter(0, internal.jointChat.generateCoachResponse, {
+      caseId: session.caseId,
+      messageId,
+    });
 
     // Mark session as SENT
     await ctx.db.patch(sessionId, {
@@ -207,9 +208,7 @@ export const getSessionForGeneration = internalQuery({
 
     const messages = await ctx.db
       .query("draftMessages")
-      .withIndex("by_draft_session", (q) =>
-        q.eq("draftSessionId", sessionId),
-      )
+      .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
       .collect();
 
     return { session, messages };
@@ -277,14 +276,20 @@ export const updateStreamingDraftMessage = internalMutation({
 });
 
 export const finalizeStreamingDraftMessage = internalMutation({
-  args: { messageId: v.id("draftMessages"), content: v.string(), tokens: v.number() },
+  args: {
+    messageId: v.id("draftMessages"),
+    content: v.string(),
+    tokens: v.number(),
+  },
   handler: async (ctx, { messageId, content, tokens }) => {
     await ctx.db.patch(messageId, {
       content,
       status: "COMPLETE",
     });
     // Token count logged for cost tracking (schema doesn't have tokens field on draftMessages)
-    console.log(`draftCoach: finalized message ${messageId} with ${tokens} tokens`);
+    console.log(
+      `draftCoach: finalized message ${messageId} with ${tokens} tokens`,
+    );
   },
 });
 
@@ -329,9 +334,7 @@ export const retryLastDraftAIResponse = mutation({
     // Find the last AI message with ERROR status
     const messages = await ctx.db
       .query("draftMessages")
-      .withIndex("by_draft_session", (q) =>
-        q.eq("draftSessionId", sessionId),
-      )
+      .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
       .collect();
 
     const errorMsg = messages
@@ -384,7 +387,9 @@ function isReadinessSignal(content: string): boolean {
 
 function extractFinalDraft(responseText: string): string | null {
   // Look for structured { "draft": "..." } JSON block in the response
-  const jsonMatch = responseText.match(/\{\s*"draft"\s*:\s*"((?:[^"\\]|\\.)*)"\s*\}/);
+  const jsonMatch = responseText.match(
+    /\{\s*"draft"\s*:\s*"((?:[^"\\]|\\.)*)"\s*\}/,
+  );
   if (jsonMatch) {
     try {
       // Parse the full JSON to handle escape sequences properly
@@ -429,7 +434,9 @@ export const generateResponse = internalAction({
     );
 
     // 3. Read template version for draftCoachInstructions
-    let templateVersion: { globalGuidance: string; draftCoachInstructions?: string } | undefined;
+    let templateVersion:
+      | { globalGuidance: string; draftCoachInstructions?: string }
+      | undefined;
     if (caseDoc?.templateVersionId) {
       const tv = await ctx.runQuery(
         internal.draftCoach.getTemplateVersionForDraftCoach,
@@ -470,7 +477,8 @@ export const generateResponse = internalAction({
       .filter((m) => m.status === "COMPLETE")
       .sort((a, b) => a.createdAt - b.createdAt)
       .map((m) => ({
-        role: m.authorType === "USER" ? ("user" as const) : ("assistant" as const),
+        role:
+          m.authorType === "USER" ? ("user" as const) : ("assistant" as const),
         content: m.content,
       }));
 
@@ -486,7 +494,8 @@ export const generateResponse = internalAction({
     if (isReadyForDraft) {
       recentHistory.push({
         role: "user",
-        content: '[System: The user has signaled readiness for a final draft. Respond with a JSON block containing the polished draft message: { "draft": "your polished message here" }. Include only the draft in the JSON block.]',
+        content:
+          '[System: The user has signaled readiness for a final draft. Respond with a JSON block containing the polished draft message: { "draft": "your polished message here" }. Include only the draft in the JSON block.]',
       });
     }
 
@@ -557,7 +566,8 @@ export const generateResponse = internalAction({
           if (isReadyForDraft) {
             // Simulate structured draft output that real Claude would produce
             // when given the readiness system instruction
-            const mockDraft = "I'd like to talk about how we handle decisions that affect both of us. I've noticed that sometimes I feel left out of the process, and I think establishing a simple check-in habit could help us both feel more included. Would you be open to discussing what that might look like?";
+            const mockDraft =
+              "I'd like to talk about how we handle decisions that affect both of us. I've noticed that sometimes I feel left out of the process, and I think establishing a simple check-in habit could help us both feel more included. Would you be open to discussing what that might look like?";
             mockResponse = `Here is your polished draft message:\n\n{ "draft": ${JSON.stringify(mockDraft)} }`;
           }
           const chunkSize = Math.ceil(mockResponse.length / 5);
@@ -584,10 +594,10 @@ export const generateResponse = internalAction({
           if (isReadyForDraft) {
             const draft = extractFinalDraft(content);
             if (draft) {
-              await ctx.runMutation(
-                internal.draftCoach.setSessionFinalDraft,
-                { sessionId: args.sessionId, finalDraft: draft },
-              );
+              await ctx.runMutation(internal.draftCoach.setSessionFinalDraft, {
+                sessionId: args.sessionId,
+                finalDraft: draft,
+              });
             }
           }
 
@@ -622,7 +632,13 @@ export const generateResponse = internalAction({
               } catch (flushErr) {
                 console.error(
                   "draftCoach.generateResponse: failed to flush streaming update",
-                  { messageId, error: flushErr instanceof Error ? flushErr.message : String(flushErr) },
+                  {
+                    messageId,
+                    error:
+                      flushErr instanceof Error
+                        ? flushErr.message
+                        : String(flushErr),
+                  },
                 );
               }
             }
@@ -649,10 +665,10 @@ export const generateResponse = internalAction({
           if (isReadyForDraft) {
             const draft = extractFinalDraft(content);
             if (draft) {
-              await ctx.runMutation(
-                internal.draftCoach.setSessionFinalDraft,
-                { sessionId: args.sessionId, finalDraft: draft },
-              );
+              await ctx.runMutation(internal.draftCoach.setSessionFinalDraft, {
+                sessionId: args.sessionId,
+                finalDraft: draft,
+              });
             }
           }
 
@@ -665,22 +681,33 @@ export const generateResponse = internalAction({
           "status" in error &&
           (error as Record<string, unknown>).status === 429;
 
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        const statusCode = error instanceof Error && "status" in error
-          ? (error as Record<string, unknown>).status
-          : undefined;
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        const statusCode =
+          error instanceof Error && "status" in error
+            ? (error as Record<string, unknown>).status
+            : undefined;
 
         if (attempt < maxAttempts) {
           const delay = is429 ? 2000 * Math.pow(2, attempt - 1) : 2000;
           console.error(
             `draftCoach.generateResponse: attempt ${attempt} failed (status=${statusCode ?? "unknown"}), retrying in ${delay}ms`,
-            { sessionId: args.sessionId, userId: args.userId, error: errorMessage },
+            {
+              sessionId: args.sessionId,
+              userId: args.userId,
+              error: errorMessage,
+            },
           );
           await sleep(delay);
         } else {
           console.error(
             `draftCoach.generateResponse: all ${maxAttempts} attempts failed, marking message as ERROR`,
-            { sessionId: args.sessionId, userId: args.userId, messageId, error: errorMessage },
+            {
+              sessionId: args.sessionId,
+              userId: args.userId,
+              messageId,
+              error: errorMessage,
+            },
           );
           await ctx.runMutation(internal.draftCoach.markDraftMessageError, {
             messageId,

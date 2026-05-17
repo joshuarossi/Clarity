@@ -1,5 +1,9 @@
 import { v } from "convex/values";
-import { internalAction, internalMutation, internalQuery } from "./_generated/server";
+import {
+  internalAction,
+  internalMutation,
+  internalQuery,
+} from "./_generated/server";
 import { internal } from "./_generated/api";
 import { conflict, aiError } from "./lib/errors";
 import { assemblePrompt, type PromptMessage } from "./lib/prompts";
@@ -60,7 +64,8 @@ export const persistSynthesisResults = internalMutation({
     const now = Date.now();
 
     for (const ps of partyStates) {
-      const text = ps.role === "INITIATOR" ? args.forInitiator : args.forInvitee;
+      const text =
+        ps.role === "INITIATOR" ? args.forInitiator : args.forInvitee;
       await ctx.db.patch(ps._id, {
         synthesisText: text,
         synthesisGeneratedAt: now,
@@ -99,9 +104,12 @@ export const generate = internalAction({
     }
 
     // 2. Read all party states and validate both completed coaching
-    const partyStates = await ctx.runQuery(internal.synthesis.getAllPartyStates, {
-      caseId: args.caseId,
-    });
+    const partyStates = await ctx.runQuery(
+      internal.synthesis.getAllPartyStates,
+      {
+        caseId: args.caseId,
+      },
+    );
     const initiatorState = partyStates.find((ps) => ps.role === "INITIATOR");
     const inviteeState = partyStates.find((ps) => ps.role === "INVITEE");
 
@@ -112,7 +120,9 @@ export const generate = internalAction({
       !initiatorState.privateCoachingCompletedAt ||
       !inviteeState.privateCoachingCompletedAt
     ) {
-      throw conflict("Both parties must complete private coaching before synthesis");
+      throw conflict(
+        "Both parties must complete private coaching before synthesis",
+      );
     }
 
     // 3. Read all private messages
@@ -124,20 +134,14 @@ export const generate = internalAction({
     // Group messages by party — use partyRole for solo cases, userId otherwise
     const isSolo = caseDoc.isSolo;
     const initiatorMessages = allMessages.filter((m) =>
-      isSolo
-        ? m.partyRole === "INITIATOR"
-        : m.userId === initiatorState.userId,
+      isSolo ? m.partyRole === "INITIATOR" : m.userId === initiatorState.userId,
     );
     const inviteeMessages = allMessages.filter((m) =>
-      isSolo
-        ? m.partyRole === "INVITEE"
-        : m.userId === inviteeState.userId,
+      isSolo ? m.partyRole === "INVITEE" : m.userId === inviteeState.userId,
     );
 
     // Build prompt messages (COMPLETE messages only)
-    const toPromptMessages = (
-      msgs: typeof allMessages,
-    ): PromptMessage[] =>
+    const toPromptMessages = (msgs: typeof allMessages): PromptMessage[] =>
       msgs
         .filter((m) => m.status === "COMPLETE")
         .sort((a, b) => a.createdAt - b.createdAt)
@@ -168,12 +172,18 @@ export const generate = internalAction({
 
     // Include invitee's form fields (AC: "both parties' form fields as context")
     const inviteeFormParts: string[] = [];
-    if (inviteeState.mainTopic) inviteeFormParts.push(`Main topic: ${inviteeState.mainTopic}`);
-    if (inviteeState.description) inviteeFormParts.push(`Description: ${inviteeState.description}`);
-    if (inviteeState.desiredOutcome) inviteeFormParts.push(`Desired outcome: ${inviteeState.desiredOutcome}`);
+    if (inviteeState.mainTopic)
+      inviteeFormParts.push(`Main topic: ${inviteeState.mainTopic}`);
+    if (inviteeState.description)
+      inviteeFormParts.push(`Description: ${inviteeState.description}`);
+    if (inviteeState.desiredOutcome)
+      inviteeFormParts.push(`Desired outcome: ${inviteeState.desiredOutcome}`);
     if (inviteeFormParts.length > 0) {
-      const insertIdx = prompt.messages.length > 0 &&
-        prompt.messages[0].content.startsWith("[Case intake context]") ? 1 : 0;
+      const insertIdx =
+        prompt.messages.length > 0 &&
+        prompt.messages[0].content.startsWith("[Case intake context]")
+          ? 1
+          : 0;
       prompt.messages.splice(insertIdx, 0, {
         role: "user" as const,
         content: `[Party B intake context]\n${inviteeFormParts.join("\n")}`,
@@ -245,7 +255,8 @@ export const generate = internalAction({
             .map((block) => block.text)
             .join("");
         } catch (error: unknown) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           console.error(
             `synthesis.generate: Claude API error (attempt ${attempt + 1})`,
             { caseId: args.caseId, error: errorMessage },

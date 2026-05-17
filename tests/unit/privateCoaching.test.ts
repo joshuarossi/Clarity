@@ -316,9 +316,7 @@ describe("privateCoaching/sendUserMessage — insert + schedule", () => {
       generateAIResponseJob,
       "Expected generateAIResponse to be scheduled after sendUserMessage",
     ).toBeDefined();
-    expect(generateAIResponseJob!.args).toEqual([
-      { caseId, userId: userAId },
-    ]);
+    expect(generateAIResponseJob!.args).toEqual([{ caseId, userId: userAId }]);
   });
 });
 
@@ -406,14 +404,12 @@ describe("privateCoaching/sendUserMessage — status validation", () => {
     });
 
     await expectConvexError(
-      t
-        .withIdentity({ email: "usera@test.com" })
-        .run(async (ctx) =>
-          ctx.runMutation(api.privateCoaching.sendUserMessage, {
-            caseId,
-            content: "Should fail",
-          }),
-        ),
+      t.withIdentity({ email: "usera@test.com" }).run(async (ctx) =>
+        ctx.runMutation(api.privateCoaching.sendUserMessage, {
+          caseId,
+          content: "Should fail",
+        }),
+      ),
       "CONFLICT",
     );
   });
@@ -425,14 +421,12 @@ describe("privateCoaching/sendUserMessage — status validation", () => {
     });
 
     await expectConvexError(
-      t
-        .withIdentity({ email: "usera@test.com" })
-        .run(async (ctx) =>
-          ctx.runMutation(api.privateCoaching.sendUserMessage, {
-            caseId,
-            content: "Should fail",
-          }),
-        ),
+      t.withIdentity({ email: "usera@test.com" }).run(async (ctx) =>
+        ctx.runMutation(api.privateCoaching.sendUserMessage, {
+          caseId,
+          content: "Should fail",
+        }),
+      ),
       "CONFLICT",
     );
   });
@@ -444,14 +438,12 @@ describe("privateCoaching/sendUserMessage — status validation", () => {
     });
 
     await expectConvexError(
-      t
-        .withIdentity({ email: "usera@test.com" })
-        .run(async (ctx) =>
-          ctx.runMutation(api.privateCoaching.sendUserMessage, {
-            caseId,
-            content: "Should fail",
-          }),
-        ),
+      t.withIdentity({ email: "usera@test.com" }).run(async (ctx) =>
+        ctx.runMutation(api.privateCoaching.sendUserMessage, {
+          caseId,
+          content: "Should fail",
+        }),
+      ),
       "CONFLICT",
     );
   });
@@ -463,14 +455,12 @@ describe("privateCoaching/sendUserMessage — status validation", () => {
     });
 
     await expectConvexError(
-      t
-        .withIdentity({ email: "usera@test.com" })
-        .run(async (ctx) =>
-          ctx.runMutation(api.privateCoaching.sendUserMessage, {
-            caseId,
-            content: "Should fail",
-          }),
-        ),
+      t.withIdentity({ email: "usera@test.com" }).run(async (ctx) =>
+        ctx.runMutation(api.privateCoaching.sendUserMessage, {
+          caseId,
+          content: "Should fail",
+        }),
+      ),
       "CONFLICT",
     );
   });
@@ -482,14 +472,12 @@ describe("privateCoaching/sendUserMessage — status validation", () => {
     });
 
     await expectConvexError(
-      t
-        .withIdentity({ email: "usera@test.com" })
-        .run(async (ctx) =>
-          ctx.runMutation(api.privateCoaching.sendUserMessage, {
-            caseId,
-            content: "Should fail",
-          }),
-        ),
+      t.withIdentity({ email: "usera@test.com" }).run(async (ctx) =>
+        ctx.runMutation(api.privateCoaching.sendUserMessage, {
+          caseId,
+          content: "Should fail",
+        }),
+      ),
       "CONFLICT",
     );
   });
@@ -645,14 +633,12 @@ describe("auth enforcement", () => {
     );
 
     await expectConvexError(
-      t
-        .withIdentity({ email: "outsider@test.com" })
-        .run(async (ctx) =>
-          ctx.runMutation(api.privateCoaching.sendUserMessage, {
-            caseId,
-            content: "Intruder message",
-          }),
-        ),
+      t.withIdentity({ email: "outsider@test.com" }).run(async (ctx) =>
+        ctx.runMutation(api.privateCoaching.sendUserMessage, {
+          caseId,
+          content: "Intruder message",
+        }),
+      ),
       "FORBIDDEN",
     );
   });

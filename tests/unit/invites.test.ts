@@ -269,13 +269,11 @@ describe("invites/redeem — consumed token", () => {
     const { t } = await seedInviteEnv();
 
     await expectConvexError(
-      t
-        .withIdentity({ email: "invitee@test.com" })
-        .run(async (ctx) =>
-          ctx.runMutation(anyApi.invites.redeem, {
-            token: "nonexistent_token_value_here____",
-          }),
-        ),
+      t.withIdentity({ email: "invitee@test.com" }).run(async (ctx) =>
+        ctx.runMutation(anyApi.invites.redeem, {
+          token: "nonexistent_token_value_here____",
+        }),
+      ),
       "TOKEN_INVALID",
     );
   });

@@ -20,10 +20,10 @@ to the case (or uses `viewAsRole` in solo/demo mode).
 Returns all `jointMessages` rows for the given case, sorted by `createdAt`
 ascending. The caller must be a party to the case.
 
-| Arg | Type | Description |
-|-----|------|-------------|
-| `caseId` | `Id<"cases">` | The case to fetch messages for |
-| `viewAsRole` | `"INITIATOR" \| "INVITEE"` (optional) | Solo-mode role selector |
+| Arg          | Type                                  | Description                    |
+| ------------ | ------------------------------------- | ------------------------------ |
+| `caseId`     | `Id<"cases">`                         | The case to fetch messages for |
+| `viewAsRole` | `"INITIATOR" \| "INVITEE"` (optional) | Solo-mode role selector        |
 
 ### `mySynthesis`
 
@@ -41,9 +41,9 @@ state machine. On the **first** such transition the mutation schedules
 grounded in the case's `mainTopic`. The state machine prevents re-entry,
 so duplicate opening messages cannot be generated.
 
-| Arg | Type | Description |
-|-----|------|-------------|
-| `caseId` | `Id<"cases">` | Target case |
+| Arg          | Type                                  | Description             |
+| ------------ | ------------------------------------- | ----------------------- |
+| `caseId`     | `Id<"cases">`                         | Target case             |
 | `viewAsRole` | `"INITIATOR" \| "INVITEE"` (optional) | Solo-mode role selector |
 
 ### `sendUserMessage`
@@ -56,20 +56,20 @@ in `convex/lib/mentionDetect.ts`), `triggerType: "mention"` is passed to
 the action so the Coach always responds regardless of Haiku classification.
 Throws `CONFLICT` if the case is not in `JOINT_ACTIVE` status.
 
-| Arg | Type | Description |
-|-----|------|-------------|
-| `caseId` | `Id<"cases">` | Target case |
-| `content` | `string` | Message text |
+| Arg       | Type          | Description  |
+| --------- | ------------- | ------------ |
+| `caseId`  | `Id<"cases">` | Target case  |
+| `content` | `string`      | Message text |
 
 ### `proposeClosure`
 
 Sets the caller's `partyStates.closureProposed` to `true` and stores the
 provided summary on `case.closureSummary`. Only valid in `JOINT_ACTIVE`.
 
-| Arg | Type | Description |
-|-----|------|-------------|
-| `caseId` | `Id<"cases">` | Target case |
-| `summary` | `string` | Proposed closure summary |
+| Arg       | Type          | Description              |
+| --------- | ------------- | ------------------------ |
+| `caseId`  | `Id<"cases">` | Target case              |
+| `summary` | `string`      | Proposed closure summary |
 
 ### `confirmClosure`
 
@@ -77,8 +77,8 @@ If the other party has already proposed closure, transitions the case to
 `CLOSED_RESOLVED` via the state machine, sets `closedAt`, and marks both
 parties as confirmed. Throws `CONFLICT` if the other party has not proposed.
 
-| Arg | Type | Description |
-|-----|------|-------------|
+| Arg      | Type          | Description |
+| -------- | ------------- | ----------- |
 | `caseId` | `Id<"cases">` | Target case |
 
 ### `rejectClosure`
@@ -86,8 +86,8 @@ parties as confirmed. Throws `CONFLICT` if the other party has not proposed.
 Clears the other party's `closureProposed` flag, effectively declining the
 proposal without ending the session.
 
-| Arg | Type | Description |
-|-----|------|-------------|
+| Arg      | Type          | Description |
+| -------- | ------------- | ----------- |
 | `caseId` | `Id<"cases">` | Target case |
 
 ### `unilateralClose`
@@ -98,8 +98,8 @@ A `notifications` record of type `CASE_CLOSED_UNRESOLVED` is inserted for
 the other party (unless the invitee never joined, in which case no
 notification is created).
 
-| Arg | Type | Description |
-|-----|------|-------------|
+| Arg      | Type          | Description |
+| -------- | ------------- | ----------- |
 | `caseId` | `Id<"cases">` | Target case |
 
 ## Internal Actions
@@ -113,8 +113,8 @@ the same streaming-insert path as `generateCoachResponse` (insert →
 stream → finalize) and applies the privacy response filter before
 finalizing. On failure after retries the message row is marked `ERROR`.
 
-| Arg | Type | Description |
-|-----|------|-------------|
+| Arg      | Type          | Description                         |
+| -------- | ------------- | ----------------------------------- |
 | `caseId` | `Id<"cases">` | The case entering the joint session |
 
 ### `generateCoachResponse`
@@ -140,12 +140,12 @@ raw private messages before emitting. On rejection the action retries up to
 Messages classified as `INFLAMMATORY` are flagged with `isIntervention: true`
 for distinct UI styling.
 
-| Trigger type | Behaviour |
-|--------------|-----------|
-| New user message | Haiku gate decides |
-| @-mention | Always generates (bypasses gate) |
-| Silence timer (5+ exchanges) | Always generates |
-| Periodic summary (cron) | Always generates in summary mode |
+| Trigger type                 | Behaviour                        |
+| ---------------------------- | -------------------------------- |
+| New user message             | Haiku gate decides               |
+| @-mention                    | Always generates (bypasses gate) |
+| Silence timer (5+ exchanges) | Always generates                 |
+| Periodic summary (cron)      | Always generates in summary mode |
 
 ### `evaluateAndSummarize`
 
@@ -161,17 +161,17 @@ facilitation.
 Throttle mechanism: the 6-message minimum prevents redundant summaries when
 conversation is slow or when agreement has not advanced since the last summary.
 
-| Arg | Type | Description |
-|-----|------|-------------|
+| Arg      | Type                     | Description                                           |
+| -------- | ------------------------ | ----------------------------------------------------- |
 | `caseId` | `Id<"cases">` (optional) | Evaluate a single case; omit to scan all active cases |
 
 ## Error Codes
 
-| Code | HTTP | When |
-|------|------|------|
-| `UNAUTHENTICATED` | 401 | No valid session |
-| `FORBIDDEN` | 403 | Caller is not a party to the case |
-| `CONFLICT` | 409 | Case is not in the expected status, or closure precondition not met |
+| Code              | HTTP | When                                                                |
+| ----------------- | ---- | ------------------------------------------------------------------- |
+| `UNAUTHENTICATED` | 401  | No valid session                                                    |
+| `FORBIDDEN`       | 403  | Caller is not a party to the case                                   |
+| `CONFLICT`        | 409  | Case is not in the expected status, or closure precondition not met |
 
 ## State Transitions
 

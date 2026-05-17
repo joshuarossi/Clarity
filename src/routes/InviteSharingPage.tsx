@@ -6,18 +6,24 @@ import type { Id } from "../../convex/_generated/dataModel";
 import { Button } from "../components/ui/button";
 import { LoadingSpinner } from "../components/layout/LoadingSpinner";
 
-function useCopyWithFeedback(text: string): { copy: () => void; copied: boolean } {
+function useCopyWithFeedback(text: string): {
+  copy: () => void;
+  copied: boolean;
+} {
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const copy = useCallback(() => {
-    navigator.clipboard.writeText(text).then(() => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      setCopied(true);
-      timerRef.current = setTimeout(() => setCopied(false), 2000);
-    }).catch(() => {
-      // Clipboard API unavailable — silently fail
-    });
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+        setCopied(true);
+        timerRef.current = setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {
+        // Clipboard API unavailable — silently fail
+      });
   }, [text]);
 
   useEffect(() => {
@@ -35,11 +41,16 @@ export function InviteSharingPage(): React.ReactElement {
   const navigate = useNavigate();
 
   const otherPartyName: string =
-    (location.state as { otherPartyName?: string } | null)?.otherPartyName || "the other party";
+    (location.state as { otherPartyName?: string } | null)?.otherPartyName ||
+    "the other party";
 
   const caseDoc = useQuery(api.cases.get, { caseId: caseId as Id<"cases"> });
-  const partyStates = useQuery(api.cases.partyStates, { caseId: caseId as Id<"cases"> });
-  const invite = useQuery(api.invites.getForCase, { caseId: caseId as Id<"cases"> });
+  const partyStates = useQuery(api.cases.partyStates, {
+    caseId: caseId as Id<"cases">,
+  });
+  const invite = useQuery(api.invites.getForCase, {
+    caseId: caseId as Id<"cases">,
+  });
 
   // Solo-mode redirect guard
   useEffect(() => {
@@ -52,9 +63,12 @@ export function InviteSharingPage(): React.ReactElement {
   const mainTopic = partyStates?.self?.mainTopic ?? "our situation";
 
   // Display name for templates — use "there" for email greeting when fallback
-  const templateName = otherPartyName === "the other party" ? "there" : otherPartyName;
+  const templateName =
+    otherPartyName === "the other party" ? "there" : otherPartyName;
 
-  const emailSubject = encodeURIComponent("Let's work through this together — Clarity");
+  const emailSubject = encodeURIComponent(
+    "Let's work through this together — Clarity",
+  );
   const emailBody = encodeURIComponent(
     `Hey ${templateName} — I found this thing called Clarity. It's a private tool that helps two people work through something difficult together with an AI mediator. I thought it might help us work through the ${mainTopic}. Here's a link to join: ${inviteUrl}. No pressure — let me know what you think.`,
   );
@@ -67,7 +81,11 @@ export function InviteSharingPage(): React.ReactElement {
   const [expandedHelp, setExpandedHelp] = useState(false);
 
   // Loading state — all three queries must resolve
-  if (caseDoc === undefined || partyStates === undefined || invite === undefined) {
+  if (
+    caseDoc === undefined ||
+    partyStates === undefined ||
+    invite === undefined
+  ) {
     return <LoadingSpinner />;
   }
 
@@ -79,12 +97,26 @@ export function InviteSharingPage(): React.ReactElement {
   // Token already consumed
   if (invite === null) {
     return (
-      <main style={{ display: "flex", justifyContent: "center", minHeight: "100vh", padding: "2rem 1rem" }}>
+      <main
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          minHeight: "100vh",
+          padding: "2rem 1rem",
+        }}
+      >
         <div style={{ maxWidth: 600, width: "100%", textAlign: "center" }}>
           <h1>Link already used</h1>
-          <p>{otherPartyName === "the other party" ? "The other party" : otherPartyName} has joined the case.</p>
+          <p>
+            {otherPartyName === "the other party"
+              ? "The other party"
+              : otherPartyName}{" "}
+            has joined the case.
+          </p>
           <Link to={`/cases/${caseId}`}>
-            <Button variant="primary" style={{ marginTop: "1rem" }}>Go to case</Button>
+            <Button variant="primary" style={{ marginTop: "1rem" }}>
+              Go to case
+            </Button>
           </Link>
         </div>
       </main>
@@ -92,7 +124,14 @@ export function InviteSharingPage(): React.ReactElement {
   }
 
   return (
-    <main style={{ display: "flex", justifyContent: "center", minHeight: "100vh", padding: "2rem 1rem" }}>
+    <main
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        minHeight: "100vh",
+        padding: "2rem 1rem",
+      }}
+    >
       <div style={{ maxWidth: 600, width: "100%" }}>
         <h1>Your case is ready. Send this link to {otherPartyName}.</h1>
 
@@ -124,7 +163,14 @@ export function InviteSharingPage(): React.ReactElement {
         </Button>
 
         {/* Share options */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.5rem" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.75rem",
+            marginBottom: "1.5rem",
+          }}
+        >
           <a
             href={`mailto:?subject=${emailSubject}&body=${emailBody}`}
             style={{ textDecoration: "none" }}
@@ -134,11 +180,19 @@ export function InviteSharingPage(): React.ReactElement {
             </Button>
           </a>
 
-          <Button variant="secondary" onClick={smsCopy.copy} style={{ width: "100%" }}>
+          <Button
+            variant="secondary"
+            onClick={smsCopy.copy}
+            style={{ width: "100%" }}
+          >
             Copy for text
           </Button>
 
-          <Button variant="secondary" onClick={linkCopy.copy} style={{ width: "100%" }}>
+          <Button
+            variant="secondary"
+            onClick={linkCopy.copy}
+            style={{ width: "100%" }}
+          >
             Just copy the link
           </Button>
         </div>
@@ -161,12 +215,22 @@ export function InviteSharingPage(): React.ReactElement {
             What should I tell them?
           </button>
           {expandedHelp && (
-            <div style={{ marginTop: "0.75rem", padding: "1rem", background: "var(--surface-secondary, #f5f5f5)", borderRadius: "0.5rem" }}>
+            <div
+              style={{
+                marginTop: "0.75rem",
+                padding: "1rem",
+                background: "var(--surface-secondary, #f5f5f5)",
+                borderRadius: "0.5rem",
+              }}
+            >
               <p style={{ fontStyle: "italic", marginBottom: "0.5rem" }}>
                 {`"Hey ${templateName} — I found this thing called Clarity. It's a private tool that helps two people work through something difficult together with an AI mediator. I thought it might help us work through the ${mainTopic}. Here's a link to join: ${inviteUrl}. No pressure — let me know what you think."`}
               </p>
-              <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
-                Feel free to adjust this message to fit your style and situation.
+              <p
+                style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}
+              >
+                Feel free to adjust this message to fit your style and
+                situation.
               </p>
             </div>
           )}

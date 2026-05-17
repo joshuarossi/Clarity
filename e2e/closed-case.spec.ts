@@ -154,13 +154,15 @@ test.describe("AC: Case remains accessible from Dashboard closed section", () =>
     });
 
     // Verify the closed section is visible on the dashboard
-    const closedSection = pageA.locator(
-      "text=Closed Cases, text=Closed",
-    ).first();
+    const closedSection = pageA
+      .locator("text=Closed Cases, text=Closed")
+      .first();
     await expect(closedSection).toBeVisible();
 
     // Click the case entry within the closed section to navigate
-    const caseLink = pageA.locator(`a[href*="/cases/${caseId}/closed"]`).first();
+    const caseLink = pageA
+      .locator(`a[href*="/cases/${caseId}/closed"]`)
+      .first();
     await expect(caseLink).toBeVisible({ timeout: 10_000 });
     await caseLink.click();
 

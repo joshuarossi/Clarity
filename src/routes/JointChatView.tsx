@@ -41,7 +41,9 @@ function SynthesisPanel({
         <DialogDescription>
           {text ?? "Synthesis not available."}
         </DialogDescription>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+        <div
+          style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}
+        >
           <button
             type="button"
             className="cc-btn cc-btn-ghost cc-btn-sm"
@@ -83,7 +85,9 @@ function JointChatViewInner({
   const [synthesisOpen, setSynthesisOpen] = React.useState(false);
   const [closureOpen, setClosureOpen] = React.useState(false);
   const [draftCoachOpen, setDraftCoachOpen] = React.useState(false);
-  const [draftInputText, setDraftInputText] = React.useState<string | null>(null);
+  const [draftInputText, setDraftInputText] = React.useState<string | null>(
+    null,
+  );
   const [draftVersion, setDraftVersion] = React.useState(0);
   const [sendError, setSendError] = React.useState<string | null>(null);
 
@@ -157,7 +161,9 @@ function JointChatViewInner({
     } catch (err) {
       console.error("Failed to send message:", err);
       setSendError(
-        err instanceof Error ? err.message : "Failed to send message. Please try again.",
+        err instanceof Error
+          ? err.message
+          : "Failed to send message. Please try again.",
       );
     }
   };
@@ -207,7 +213,9 @@ function JointChatViewInner({
     } catch (err) {
       console.error("Failed to confirm closure:", err);
       setSendError(
-        err instanceof Error ? err.message : "Failed to confirm closure. Please try again.",
+        err instanceof Error
+          ? err.message
+          : "Failed to confirm closure. Please try again.",
       );
     }
   };
@@ -221,7 +229,9 @@ function JointChatViewInner({
     } catch (err) {
       console.error("Failed to reject closure:", err);
       setSendError(
-        err instanceof Error ? err.message : "Failed to reject closure. Please try again.",
+        err instanceof Error
+          ? err.message
+          : "Failed to reject closure. Please try again.",
       );
     }
   };
@@ -288,7 +298,11 @@ function JointChatViewInner({
 
       {/* Message list with auto-scroll */}
       <div style={{ flex: 1, overflow: "hidden" }}>
-        <ChatWindow messages={messages} className="cc-joint-chat-messages" onRetry={handleRetry} />
+        <ChatWindow
+          messages={messages}
+          className="cc-joint-chat-messages"
+          onRetry={handleRetry}
+        />
       </div>
 
       {/* Closure confirmation banner */}
@@ -303,7 +317,14 @@ function JointChatViewInner({
 
       {/* Send error feedback */}
       {sendError && (
-        <p style={{ color: "var(--danger)", fontSize: 13, padding: "0 16px", margin: 0 }}>
+        <p
+          style={{
+            color: "var(--danger)",
+            fontSize: 13,
+            padding: "0 16px",
+            margin: 0,
+          }}
+        >
           {sendError}
         </p>
       )}

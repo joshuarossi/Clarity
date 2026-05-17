@@ -2,7 +2,11 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { render, cleanup, act } from "@testing-library/react";
 import { ChatWindow } from "../../src/components/chat/ChatWindow";
-import type { ChatMessage, BubbleVariant, MessageStatus } from "../../src/components/chat/MessageBubble";
+import type {
+  ChatMessage,
+  BubbleVariant,
+  MessageStatus,
+} from "../../src/components/chat/MessageBubble";
 
 afterEach(cleanup);
 
@@ -76,22 +80,20 @@ describe("AC: ChatWindow scrollable container with ARIA", () => {
 describe("AC: Sticky auto-scroll", () => {
   it("scrolls to bottom when messages are added and user is at bottom", () => {
     const messages = makeMessages(20);
-    const { container, rerender } = render(
-      <ChatWindow messages={messages} />,
-    );
+    const { container, rerender } = render(<ChatWindow messages={messages} />);
     const log = container.querySelector("[role='log']");
     expect(log).not.toBeNull();
 
     // Simulate the scroll container having a fixed height with overflow
-    Object.defineProperty(log!, "scrollHeight", { value: 2000, writable: true });
+    Object.defineProperty(log!, "scrollHeight", {
+      value: 2000,
+      writable: true,
+    });
     Object.defineProperty(log!, "clientHeight", { value: 400, writable: true });
     Object.defineProperty(log!, "scrollTop", { value: 1600, writable: true });
 
     // Add a new message — should auto-scroll
-    const updatedMessages = [
-      ...messages,
-      makeMessage({ id: "new-msg" }),
-    ];
+    const updatedMessages = [...messages, makeMessage({ id: "new-msg" })];
     act(() => {
       rerender(<ChatWindow messages={updatedMessages} />);
     });
@@ -103,14 +105,15 @@ describe("AC: Sticky auto-scroll", () => {
 
   it("does NOT auto-scroll when user has scrolled up", () => {
     const messages = makeMessages(20);
-    const { container, rerender } = render(
-      <ChatWindow messages={messages} />,
-    );
+    const { container, rerender } = render(<ChatWindow messages={messages} />);
     const log = container.querySelector("[role='log']");
     expect(log).not.toBeNull();
 
     // Simulate user scrolled up (scrollTop far from bottom)
-    Object.defineProperty(log!, "scrollHeight", { value: 2000, writable: true });
+    Object.defineProperty(log!, "scrollHeight", {
+      value: 2000,
+      writable: true,
+    });
     Object.defineProperty(log!, "clientHeight", { value: 400, writable: true });
     Object.defineProperty(log!, "scrollTop", { value: 500, writable: true });
 
@@ -122,10 +125,7 @@ describe("AC: Sticky auto-scroll", () => {
     const scrollTopBefore = log!.scrollTop;
 
     // Add a new message
-    const updatedMessages = [
-      ...messages,
-      makeMessage({ id: "new-msg" }),
-    ];
+    const updatedMessages = [...messages, makeMessage({ id: "new-msg" })];
     act(() => {
       rerender(<ChatWindow messages={updatedMessages} />);
     });
@@ -151,12 +151,8 @@ describe("AC: New message fade-in animation", () => {
   });
 
   it("does not re-apply animation class on re-render of existing message", () => {
-    const messages = [
-      makeMessage({ id: "msg-1", content: "Hello" }),
-    ];
-    const { container, rerender } = render(
-      <ChatWindow messages={messages} />,
-    );
+    const messages = [makeMessage({ id: "msg-1", content: "Hello" })];
+    const { container, rerender } = render(<ChatWindow messages={messages} />);
 
     // Re-render with same message (content changed but same id)
     const updatedMessages = [
@@ -175,9 +171,7 @@ describe("AC: New message fade-in animation", () => {
 
   it("applies animation to each newly added message", () => {
     const messages = [makeMessage({ id: "msg-1" })];
-    const { container, rerender } = render(
-      <ChatWindow messages={messages} />,
-    );
+    const { container, rerender } = render(<ChatWindow messages={messages} />);
 
     const updatedMessages = [
       ...messages,

@@ -36,11 +36,21 @@ export function AdminTemplatesPage(): React.ReactElement {
           <tbody>
             {[1, 2, 3].map((i) => (
               <tr key={i} className="animate-pulse">
-                <td className="py-2 px-3"><div className="h-4 bg-gray-200 rounded w-20" /></td>
-                <td className="py-2 px-3"><div className="h-4 bg-gray-200 rounded w-32" /></td>
-                <td className="py-2 px-3"><div className="h-4 bg-gray-200 rounded w-8" /></td>
-                <td className="py-2 px-3"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-                <td className="py-2 px-3"><div className="h-4 bg-gray-200 rounded w-8" /></td>
+                <td className="py-2 px-3">
+                  <div className="h-4 bg-gray-200 rounded w-20" />
+                </td>
+                <td className="py-2 px-3">
+                  <div className="h-4 bg-gray-200 rounded w-32" />
+                </td>
+                <td className="py-2 px-3">
+                  <div className="h-4 bg-gray-200 rounded w-8" />
+                </td>
+                <td className="py-2 px-3">
+                  <div className="h-4 bg-gray-200 rounded w-16" />
+                </td>
+                <td className="py-2 px-3">
+                  <div className="h-4 bg-gray-200 rounded w-8" />
+                </td>
               </tr>
             ))}
           </tbody>
@@ -49,7 +59,9 @@ export function AdminTemplatesPage(): React.ReactElement {
 
       {templates !== undefined && templates.length === 0 && (
         <p className="text-gray-500 mt-8" data-testid="empty-state">
-          No templates yet. The app will use a built-in default baseline. Create a template when you want to tune the Coach&#x2019;s behavior per category.
+          No templates yet. The app will use a built-in default baseline. Create
+          a template when you want to tune the Coach&#x2019;s behavior per
+          category.
         </p>
       )}
 
@@ -59,7 +71,9 @@ export function AdminTemplatesPage(): React.ReactElement {
             <tr className="border-b">
               <th className="text-left py-2 px-3 font-medium">Category</th>
               <th className="text-left py-2 px-3 font-medium">Name</th>
-              <th className="text-left py-2 px-3 font-medium">Current Version</th>
+              <th className="text-left py-2 px-3 font-medium">
+                Current Version
+              </th>
               <th className="text-left py-2 px-3 font-medium">Status</th>
               <th className="text-left py-2 px-3 font-medium">Pinned Cases</th>
             </tr>

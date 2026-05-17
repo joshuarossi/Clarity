@@ -90,9 +90,7 @@ test.describe("AC: App.tsx defines all TechSpec §9.2 routes", () => {
     await expect(heading).toBeVisible();
   });
 
-  test("unmatched route renders a page-not-found message", async ({
-    page,
-  }) => {
+  test("unmatched route renders a page-not-found message", async ({ page }) => {
     await page.goto("/this-route-does-not-exist");
     // Should show a "Page not found" or similar stub
     await expect(page.getByText(/not found/i)).toBeVisible();
@@ -237,9 +235,7 @@ test.describe("AC: TopNav renders logged-in and case-detail variants", () => {
 // ── AC: Navigation between routes works with browser back/forward ─────────
 
 test.describe("AC: Navigation with browser back/forward buttons", () => {
-  test("back and forward navigation works between routes", async ({
-    page,
-  }) => {
+  test("back and forward navigation works between routes", async ({ page }) => {
     // Start at a known route
     await page.goto("/dashboard");
     await expect(page.locator("h1")).toBeVisible();

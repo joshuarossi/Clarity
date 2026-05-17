@@ -35,9 +35,10 @@ vi.mock("convex/react", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom",
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -135,12 +136,28 @@ const DEFAULT_MESSAGES: JointMessage[] = [
 const FN_NAME = Symbol.for("functionName");
 
 interface PartyStates {
-  self: { role: string; _id: string; _creationTime: number; caseId: string; userId: string };
-  other: { role: string; hasCompletedPC: boolean; closureProposed: boolean } | null;
+  self: {
+    role: string;
+    _id: string;
+    _creationTime: number;
+    caseId: string;
+    userId: string;
+  };
+  other: {
+    role: string;
+    hasCompletedPC: boolean;
+    closureProposed: boolean;
+  } | null;
 }
 
 const DEFAULT_PARTY_STATES: PartyStates = {
-  self: { role: "INITIATOR", _id: "ps1", _creationTime: 0, caseId: CASE_ID, userId: INITIATOR_ID },
+  self: {
+    role: "INITIATOR",
+    _id: "ps1",
+    _creationTime: 0,
+    caseId: CASE_ID,
+    userId: INITIATOR_ID,
+  },
   other: { role: "INVITEE", hasCompletedPC: false, closureProposed: false },
 };
 
@@ -247,15 +264,11 @@ function renderPage() {
 describe("AC: Renders all joint messages via reactive query", () => {
   it("renders all messages from the messages query", () => {
     renderPage();
-    expect(
-      screen.getByText(/Welcome to the joint session/),
-    ).toBeDefined();
+    expect(screen.getByText(/Welcome to the joint session/)).toBeDefined();
     expect(
       screen.getByText(/I'd like to discuss the meeting frequency/),
     ).toBeDefined();
-    expect(
-      screen.getByText(/I agree, let's talk about that/),
-    ).toBeDefined();
+    expect(screen.getByText(/I agree, let's talk about that/)).toBeDefined();
   });
 
   it("shows loading state while queries return undefined", () => {
@@ -271,9 +284,7 @@ describe("AC: Renders all joint messages via reactive query", () => {
     messagesFixture = [];
     renderPage();
     // No messages rendered but page still loads
-    expect(
-      screen.queryByText(/Welcome to the joint session/),
-    ).toBeNull();
+    expect(screen.queryByText(/Welcome to the joint session/)).toBeNull();
   });
 
   it("reactively updates when new messages arrive", () => {
@@ -283,7 +294,11 @@ describe("AC: Renders all joint messages via reactive query", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getAllByText(/Welcome to the joint session|I'd like to discuss|I agree/).length).toBe(3);
+    expect(
+      screen.getAllByText(
+        /Welcome to the joint session|I'd like to discuss|I agree/,
+      ).length,
+    ).toBe(3);
 
     // Simulate new message arriving via reactive query
     messagesFixture = [
@@ -306,9 +321,7 @@ describe("AC: Renders all joint messages via reactive query", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      screen.getByText(/How about meeting twice a week/),
-    ).toBeDefined();
+    expect(screen.getByText(/How about meeting twice a week/)).toBeDefined();
   });
 });
 
@@ -320,9 +333,7 @@ describe("AC: Each participant has consistent avatar color", () => {
     const initiatorMsg = screen.getByText(
       /I'd like to discuss the meeting frequency/,
     );
-    const bubble = initiatorMsg.closest(
-      "[class*='cc-bubble-party-initiator']",
-    );
+    const bubble = initiatorMsg.closest("[class*='cc-bubble-party-initiator']");
     expect(bubble).not.toBeNull();
   });
 
@@ -380,9 +391,7 @@ describe("AC: Coach intervention messages (isIntervention=true) have 4px left bo
     ];
     renderPage();
 
-    const interventionMsg = screen.getByText(
-      /Let's take a step back/,
-    );
+    const interventionMsg = screen.getByText(/Let's take a step back/);
     const bubble = interventionMsg.closest(
       "[class*='cc-bubble-coach-intervention']",
     );
@@ -392,9 +401,7 @@ describe("AC: Coach intervention messages (isIntervention=true) have 4px left bo
   it("non-intervention Coach messages do not use intervention class", () => {
     renderPage();
     const coachMsg = screen.getByText(/Welcome to the joint session/);
-    const bubble = coachMsg.closest(
-      "[class*='cc-bubble-coach-intervention']",
-    );
+    const bubble = coachMsg.closest("[class*='cc-bubble-coach-intervention']");
     expect(bubble).toBeNull();
   });
 });
@@ -535,9 +542,7 @@ describe("AC: Top nav: 'My guidance' link opens synthesis panel, 'Close' button 
 
     await waitFor(() => {
       expect(
-        screen.getByText(
-          /Start by acknowledging shared goals/,
-        ),
+        screen.getByText(/Start by acknowledging shared goals/),
       ).toBeDefined();
     });
   });
@@ -549,9 +554,7 @@ describe("AC: Top nav: 'My guidance' link opens synthesis panel, 'Close' button 
     fireEvent.click(guidanceLink);
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/synthesis not available/i),
-      ).toBeDefined();
+      expect(screen.getByText(/synthesis not available/i)).toBeDefined();
     });
   });
 

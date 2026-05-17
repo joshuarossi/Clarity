@@ -44,7 +44,9 @@ function NotFoundPage() {
 function AppLayout() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const location = useLocation();
-  const caseMatch = location.pathname.match(/^\/cases\/([^/]+)\/(private|ready|joint|closed)$/);
+  const caseMatch = location.pathname.match(
+    /^\/cases\/([^/]+)\/(private|ready|joint|closed)$/,
+  );
 
   const phaseMap: Record<string, string> = {
     private: "Private Coaching",
@@ -55,30 +57,134 @@ function AppLayout() {
 
   return (
     <>
-      {isAuthenticated && !isLoading && (
-        caseMatch ? (
-          <TopNav variant="case-detail" caseId={caseMatch[1]} casePhase={phaseMap[caseMatch[2]]} />
+      {isAuthenticated &&
+        !isLoading &&
+        (caseMatch ? (
+          <TopNav
+            variant="case-detail"
+            caseId={caseMatch[1]}
+            casePhase={phaseMap[caseMatch[2]]}
+          />
         ) : (
           <TopNav variant="logged-in" />
-        )
-      )}
+        ))}
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={isAuthenticated && !isLoading ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+        <Route
+          path="/login"
+          element={
+            isAuthenticated && !isLoading ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <LoginPage />
+            )
+          }
+        />
         <Route path="/invite/:token" element={<InviteAcceptPage />} />
-        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-        <Route path="/cases/new" element={<ProtectedRoute><NewCasePage /></ProtectedRoute>} />
-        <Route path="/cases/:caseId/invite" element={<ProtectedRoute><InviteSharingPage /></ProtectedRoute>} />
-        <Route path="/cases/:caseId" element={<ProtectedRoute><CaseDetailPage /></ProtectedRoute>} />
-        <Route path="/cases/:caseId/ready" element={<ProtectedRoute><ReadyForJointView /></ProtectedRoute>} />
-        <Route path="/cases/:caseId/private" element={<ProtectedRoute><CasePrivatePage /></ProtectedRoute>} />
-        <Route path="/cases/:caseId/joint" element={<ProtectedRoute><JointChatView /></ProtectedRoute>} />
-        <Route path="/cases/:caseId/closed" element={<ProtectedRoute><ClosedCaseView /></ProtectedRoute>} />
-        <Route path="/admin/templates" element={<AdminRoute><AdminTemplatesPage /></AdminRoute>} />
-        <Route path="/admin/templates/new" element={<AdminRoute><AdminTemplateCreatePage /></AdminRoute>} />
-        <Route path="/admin/templates/:id" element={<AdminRoute><AdminTemplateEditPage /></AdminRoute>} />
-        <Route path="/admin/audit" element={<AdminRoute><AdminAuditLogPage /></AdminRoute>} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cases/new"
+          element={
+            <ProtectedRoute>
+              <NewCasePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cases/:caseId/invite"
+          element={
+            <ProtectedRoute>
+              <InviteSharingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cases/:caseId"
+          element={
+            <ProtectedRoute>
+              <CaseDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cases/:caseId/ready"
+          element={
+            <ProtectedRoute>
+              <ReadyForJointView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cases/:caseId/private"
+          element={
+            <ProtectedRoute>
+              <CasePrivatePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cases/:caseId/joint"
+          element={
+            <ProtectedRoute>
+              <JointChatView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cases/:caseId/closed"
+          element={
+            <ProtectedRoute>
+              <ClosedCaseView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/templates"
+          element={
+            <AdminRoute>
+              <AdminTemplatesPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/templates/new"
+          element={
+            <AdminRoute>
+              <AdminTemplateCreatePage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/templates/:id"
+          element={
+            <AdminRoute>
+              <AdminTemplateEditPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/audit"
+          element={
+            <AdminRoute>
+              <AdminAuditLogPage />
+            </AdminRoute>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>

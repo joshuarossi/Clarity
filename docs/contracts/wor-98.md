@@ -28,7 +28,7 @@ files:
     action: create
     exports: []
 signatures:
-  - "type ErrorCode = \"UNAUTHENTICATED\" | \"FORBIDDEN\" | \"NOT_FOUND\" | \"CONFLICT\" | \"INVALID_INPUT\" | \"TOKEN_INVALID\" | \"RATE_LIMITED\" | \"AI_ERROR\" | \"INTERNAL\";"
+  - 'type ErrorCode = "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "INVALID_INPUT" | "TOKEN_INVALID" | "RATE_LIMITED" | "AI_ERROR" | "INTERNAL";'
   - "type AppErrorData = { code: ErrorCode; message: string; httpStatus: number };"
   - "const HTTP_STATUS: Record<ErrorCode, number>;"
   - "function appError(code: ErrorCode, message: string): ConvexError<AppErrorData>;"
@@ -102,6 +102,7 @@ None. This module is a pure utility — it does not read from or write to any da
 **Error shape is exactly `{ code, message, httpStatus }`.** Every constructor returns a `ConvexError` whose `.data` property is an object with exactly three fields: `code` (an `ErrorCode` string), `message` (the string passed to the constructor), and `httpStatus` (a number from `HTTP_STATUS`). No additional fields are added. No fields are omitted.
 
 **httpStatus mapping matches TechSpec §7.4.** The mapping is:
+
 - `UNAUTHENTICATED` → 401
 - `FORBIDDEN` → 403
 - `NOT_FOUND` → 404

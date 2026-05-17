@@ -152,22 +152,26 @@ No mutations, actions, or external APIs are called. The module operates entirely
 All tests live in `tests/unit/auth.test.ts` using `convex-test` with the schema from `convex/schema.ts`. Tests define inline Convex functions (using `convexTest` helpers) that call the auth helpers, then assert on results and thrown errors.
 
 **AC 1 (requireAuth returns user or throws UNAUTHENTICATED) → `tests/unit/auth.test.ts` (unit).** Two sub-cases:
+
 1. Happy path: Set up a `convex-test` environment with a seeded user row and a mock identity (via convex-test's identity helpers) matching that user's email. Call `requireAuth(ctx)` inside a test query. Assert: returns a user doc with the correct email.
 2. No identity: Run with no identity configured. Assert: throws `ConvexError` with `code: "UNAUTHENTICATED"` and `httpStatus: 401`.
 3. Identity but no user row: Set up a mock identity but don't seed a user row. Assert: throws `ConvexError` with `code: "UNAUTHENTICATED"`.
 
 **AC 2 (getUserByEmail upserts on first login) → `tests/unit/auth.test.ts` (unit).** Three sub-cases:
+
 1. First call with new email: Assert returns a user doc with `role: "USER"` and the correct email. Verify via DB query that exactly one users row exists.
 2. Second call with same email: Assert returns the same user doc (same `_id`). Verify via DB query that still exactly one users row exists (no duplicate).
 3. Different emails: Call with two different emails. Assert two distinct user rows exist.
 
 **AC 3 (requirePartyToCase verifies party membership) → `tests/unit/auth.test.ts` (unit).** Four sub-cases:
+
 1. userId matches initiatorUserId: Assert returns the case doc without throwing.
 2. userId matches inviteeUserId: Assert returns the case doc without throwing.
 3. userId is neither party: Assert throws `ConvexError` with `code: "FORBIDDEN"` and `httpStatus: 403`.
 4. caseId does not exist: Assert throws `ConvexError` with `code: "NOT_FOUND"` and `httpStatus: 404`.
 
 **AC 4 (requireAdmin checks server-side role) → `tests/unit/auth.test.ts` (unit).** Two sub-cases:
+
 1. User with `role: "ADMIN"`: Assert returns the user doc without throwing.
 2. User with `role: "USER"`: Assert throws `ConvexError` with `code: "FORBIDDEN"` and `httpStatus: 403`.
 

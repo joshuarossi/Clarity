@@ -29,11 +29,11 @@ export function AdminTemplateEditPage(): React.ReactElement {
   const templateId = id as Id<"templates">;
   const template = useQuery(
     api.admin.get,
-    id && id !== "new" ? { templateId } : "skip"
+    id && id !== "new" ? { templateId } : "skip",
   );
   const versions = useQuery(
     api.admin.listVersions,
-    id && id !== "new" ? { templateId } : "skip"
+    id && id !== "new" ? { templateId } : "skip",
   );
 
   const publishNewVersion = useMutation(api.admin.publishNewVersion);
@@ -41,11 +41,14 @@ export function AdminTemplateEditPage(): React.ReactElement {
 
   const [globalGuidance, setGlobalGuidance] = React.useState("");
   const [coachInstructions, setCoachInstructions] = React.useState("");
-  const [draftCoachInstructions, setDraftCoachInstructions] = React.useState("");
+  const [draftCoachInstructions, setDraftCoachInstructions] =
+    React.useState("");
   const [notes, setNotes] = React.useState("");
   const [publishing, setPublishing] = React.useState(false);
   const [archiving, setArchiving] = React.useState(false);
-  const [viewingVersionId, setViewingVersionId] = React.useState<string | null>(null);
+  const [viewingVersionId, setViewingVersionId] = React.useState<string | null>(
+    null,
+  );
   const [archiveDialogOpen, setArchiveDialogOpen] = React.useState(false);
   const [publishError, setPublishError] = React.useState<string | null>(null);
   const [archiveError, setArchiveError] = React.useState<string | null>(null);
@@ -66,7 +69,10 @@ export function AdminTemplateEditPage(): React.ReactElement {
   // Loading state
   if (template === undefined || versions === undefined) {
     return (
-      <main className="mx-auto max-w-7xl px-4 py-8" data-testid="page-admin-template-edit">
+      <main
+        className="mx-auto max-w-7xl px-4 py-8"
+        data-testid="page-admin-template-edit"
+      >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
             {[1, 2, 3, 4].map((i) => (
@@ -86,7 +92,10 @@ export function AdminTemplateEditPage(): React.ReactElement {
   // Template not found
   if (template === null) {
     return (
-      <main className="mx-auto max-w-7xl px-4 py-8" data-testid="page-admin-template-edit">
+      <main
+        className="mx-auto max-w-7xl px-4 py-8"
+        data-testid="page-admin-template-edit"
+      >
         <h1 className="text-2xl font-bold mb-4">Template not found</h1>
         <a href="/admin/templates" className="text-blue-600 underline">
           Back to Templates
@@ -136,7 +145,10 @@ export function AdminTemplateEditPage(): React.ReactElement {
   };
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8" data-testid="page-admin-template-edit">
+    <main
+      className="mx-auto max-w-7xl px-4 py-8"
+      data-testid="page-admin-template-edit"
+    >
       <div className="flex items-center gap-3 mb-6">
         <h1 className="text-2xl font-bold">{template.name}</h1>
         {isArchived && (
@@ -148,11 +160,18 @@ export function AdminTemplateEditPage(): React.ReactElement {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left pane: Form */}
-        <form className="lg:col-span-2" data-testid="edit-form-pane" onSubmit={(e) => e.preventDefault()}>
+        <form
+          className="lg:col-span-2"
+          data-testid="edit-form-pane"
+          onSubmit={(e) => e.preventDefault()}
+        >
           {/* Read-only context fields */}
           <div className="mb-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="template-category">
+              <label
+                className="block text-sm font-medium mb-1"
+                htmlFor="template-category"
+              >
                 Category
               </label>
               <select
@@ -167,7 +186,10 @@ export function AdminTemplateEditPage(): React.ReactElement {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="template-name">
+              <label
+                className="block text-sm font-medium mb-1"
+                htmlFor="template-name"
+              >
                 Name
               </label>
               <input
@@ -185,7 +207,10 @@ export function AdminTemplateEditPage(): React.ReactElement {
           {!isArchived && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="global-guidance">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  htmlFor="global-guidance"
+                >
                   Global Guidance
                 </label>
                 <textarea
@@ -199,7 +224,10 @@ export function AdminTemplateEditPage(): React.ReactElement {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="coach-instructions">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  htmlFor="coach-instructions"
+                >
                   Coach Instructions
                 </label>
                 <textarea
@@ -213,7 +241,10 @@ export function AdminTemplateEditPage(): React.ReactElement {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="draft-coach-instructions">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  htmlFor="draft-coach-instructions"
+                >
                   Draft Coach Instructions
                 </label>
                 <textarea
@@ -227,7 +258,10 @@ export function AdminTemplateEditPage(): React.ReactElement {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="version-notes">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  htmlFor="version-notes"
+                >
                   Notes
                 </label>
                 <textarea
@@ -249,7 +283,10 @@ export function AdminTemplateEditPage(): React.ReactElement {
                   {publishing ? "Publishing..." : "Publish New Version"}
                 </Button>
 
-                <Dialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
+                <Dialog
+                  open={archiveDialogOpen}
+                  onOpenChange={setArchiveDialogOpen}
+                >
                   <DialogTrigger asChild>
                     <Button
                       className="bg-red-600 hover:bg-red-700 text-white"
@@ -261,15 +298,21 @@ export function AdminTemplateEditPage(): React.ReactElement {
                   <DialogContent aria-label="Archive confirmation">
                     <DialogTitle>Archive Template</DialogTitle>
                     <DialogDescription>
-                      Are you sure you want to archive &ldquo;{template.name}&rdquo;?
+                      Are you sure you want to archive &ldquo;{template.name}
+                      &rdquo;?
                     </DialogDescription>
-                    <p className="mt-2 text-sm" data-testid="pinned-cases-count">
+                    <p
+                      className="mt-2 text-sm"
+                      data-testid="pinned-cases-count"
+                    >
                       {template.pinnedCasesCount === 0
                         ? "No cases are currently pinned to this template."
                         : `${template.pinnedCasesCount} case${template.pinnedCasesCount === 1 ? " is" : "s are"} currently pinned to this template. They will continue working, but new cases won't be able to select this template.`}
                     </p>
                     {archiveError && (
-                      <p className="text-red-600 text-sm mt-2" role="alert">{archiveError}</p>
+                      <p className="text-red-600 text-sm mt-2" role="alert">
+                        {archiveError}
+                      </p>
                     )}
                     <div className="flex gap-3 mt-4 justify-end">
                       <DialogClose asChild>
@@ -292,7 +335,9 @@ export function AdminTemplateEditPage(): React.ReactElement {
             </div>
           )}
           {publishError && (
-            <p className="text-red-600 text-sm mt-2" role="alert">{publishError}</p>
+            <p className="text-red-600 text-sm mt-2" role="alert">
+              {publishError}
+            </p>
           )}
         </form>
 
@@ -318,7 +363,7 @@ export function AdminTemplateEditPage(): React.ReactElement {
                     className="text-xs px-2 py-1"
                     onClick={() =>
                       setViewingVersionId(
-                        viewingVersionId === ver._id ? null : ver._id
+                        viewingVersionId === ver._id ? null : ver._id,
                       )
                     }
                     aria-label={`View version ${ver.version}`}
@@ -343,14 +388,18 @@ export function AdminTemplateEditPage(): React.ReactElement {
                     data-testid="version-content-view"
                   >
                     <div>
-                      <span className="font-medium text-xs">Global Guidance:</span>
+                      <span className="font-medium text-xs">
+                        Global Guidance:
+                      </span>
                       <pre className="whitespace-pre-wrap mt-1 text-xs font-mono">
                         {ver.globalGuidance}
                       </pre>
                     </div>
                     {ver.coachInstructions && (
                       <div>
-                        <span className="font-medium text-xs">Coach Instructions:</span>
+                        <span className="font-medium text-xs">
+                          Coach Instructions:
+                        </span>
                         <pre className="whitespace-pre-wrap mt-1 text-xs font-mono">
                           {ver.coachInstructions}
                         </pre>
@@ -358,7 +407,9 @@ export function AdminTemplateEditPage(): React.ReactElement {
                     )}
                     {ver.draftCoachInstructions && (
                       <div>
-                        <span className="font-medium text-xs">Draft Coach Instructions:</span>
+                        <span className="font-medium text-xs">
+                          Draft Coach Instructions:
+                        </span>
                         <pre className="whitespace-pre-wrap mt-1 text-xs font-mono">
                           {ver.draftCoachInstructions}
                         </pre>

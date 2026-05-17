@@ -63,22 +63,19 @@ describe("WOR-108: Lint job", () => {
   it("has a lint job that runs ESLint", () => {
     const lint = workflow.jobs["lint"];
     expect(lint).toBeDefined();
-    const stepRuns = lint.steps
-      .filter((s) => s.run)
-      .map((s) => s.run);
+    const stepRuns = lint.steps.filter((s) => s.run).map((s) => s.run);
     const hasEslint = stepRuns.some(
-      (r) => r !== undefined && (r.includes("npm run lint") || r.includes("eslint"))
+      (r) =>
+        r !== undefined && (r.includes("npm run lint") || r.includes("eslint")),
     );
     expect(hasEslint).toBe(true);
   });
 
   it("has a lint job that runs Prettier check", () => {
     const lint = workflow.jobs["lint"];
-    const stepRuns = lint.steps
-      .filter((s) => s.run)
-      .map((s) => s.run);
+    const stepRuns = lint.steps.filter((s) => s.run).map((s) => s.run);
     const hasPrettier = stepRuns.some(
-      (r) => r !== undefined && r.includes("prettier") && r.includes("--check")
+      (r) => r !== undefined && r.includes("prettier") && r.includes("--check"),
     );
     expect(hasPrettier).toBe(true);
   });
@@ -96,13 +93,11 @@ describe("WOR-108: Typecheck job", () => {
 
   it("runs tsc --noEmit", () => {
     const typecheck = workflow.jobs["typecheck"];
-    const stepRuns = typecheck.steps
-      .filter((s) => s.run)
-      .map((s) => s.run);
+    const stepRuns = typecheck.steps.filter((s) => s.run).map((s) => s.run);
     const hasTsc = stepRuns.some(
       (r) =>
         r !== undefined &&
-        (r.includes("tsc --noEmit") || r.includes("npm run typecheck"))
+        (r.includes("tsc --noEmit") || r.includes("npm run typecheck")),
     );
     expect(hasTsc).toBe(true);
   });
@@ -118,13 +113,13 @@ describe("WOR-108: Unit job", () => {
 
   it("runs vitest", () => {
     const unit = workflow.jobs["unit"];
-    const stepRuns = unit.steps
-      .filter((s) => s.run)
-      .map((s) => s.run);
+    const stepRuns = unit.steps.filter((s) => s.run).map((s) => s.run);
     const hasVitest = stepRuns.some(
       (r) =>
         r !== undefined &&
-        (r.includes("vitest run") || r.includes("npm test") || r.includes("npm run test"))
+        (r.includes("vitest run") ||
+          r.includes("npm test") ||
+          r.includes("npm run test")),
     );
     expect(hasVitest).toBe(true);
   });
@@ -143,54 +138,44 @@ describe("WOR-108: E2E job", () => {
     // Check job-level env or step-level env
     const jobEnvMock = e2e.env?.["CLAUDE_MOCK"] === "true";
     const stepEnvMock = e2e.steps.some(
-      (s) => s.env?.["CLAUDE_MOCK"] === "true"
+      (s) => s.env?.["CLAUDE_MOCK"] === "true",
     );
     expect(jobEnvMock || stepEnvMock).toBe(true);
   });
 
   it("installs Playwright browsers", () => {
     const e2e = workflow.jobs["e2e"];
-    const stepRuns = e2e.steps
-      .filter((s) => s.run)
-      .map((s) => s.run);
+    const stepRuns = e2e.steps.filter((s) => s.run).map((s) => s.run);
     const hasPlaywrightInstall = stepRuns.some(
-      (r) => r !== undefined && r.includes("playwright install")
+      (r) => r !== undefined && r.includes("playwright install"),
     );
     expect(hasPlaywrightInstall).toBe(true);
   });
 
   it("runs Playwright tests", () => {
     const e2e = workflow.jobs["e2e"];
-    const stepRuns = e2e.steps
-      .filter((s) => s.run)
-      .map((s) => s.run);
+    const stepRuns = e2e.steps.filter((s) => s.run).map((s) => s.run);
     const hasPlaywrightTest = stepRuns.some(
-      (r) => r !== undefined && r.includes("playwright test")
+      (r) => r !== undefined && r.includes("playwright test"),
     );
     expect(hasPlaywrightTest).toBe(true);
   });
 
   it("provisions a Convex dev deployment", () => {
     const e2e = workflow.jobs["e2e"];
-    const stepRuns = e2e.steps
-      .filter((s) => s.run)
-      .map((s) => s.run);
+    const stepRuns = e2e.steps.filter((s) => s.run).map((s) => s.run);
     const hasConvexDeploy = stepRuns.some(
       (r) =>
         r !== undefined &&
-        (r.includes("convex deploy") || r.includes("convex dev"))
+        (r.includes("convex deploy") || r.includes("convex dev")),
     );
     expect(hasConvexDeploy).toBe(true);
   });
 
   it("seeds test data", () => {
     const e2e = workflow.jobs["e2e"];
-    const stepRuns = e2e.steps
-      .filter((s) => s.run)
-      .map((s) => s.run);
-    const hasSeed = stepRuns.some(
-      (r) => r !== undefined && r.includes("seed")
-    );
+    const stepRuns = e2e.steps.filter((s) => s.run).map((s) => s.run);
+    const hasSeed = stepRuns.some((r) => r !== undefined && r.includes("seed"));
     expect(hasSeed).toBe(true);
   });
 
@@ -212,7 +197,7 @@ describe("WOR-108: E2E job", () => {
   it("uploads artifacts on failure", () => {
     const e2e = workflow.jobs["e2e"];
     const uploadStep = e2e.steps.find(
-      (s) => s.uses !== undefined && s.uses.includes("upload-artifact")
+      (s) => s.uses !== undefined && s.uses.includes("upload-artifact"),
     );
     expect(uploadStep).toBeDefined();
     expect(uploadStep?.if).toMatch(/failure\(\)/);
@@ -225,17 +210,14 @@ describe("WOR-108: Node.js LTS and caching", () => {
     for (const name of jobNames) {
       const job = workflow.jobs[name];
       const setupNodeStep = job.steps.find(
-        (s) => s.uses !== undefined && s.uses.includes("actions/setup-node")
+        (s) => s.uses !== undefined && s.uses.includes("actions/setup-node"),
       );
       expect(
         setupNodeStep,
-        `Job "${name}" must use actions/setup-node`
+        `Job "${name}" must use actions/setup-node`,
       ).toBeDefined();
       const nodeVersion = String(setupNodeStep?.with?.["node-version"] ?? "");
-      expect(
-        nodeVersion,
-        `Job "${name}" must use Node.js LTS`
-      ).toMatch(/lts/i);
+      expect(nodeVersion, `Job "${name}" must use Node.js LTS`).toMatch(/lts/i);
     }
   });
 
@@ -244,11 +226,11 @@ describe("WOR-108: Node.js LTS and caching", () => {
     for (const name of jobNames) {
       const job = workflow.jobs[name];
       const setupNodeStep = job.steps.find(
-        (s) => s.uses !== undefined && s.uses.includes("actions/setup-node")
+        (s) => s.uses !== undefined && s.uses.includes("actions/setup-node"),
       );
       expect(
         setupNodeStep?.with?.["cache"],
-        `Job "${name}" must have npm caching`
+        `Job "${name}" must have npm caching`,
       ).toBe("npm");
     }
   });
@@ -292,7 +274,7 @@ describe("WOR-108: Workflow performance prerequisites", () => {
     for (const name of jobNames) {
       expect(
         workflow.jobs[name]["runs-on"],
-        `Job "${name}" must run on ubuntu-latest`
+        `Job "${name}" must run on ubuntu-latest`,
       ).toBe("ubuntu-latest");
     }
   });
@@ -301,16 +283,11 @@ describe("WOR-108: Workflow performance prerequisites", () => {
     const jobNames = Object.keys(workflow.jobs);
     for (const name of jobNames) {
       const job = workflow.jobs[name];
-      const stepRuns = job.steps
-        .filter((s) => s.run)
-        .map((s) => s.run);
+      const stepRuns = job.steps.filter((s) => s.run).map((s) => s.run);
       const hasNpmCi = stepRuns.some(
-        (r) => r !== undefined && r.includes("npm ci")
+        (r) => r !== undefined && r.includes("npm ci"),
       );
-      expect(
-        hasNpmCi,
-        `Job "${name}" must run npm ci`
-      ).toBe(true);
+      expect(hasNpmCi, `Job "${name}" must run npm ci`).toBe(true);
     }
   });
 });

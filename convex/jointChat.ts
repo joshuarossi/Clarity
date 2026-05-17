@@ -1,6 +1,12 @@
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
-import { query, mutation, internalAction, internalMutation, internalQuery } from "./_generated/server";
+import {
+  query,
+  mutation,
+  internalAction,
+  internalMutation,
+  internalQuery,
+} from "./_generated/server";
 import type { ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
@@ -127,11 +133,11 @@ export const sendUserMessage = mutation({
     });
 
     const triggerType = detectCoachMention(content) ? "mention" : undefined;
-    await ctx.scheduler.runAfter(
-      0,
-      internal.jointChat.generateCoachResponse,
-      { caseId, messageId, ...(triggerType && { triggerType }) },
-    );
+    await ctx.scheduler.runAfter(0, internal.jointChat.generateCoachResponse, {
+      caseId,
+      messageId,
+      ...(triggerType && { triggerType }),
+    });
 
     return messageId;
   },
@@ -211,12 +217,8 @@ export const confirmClosure = mutation({
       callerPartyState = allPartyStates.find((ps) => ps.role === viewAsRole);
       otherPartyState = allPartyStates.find((ps) => ps.role !== viewAsRole);
     } else {
-      callerPartyState = allPartyStates.find(
-        (ps) => ps.userId === user._id,
-      );
-      otherPartyState = allPartyStates.find(
-        (ps) => ps.userId !== user._id,
-      );
+      callerPartyState = allPartyStates.find((ps) => ps.userId === user._id);
+      otherPartyState = allPartyStates.find((ps) => ps.userId !== user._id);
     }
 
     if (!otherPartyState || otherPartyState.closureProposed !== true) {
@@ -330,9 +332,7 @@ export const rejectClosure = mutation({
     if (caseDoc.isSolo && viewAsRole) {
       otherPartyState = allPartyStates.find((ps) => ps.role !== viewAsRole);
     } else {
-      otherPartyState = allPartyStates.find(
-        (ps) => ps.userId !== user._id,
-      );
+      otherPartyState = allPartyStates.find((ps) => ps.userId !== user._id);
     }
 
     if (otherPartyState) {
@@ -459,7 +459,11 @@ export const markCoachMessageError = internalMutation({
 const COACH_FALLBACK_MESSAGE =
   "I'm having trouble responding to that right now. Could either of you rephrase?";
 
-type Classification = "INFLAMMATORY" | "PROGRESS" | "QUESTION_TO_COACH" | "NORMAL_EXCHANGE";
+type Classification =
+  | "INFLAMMATORY"
+  | "PROGRESS"
+  | "QUESTION_TO_COACH"
+  | "NORMAL_EXCHANGE";
 
 function parseClassification(raw: string): Classification {
   const normalized = raw.trim().toUpperCase();
@@ -471,7 +475,10 @@ function parseClassification(raw: string): Classification {
   ) {
     return normalized as Classification;
   }
-  console.warn("generateCoachResponse: unexpected classification from Haiku, defaulting to NORMAL_EXCHANGE", { raw });
+  console.warn(
+    "generateCoachResponse: unexpected classification from Haiku, defaulting to NORMAL_EXCHANGE",
+    { raw },
+  );
   return "NORMAL_EXCHANGE";
 }
 
@@ -538,7 +545,9 @@ export const generateCoachResponse = internalAction({
     } else {
       const apiKey = process.env.ANTHROPIC_API_KEY;
       if (!apiKey) {
-        throw new Error("generateCoachResponse: ANTHROPIC_API_KEY environment variable is not configured");
+        throw new Error(
+          "generateCoachResponse: ANTHROPIC_API_KEY environment variable is not configured",
+        );
       }
 
       let haikuAttempt = 0;
@@ -604,26 +613,36 @@ export const generateCoachResponse = internalAction({
     }
 
     // 8. Prepare prompt context
-    const actingUserId = lastUserMessage?.authorUserId ?? partyStates[0]?.userId;
-    const actingPartyState = partyStates.find((ps) => ps.userId === actingUserId);
-    const otherPartyState = partyStates.find((ps) => ps.userId !== actingUserId);
+    const actingUserId =
+      lastUserMessage?.authorUserId ?? partyStates[0]?.userId;
+    const actingPartyState = partyStates.find(
+      (ps) => ps.userId === actingUserId,
+    );
+    const otherPartyState = partyStates.find(
+      (ps) => ps.userId !== actingUserId,
+    );
     const actingPartySynthesis = actingPartyState?.synthesisText;
     const otherPartySynthesis = otherPartyState?.synthesisText;
 
     const jointChatHistory: PromptMessage[] = sortedMessages
       .filter((m) => m.status === "COMPLETE")
       .map((m) => ({
-        role: m.authorType === "USER" ? ("user" as const) : ("assistant" as const),
+        role:
+          m.authorType === "USER" ? ("user" as const) : ("assistant" as const),
         content: m.content,
       }));
 
     // Enable summary mode for PROGRESS classification or timer-triggered responses (US-10b)
-    const summaryMode = classification === "PROGRESS" || triggerType === "timer";
+    const summaryMode =
+      classification === "PROGRESS" || triggerType === "timer";
 
     const prompt = assemblePrompt({
       role: "COACH",
       caseId: args.caseId,
-      actingUserId: lastUserMessage?.authorUserId ?? partyStates[0]?.userId ?? ("" as never),
+      actingUserId:
+        lastUserMessage?.authorUserId ??
+        partyStates[0]?.userId ??
+        ("" as never),
       recentHistory: [],
       templateVersion: templateVersion
         ? {
@@ -649,14 +668,24 @@ export const generateCoachResponse = internalAction({
     // 10. Sonnet generation with privacy filter retry loop
     const maxFilterAttempts = 3;
 
-    for (let filterAttempt = 0; filterAttempt < maxFilterAttempts; filterAttempt++) {
+    for (
+      let filterAttempt = 0;
+      filterAttempt < maxFilterAttempts;
+      filterAttempt++
+    ) {
       let finalContent = "";
 
       try {
         if (isMock) {
           // Mock failure simulation
-          const failCount = parseInt(process.env.CLAUDE_MOCK_FAIL_COUNT ?? "0", 10);
-          const failStatus = parseInt(process.env.CLAUDE_MOCK_FAIL_STATUS ?? "500", 10);
+          const failCount = parseInt(
+            process.env.CLAUDE_MOCK_FAIL_COUNT ?? "0",
+            10,
+          );
+          const failStatus = parseInt(
+            process.env.CLAUDE_MOCK_FAIL_STATUS ?? "500",
+            10,
+          );
           if (filterAttempt === 0 && failCount > 0) {
             // Simulate API failures on first attempt
             let apiAttempt = 0;
@@ -665,12 +694,17 @@ export const generateCoachResponse = internalAction({
               if (apiAttempt < failCount) {
                 apiAttempt++;
                 if (apiAttempt < maxApiAttempts) {
-                  await sleep(failStatus === 429 ? 2000 * Math.pow(2, apiAttempt) : 2000);
+                  await sleep(
+                    failStatus === 429 ? 2000 * Math.pow(2, apiAttempt) : 2000,
+                  );
                   continue;
                 } else {
-                  await ctx.runMutation(internal.jointChat.markCoachMessageError, {
-                    messageId: coachMessageId,
-                  });
+                  await ctx.runMutation(
+                    internal.jointChat.markCoachMessageError,
+                    {
+                      messageId: coachMessageId,
+                    },
+                  );
                   return;
                 }
               }
@@ -679,17 +713,23 @@ export const generateCoachResponse = internalAction({
           }
 
           // Mock streaming
-          const mockDelayMs = parseInt(process.env.CLAUDE_MOCK_DELAY_MS ?? "100", 10);
+          const mockDelayMs = parseInt(
+            process.env.CLAUDE_MOCK_DELAY_MS ?? "100",
+            10,
+          );
           const mockResponse = getMockClaudeResponse("COACH", summaryMode);
           const chunkSize = Math.ceil(mockResponse.length / 5);
           let content = "";
 
           for (let i = 0; i < mockResponse.length; i += chunkSize) {
             content += mockResponse.slice(i, i + chunkSize);
-            await ctx.runMutation(internal.jointChat.updateCoachStreamingMessage, {
-              messageId: coachMessageId,
-              content,
-            });
+            await ctx.runMutation(
+              internal.jointChat.updateCoachStreamingMessage,
+              {
+                messageId: coachMessageId,
+                content,
+              },
+            );
             if (i + chunkSize < mockResponse.length) {
               await sleep(mockDelayMs);
             }
@@ -698,7 +738,9 @@ export const generateCoachResponse = internalAction({
         } else {
           // Real Sonnet API call
           const { default: Anthropic } = await import("@anthropic-ai/sdk");
-          const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+          const client = new Anthropic({
+            apiKey: process.env.ANTHROPIC_API_KEY,
+          });
 
           let attempt = 0;
           const maxAttempts = 2;
@@ -728,7 +770,10 @@ export const generateCoachResponse = internalAction({
                     );
                   } catch (flushErr) {
                     console.error("generateCoachResponse: flush error", {
-                      error: flushErr instanceof Error ? flushErr.message : String(flushErr),
+                      error:
+                        flushErr instanceof Error
+                          ? flushErr.message
+                          : String(flushErr),
                     });
                   }
                 }
@@ -743,12 +788,15 @@ export const generateCoachResponse = internalAction({
               break;
             } catch (error: unknown) {
               attempt++;
-              const statusCode = error instanceof Error && "status" in error
-                ? (error as Record<string, unknown>).status
-                : undefined;
+              const statusCode =
+                error instanceof Error && "status" in error
+                  ? (error as Record<string, unknown>).status
+                  : undefined;
               const is429 = statusCode === 429;
-              const isContentFilter = statusCode === 400 &&
-                error instanceof Error && error.message.includes("content");
+              const isContentFilter =
+                statusCode === 400 &&
+                error instanceof Error &&
+                error.message.includes("content");
 
               if (isContentFilter) {
                 // Content filtered — emit generic fallback per §6.5
@@ -763,12 +811,19 @@ export const generateCoachResponse = internalAction({
                 const delay = is429 ? 2000 * Math.pow(2, attempt - 1) : 2000;
                 await sleep(delay);
               } else {
-                console.error("generateCoachResponse: Sonnet failed after retries", {
-                  error: error instanceof Error ? error.message : String(error),
-                });
-                await ctx.runMutation(internal.jointChat.markCoachMessageError, {
-                  messageId: coachMessageId,
-                });
+                console.error(
+                  "generateCoachResponse: Sonnet failed after retries",
+                  {
+                    error:
+                      error instanceof Error ? error.message : String(error),
+                  },
+                );
+                await ctx.runMutation(
+                  internal.jointChat.markCoachMessageError,
+                  {
+                    messageId: coachMessageId,
+                  },
+                );
                 return;
               }
             }
@@ -803,13 +858,19 @@ export const generateCoachResponse = internalAction({
         }
 
         // Filter failed — retry generation (continue loop)
-        console.warn("generateCoachResponse: privacy filter rejected, retrying", {
-          attempt: filterAttempt + 1,
-        });
+        console.warn(
+          "generateCoachResponse: privacy filter rejected, retrying",
+          {
+            attempt: filterAttempt + 1,
+          },
+        );
       } catch (error: unknown) {
-        console.error("generateCoachResponse: unexpected error in generation loop", {
-          error: error instanceof Error ? error.message : String(error),
-        });
+        console.error(
+          "generateCoachResponse: unexpected error in generation loop",
+          {
+            error: error instanceof Error ? error.message : String(error),
+          },
+        );
         await ctx.runMutation(internal.jointChat.markCoachMessageError, {
           messageId: coachMessageId,
         });
@@ -881,7 +942,9 @@ export const evaluateAndSummarize = internalAction({
       }
       await evaluateCase(ctx, args.caseId);
     } else {
-      const activeCases = await ctx.runQuery(internal.jointChat.getActiveCasesForSummary);
+      const activeCases = await ctx.runQuery(
+        internal.jointChat.getActiveCasesForSummary,
+      );
       for (const caseDoc of activeCases) {
         await evaluateCase(ctx, caseDoc._id);
       }
@@ -957,22 +1020,32 @@ export const generateCoachOpeningMessage = internalAction({
     const isMock = isClaudeMockEnabled();
     const maxFilterAttempts = 3;
 
-    for (let filterAttempt = 0; filterAttempt < maxFilterAttempts; filterAttempt++) {
+    for (
+      let filterAttempt = 0;
+      filterAttempt < maxFilterAttempts;
+      filterAttempt++
+    ) {
       let finalContent = "";
 
       try {
         if (isMock) {
           const mockResponse = getMockClaudeResponse("COACH");
-          const mockDelayMs = parseInt(process.env.CLAUDE_MOCK_DELAY_MS ?? "100", 10);
+          const mockDelayMs = parseInt(
+            process.env.CLAUDE_MOCK_DELAY_MS ?? "100",
+            10,
+          );
           const chunkSize = Math.ceil(mockResponse.length / 5);
           let content = "";
 
           for (let i = 0; i < mockResponse.length; i += chunkSize) {
             content += mockResponse.slice(i, i + chunkSize);
-            await ctx.runMutation(internal.jointChat.updateCoachStreamingMessage, {
-              messageId: coachMessageId,
-              content,
-            });
+            await ctx.runMutation(
+              internal.jointChat.updateCoachStreamingMessage,
+              {
+                messageId: coachMessageId,
+                content,
+              },
+            );
             if (i + chunkSize < mockResponse.length) {
               await sleep(mockDelayMs);
             }
@@ -981,7 +1054,9 @@ export const generateCoachOpeningMessage = internalAction({
         } else {
           const apiKey = process.env.ANTHROPIC_API_KEY;
           if (!apiKey) {
-            throw new Error("generateCoachOpeningMessage: ANTHROPIC_API_KEY environment variable is not configured");
+            throw new Error(
+              "generateCoachOpeningMessage: ANTHROPIC_API_KEY environment variable is not configured",
+            );
           }
 
           const { default: Anthropic } = await import("@anthropic-ai/sdk");
@@ -1015,7 +1090,10 @@ export const generateCoachOpeningMessage = internalAction({
                     );
                   } catch (flushErr) {
                     console.error("generateCoachOpeningMessage: flush error", {
-                      error: flushErr instanceof Error ? flushErr.message : String(flushErr),
+                      error:
+                        flushErr instanceof Error
+                          ? flushErr.message
+                          : String(flushErr),
                     });
                   }
                 }
@@ -1030,21 +1108,29 @@ export const generateCoachOpeningMessage = internalAction({
               break;
             } catch (error: unknown) {
               attempt++;
-              const statusCode = error instanceof Error && "status" in error
-                ? (error as Record<string, unknown>).status
-                : undefined;
+              const statusCode =
+                error instanceof Error && "status" in error
+                  ? (error as Record<string, unknown>).status
+                  : undefined;
               const is429 = statusCode === 429;
 
               if (attempt < maxAttempts) {
                 const delay = is429 ? 2000 * Math.pow(2, attempt - 1) : 2000;
                 await sleep(delay);
               } else {
-                console.error("generateCoachOpeningMessage: Sonnet failed after retries", {
-                  error: error instanceof Error ? error.message : String(error),
-                });
-                await ctx.runMutation(internal.jointChat.markCoachMessageError, {
-                  messageId: coachMessageId,
-                });
+                console.error(
+                  "generateCoachOpeningMessage: Sonnet failed after retries",
+                  {
+                    error:
+                      error instanceof Error ? error.message : String(error),
+                  },
+                );
+                await ctx.runMutation(
+                  internal.jointChat.markCoachMessageError,
+                  {
+                    messageId: coachMessageId,
+                  },
+                );
                 return;
               }
             }
@@ -1077,13 +1163,19 @@ export const generateCoachOpeningMessage = internalAction({
           return;
         }
 
-        console.warn("generateCoachOpeningMessage: privacy filter rejected, retrying", {
-          attempt: filterAttempt + 1,
-        });
+        console.warn(
+          "generateCoachOpeningMessage: privacy filter rejected, retrying",
+          {
+            attempt: filterAttempt + 1,
+          },
+        );
       } catch (error: unknown) {
-        console.error("generateCoachOpeningMessage: unexpected error in generation loop", {
-          error: error instanceof Error ? error.message : String(error),
-        });
+        console.error(
+          "generateCoachOpeningMessage: unexpected error in generation loop",
+          {
+            error: error instanceof Error ? error.message : String(error),
+          },
+        );
         await ctx.runMutation(internal.jointChat.markCoachMessageError, {
           messageId: coachMessageId,
         });

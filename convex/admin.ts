@@ -18,7 +18,7 @@ export const listAll = query({
           const versionDoc = await ctx.db.get(template.currentVersionId);
           if (!versionDoc) {
             console.warn(
-              `Template ${template._id} has currentVersionId ${template.currentVersionId} but the referenced document no longer exists`
+              `Template ${template._id} has currentVersionId ${template.currentVersionId} but the referenced document no longer exists`,
             );
           }
           currentVersion = versionDoc ? versionDoc.version : null;
@@ -32,7 +32,7 @@ export const listAll = query({
         const versionIds = new Set(versions.map((v) => v._id));
 
         const pinnedCasesCount = allCases.filter((c) =>
-          versionIds.has(c.templateVersionId)
+          versionIds.has(c.templateVersionId),
         ).length;
 
         return {
@@ -40,7 +40,7 @@ export const listAll = query({
           currentVersion,
           pinnedCasesCount,
         };
-      })
+      }),
     );
 
     return enriched;
@@ -72,7 +72,7 @@ export const get = query({
 
     const allCases = await ctx.db.query("cases").collect();
     const pinnedCasesCount = allCases.filter((c) =>
-      versionIds.has(c.templateVersionId)
+      versionIds.has(c.templateVersionId),
     ).length;
 
     return {
@@ -101,7 +101,7 @@ export const listVersions = query({
           ...ver,
           publishedByDisplayName: user?.displayName ?? user?.email ?? "Unknown",
         };
-      })
+      }),
     );
 
     return enriched;
@@ -143,7 +143,11 @@ export const create = mutation({
       action: "TEMPLATE_CREATED",
       targetType: "template",
       targetId: templateId as string,
-      metadata: { category: args.category, name: args.name, versionId: versionId as string },
+      metadata: {
+        category: args.category,
+        name: args.name,
+        versionId: versionId as string,
+      },
       createdAt: Date.now(),
     });
 
@@ -164,7 +168,11 @@ export const publishNewVersion = mutation({
 
     const template = await ctx.db.get(args.templateId);
     if (!template) {
-      throw new ConvexError({ code: "NOT_FOUND", message: "Template not found", httpStatus: 404 });
+      throw new ConvexError({
+        code: "NOT_FOUND",
+        message: "Template not found",
+        httpStatus: 404,
+      });
     }
 
     const existingVersions = await ctx.db
@@ -172,7 +180,10 @@ export const publishNewVersion = mutation({
       .withIndex("by_template", (q) => q.eq("templateId", args.templateId))
       .collect();
 
-    const maxVersion = existingVersions.reduce((max, v) => Math.max(max, v.version), 0);
+    const maxVersion = existingVersions.reduce(
+      (max, v) => Math.max(max, v.version),
+      0,
+    );
     const newVersion = maxVersion + 1;
 
     const versionId = await ctx.db.insert("templateVersions", {
@@ -208,7 +219,11 @@ export const archive = mutation({
 
     const template = await ctx.db.get(templateId);
     if (!template) {
-      throw new ConvexError({ code: "NOT_FOUND", message: "Template not found", httpStatus: 404 });
+      throw new ConvexError({
+        code: "NOT_FOUND",
+        message: "Template not found",
+        httpStatus: 404,
+      });
     }
 
     await ctx.db.patch(templateId, { archivedAt: Date.now() });
@@ -262,9 +277,11 @@ export const listAuditLog = query({
         return {
           ...entry,
           actorDisplayName:
-            user?.displayName ?? user?.email ?? `Unknown (${entry.actorUserId})`,
+            user?.displayName ??
+            user?.email ??
+            `Unknown (${entry.actorUserId})`,
         };
-      })
+      }),
     );
 
     return {

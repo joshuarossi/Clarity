@@ -60,10 +60,10 @@ triggers a filter failure.
 
 ### Retry & fallback
 
-| Attempt | Outcome on filter match |
-|---------|------------------------|
-| 1       | Regenerate             |
-| 2       | Regenerate             |
+| Attempt | Outcome on filter match                                        |
+| ------- | -------------------------------------------------------------- |
+| 1       | Regenerate                                                     |
+| 2       | Regenerate                                                     |
 | 3       | Use generic fallback text; flag for admin review via audit log |
 
 ### Persistence
@@ -93,5 +93,5 @@ The token-overlap privacy filter is in `convex/lib/privacyFilter.ts`
 ## Loading state
 
 While synthesis is in progress, clients observe a loading indicator with
-the message *"Generating your guidance..."* via reactive query on the
+the message _"Generating your guidance..."_ via reactive query on the
 party state.

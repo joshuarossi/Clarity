@@ -147,7 +147,7 @@ This is enforced by the function's role-switching logic: for PRIVATE_COACH, only
 
 When `role === "SYNTHESIS"`, the system prompt must include:
 
-1. The verbatim anti-quotation instruction: *"You have access to both parties' private content for context. In your outputs, NEVER quote, closely paraphrase, or otherwise surface the other party's raw words. Synthesize themes and positions in your own words only. If you cannot make a point without quoting, omit it."*
+1. The verbatim anti-quotation instruction: _"You have access to both parties' private content for context. In your outputs, NEVER quote, closely paraphrase, or otherwise surface the other party's raw words. Synthesize themes and positions in your own words only. If you cannot make a point without quoting, omit it."_
 2. The output format instruction requiring strict JSON: `{ "forInitiator": "...", "forInvitee": "..." }`.
 3. Both parties' private messages from `context.actingPartyPrivateMessages` and `context.otherPartyPrivateMessages` are included in the messages array as context for the model.
 
@@ -162,6 +162,7 @@ When `role === "DRAFT_COACH"`, messages include the joint chat history and ONLY 
 ### Template injection is additive
 
 When `templateVersion` is provided, the function appends the relevant instructions to the system prompt:
+
 - For COACH: `templateVersion.coachInstructions` (if present), falling back to `templateVersion.globalGuidance`.
 - For DRAFT_COACH: `templateVersion.draftCoachInstructions` (if present), falling back to `templateVersion.globalGuidance`.
 - For PRIVATE_COACH: template is NOT applied (§6.3.1 says "Template applied: NONE").

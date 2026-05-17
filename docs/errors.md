@@ -7,17 +7,17 @@ error codes without parsing strings.
 
 ## Error codes
 
-| Code             | HTTP Status | Typical trigger                        |
-| ---------------- | ----------- | -------------------------------------- |
-| `UNAUTHENTICATED`| 401         | No valid session / identity            |
-| `FORBIDDEN`      | 403         | User lacks required role or membership |
-| `NOT_FOUND`      | 404         | Record does not exist                  |
-| `CONFLICT`       | 409         | Invalid state transition or duplicate  |
-| `INVALID_INPUT`  | 400         | Validation failure on user input       |
-| `TOKEN_INVALID`  | 400         | Expired or malformed token             |
-| `RATE_LIMITED`   | 429         | Too many requests                      |
-| `AI_ERROR`       | 502         | Upstream AI provider failure           |
-| `INTERNAL`       | 500         | Unexpected server error                |
+| Code              | HTTP Status | Typical trigger                        |
+| ----------------- | ----------- | -------------------------------------- |
+| `UNAUTHENTICATED` | 401         | No valid session / identity            |
+| `FORBIDDEN`       | 403         | User lacks required role or membership |
+| `NOT_FOUND`       | 404         | Record does not exist                  |
+| `CONFLICT`        | 409         | Invalid state transition or duplicate  |
+| `INVALID_INPUT`   | 400         | Validation failure on user input       |
+| `TOKEN_INVALID`   | 400         | Expired or malformed token             |
+| `RATE_LIMITED`    | 429         | Too many requests                      |
+| `AI_ERROR`        | 502         | Upstream AI provider failure           |
+| `INTERNAL`        | 500         | Unexpected server error                |
 
 ## Usage
 

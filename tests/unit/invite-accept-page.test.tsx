@@ -44,9 +44,10 @@ vi.mock("@convex-dev/auth/react", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom",
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -105,10 +106,7 @@ beforeEach(() => {
   mockUseMutation.mockImplementation(
     (mutationRef: Record<string | symbol, unknown>) => {
       const name: string = (mutationRef?.[FN_NAME] as string) ?? "";
-      if (
-        name.includes("invites:redeem") ||
-        name.includes("invites.redeem")
-      ) {
+      if (name.includes("invites:redeem") || name.includes("invites.redeem")) {
         return mockRedeem;
       }
       if (
@@ -157,14 +155,10 @@ describe("AC: Logged-out view — centered card with heading, body, sign-in butt
   it("renders body text explaining Clarity", () => {
     renderInviteAcceptPage();
     expect(
-      screen.getByText(
-        /clarity is a private mediation tool/i,
-      ),
+      screen.getByText(/clarity is a private mediation tool/i),
     ).toBeDefined();
     expect(
-      screen.getByText(
-        /you.?ll each talk with an ai coach privately/i,
-      ),
+      screen.getByText(/you.?ll each talk with an ai coach privately/i),
     ).toBeDefined();
   });
 
@@ -192,9 +186,7 @@ describe("AC: Logged-out view — centered card with heading, body, sign-in butt
     expect(
       screen.queryByRole("button", { name: /accept invitation/i }),
     ).toBeNull();
-    expect(
-      screen.queryByRole("button", { name: /decline/i }),
-    ).toBeNull();
+    expect(screen.queryByRole("button", { name: /decline/i })).toBeNull();
   });
 });
 
@@ -203,9 +195,7 @@ describe("AC: Logged-out view — centered card with heading, body, sign-in butt
 describe("AC: Logged-in unredeemed view — mainTopic, category, Accept, Decline", () => {
   it("displays the initiator's main topic text", () => {
     renderInviteAcceptPage();
-    expect(
-      screen.getByText("How we split household chores"),
-    ).toBeDefined();
+    expect(screen.getByText("How we split household chores")).toBeDefined();
   });
 
   it("displays the category", () => {
@@ -236,9 +226,7 @@ describe("AC: Privacy callout with initiator name", () => {
   it("renders callout text with initiator name and shared summary language", () => {
     renderInviteAcceptPage();
     expect(
-      screen.getByText(
-        /alex wrote this in the shared summary/i,
-      ),
+      screen.getByText(/alex wrote this in the shared summary/i),
     ).toBeDefined();
     expect(
       screen.getByText(
@@ -274,9 +262,7 @@ describe("AC: Privacy callout with initiator name", () => {
     expect(
       screen.queryByText(/private initiator description text/i),
     ).toBeNull();
-    expect(
-      screen.queryByText(/private desired outcome text/i),
-    ).toBeNull();
+    expect(screen.queryByText(/private desired outcome text/i)).toBeNull();
   });
 });
 
@@ -368,9 +354,7 @@ describe("AC: Consumed token shows error message with navigation options", () =>
 
   it("shows 'Go to dashboard' link when logged in", () => {
     renderInviteAcceptPage();
-    expect(
-      screen.getByText(/go to dashboard/i),
-    ).toBeDefined();
+    expect(screen.getByText(/go to dashboard/i)).toBeDefined();
   });
 
   it("shows 'Sign in' option when logged out with consumed token", () => {
@@ -379,9 +363,7 @@ describe("AC: Consumed token shows error message with navigation options", () =>
       isAuthenticated: false,
     });
     renderInviteAcceptPage();
-    expect(
-      screen.getByText(/sign in/i),
-    ).toBeDefined();
+    expect(screen.getByText(/sign in/i)).toBeDefined();
   });
 
   it("does NOT show Accept or Decline buttons for consumed token", () => {
@@ -389,9 +371,7 @@ describe("AC: Consumed token shows error message with navigation options", () =>
     expect(
       screen.queryByRole("button", { name: /accept invitation/i }),
     ).toBeNull();
-    expect(
-      screen.queryByRole("button", { name: /decline/i }),
-    ).toBeNull();
+    expect(screen.queryByRole("button", { name: /decline/i })).toBeNull();
   });
 });
 
@@ -416,16 +396,12 @@ describe("Edge case: Invalid token (getByToken returns null)", () => {
 
   it("displays error message for invalid token", () => {
     renderInviteAcceptPage();
-    expect(
-      screen.getByText(/this invite link is not valid/i),
-    ).toBeDefined();
+    expect(screen.getByText(/this invite link is not valid/i)).toBeDefined();
   });
 
   it("shows 'Go to dashboard' link when logged in with invalid token", () => {
     renderInviteAcceptPage();
-    expect(
-      screen.getByText(/go to dashboard/i),
-    ).toBeDefined();
+    expect(screen.getByText(/go to dashboard/i)).toBeDefined();
   });
 });
 

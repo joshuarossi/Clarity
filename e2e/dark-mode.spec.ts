@@ -21,9 +21,7 @@ test.describe("AC: Dark mode detection and persistence", () => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/");
 
-    const theme = await page
-      .locator("html")
-      .getAttribute("data-theme");
+    const theme = await page.locator("html").getAttribute("data-theme");
     expect(theme).toBe("dark");
   });
 
@@ -33,9 +31,7 @@ test.describe("AC: Dark mode detection and persistence", () => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto("/");
 
-    const theme = await page
-      .locator("html")
-      .getAttribute("data-theme");
+    const theme = await page.locator("html").getAttribute("data-theme");
     expect(theme).toBe("light");
   });
 
@@ -53,9 +49,7 @@ test.describe("AC: Dark mode detection and persistence", () => {
     // Reload — the inline script should read localStorage and apply dark
     await page.reload();
 
-    const theme = await page
-      .locator("html")
-      .getAttribute("data-theme");
+    const theme = await page.locator("html").getAttribute("data-theme");
     expect(theme).toBe("dark");
   });
 
@@ -71,15 +65,11 @@ test.describe("AC: Dark mode detection and persistence", () => {
     });
     await page.reload();
 
-    const theme = await page
-      .locator("html")
-      .getAttribute("data-theme");
+    const theme = await page.locator("html").getAttribute("data-theme");
     expect(theme).toBe("dark");
   });
 
-  test("data-theme is set before first paint (no flash)", async ({
-    page,
-  }) => {
+  test("data-theme is set before first paint (no flash)", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
 
     // Capture the data-theme attribute as early as possible via

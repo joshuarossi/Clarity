@@ -29,7 +29,10 @@ function parseInline(line: string): React.ReactNode[] {
   return parts.length > 0 ? parts : [line];
 }
 
-export function MarkdownContent({ content, className }: MarkdownContentProps): React.ReactElement {
+export function MarkdownContent({
+  content,
+  className,
+}: MarkdownContentProps): React.ReactElement {
   if (!content) {
     return <span className={className} />;
   }

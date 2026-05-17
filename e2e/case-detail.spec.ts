@@ -1,5 +1,10 @@
 import { test, expect } from "./fixtures";
-import { createTestUser, createTestCase, loginAs, transitionCaseStatus } from "./helpers";
+import {
+  createTestUser,
+  createTestCase,
+  loginAs,
+  transitionCaseStatus,
+} from "./helpers";
 
 // ── AC: Route /cases/:caseId reads case status and renders the correct subview ──
 
@@ -16,9 +21,7 @@ test.describe("AC: Correct subview for each case status", () => {
     await pageA.goto(`/cases/${caseId}`);
 
     // Should redirect to /private or show private coaching content
-    await expect(pageA).toHaveURL(
-      new RegExp(`/cases/${caseId}/private`),
-    );
+    await expect(pageA).toHaveURL(new RegExp(`/cases/${caseId}/private`));
   });
 
   test("renders ReadyForJointView for READY_FOR_JOINT status", async ({
@@ -37,9 +40,7 @@ test.describe("AC: Correct subview for each case status", () => {
     ).toBeVisible();
   });
 
-  test("renders JointChatView for JOINT_ACTIVE status", async ({
-    pageA,
-  }) => {
+  test("renders JointChatView for JOINT_ACTIVE status", async ({ pageA }) => {
     const { caseId } = await createTestCase({
       initiatorEmail: "testusera@example.com",
       inviteeEmail: "testuserb@example.com",
@@ -64,9 +65,7 @@ test.describe("AC: Correct subview for each case status", () => {
 
     await pageA.goto(`/cases/${caseId}`);
 
-    await expect(
-      pageA.locator("[data-testid='subview-closed']"),
-    ).toBeVisible();
+    await expect(pageA.locator("[data-testid='subview-closed']")).toBeVisible();
   });
 });
 
@@ -86,10 +85,9 @@ test.describe("AC: Subroute mismatch triggers redirect", () => {
     await pageA.goto(`/cases/${caseId}/joint`);
 
     // Should redirect or show private coaching content since case is not in joint phase
-    await pageA.waitForURL(
-      new RegExp(`/cases/${caseId}/private`),
-      { timeout: 5_000 },
-    );
+    await pageA.waitForURL(new RegExp(`/cases/${caseId}/private`), {
+      timeout: 5_000,
+    });
   });
 
   test("navigating to /closed when case is in JOINT_ACTIVE redirects to /joint", async ({
@@ -104,10 +102,9 @@ test.describe("AC: Subroute mismatch triggers redirect", () => {
     await pageA.goto(`/cases/${caseId}/closed`);
 
     // Should redirect since case is not closed
-    await pageA.waitForURL(
-      new RegExp(`/cases/${caseId}/joint`),
-      { timeout: 5_000 },
-    );
+    await pageA.waitForURL(new RegExp(`/cases/${caseId}/joint`), {
+      timeout: 5_000,
+    });
   });
 });
 
@@ -125,9 +122,7 @@ test.describe("AC: PhaseHeader shows correct phase name for current status", () 
 
     await pageA.goto(`/cases/${caseId}`);
 
-    await expect(
-      pageA.getByText("Private Coaching"),
-    ).toBeVisible();
+    await expect(pageA.getByText("Private Coaching")).toBeVisible();
   });
 
   test("shows 'Joint Discussion' phase for JOINT_ACTIVE status", async ({
@@ -141,14 +136,10 @@ test.describe("AC: PhaseHeader shows correct phase name for current status", () 
 
     await pageA.goto(`/cases/${caseId}`);
 
-    await expect(
-      pageA.getByText("Joint Discussion"),
-    ).toBeVisible();
+    await expect(pageA.getByText("Joint Discussion")).toBeVisible();
   });
 
-  test("shows 'Closed' phase for CLOSED_RESOLVED status", async ({
-    pageA,
-  }) => {
+  test("shows 'Closed' phase for CLOSED_RESOLVED status", async ({ pageA }) => {
     const { caseId } = await createTestCase({
       initiatorEmail: "testusera@example.com",
       inviteeEmail: "testuserb@example.com",
@@ -157,9 +148,7 @@ test.describe("AC: PhaseHeader shows correct phase name for current status", () 
 
     await pageA.goto(`/cases/${caseId}`);
 
-    await expect(
-      pageA.getByText("Closed"),
-    ).toBeVisible();
+    await expect(pageA.getByText("Closed")).toBeVisible();
   });
 });
 
@@ -215,9 +204,7 @@ test.describe("AC: Reactive updates on case status transition", () => {
     await pageA.goto(`/cases/${caseId}`);
 
     // Verify initial state shows private coaching content
-    await expect(pageA).toHaveURL(
-      new RegExp(`/cases/${caseId}/private`),
-    );
+    await expect(pageA).toHaveURL(new RegExp(`/cases/${caseId}/private`));
 
     // Trigger a status transition mutation server-side
     await transitionCaseStatus(caseId, "READY_FOR_JOINT");
@@ -245,15 +232,9 @@ test.describe("AC: Invitee form when invitee has not completed perspective form"
     await pageB.goto(`/cases/${caseId}`);
 
     // Should show the invitee perspective form fields
-    await expect(
-      pageB.getByLabel(/main topic/i),
-    ).toBeVisible();
-    await expect(
-      pageB.getByLabel(/description/i),
-    ).toBeVisible();
-    await expect(
-      pageB.getByLabel(/desired outcome/i),
-    ).toBeVisible();
+    await expect(pageB.getByLabel(/main topic/i)).toBeVisible();
+    await expect(pageB.getByLabel(/description/i)).toBeVisible();
+    await expect(pageB.getByLabel(/desired outcome/i)).toBeVisible();
   });
 
   test("submitting the form transitions to PrivateCoachingView", async ({
@@ -273,21 +254,17 @@ test.describe("AC: Invitee form when invitee has not completed perspective form"
     await pageB
       .getByLabel(/description/i)
       .fill("We have trouble communicating");
-    await pageB
-      .getByLabel(/desired outcome/i)
-      .fill("Better understanding");
+    await pageB.getByLabel(/desired outcome/i).fill("Better understanding");
 
     // Submit
     await pageB.getByRole("button", { name: /submit/i }).click();
 
     // After submission, the invitee form should disappear and private coaching view should show
-    await expect(
-      pageB.getByLabel(/main topic/i),
-    ).not.toBeVisible({ timeout: 5_000 });
+    await expect(pageB.getByLabel(/main topic/i)).not.toBeVisible({
+      timeout: 5_000,
+    });
 
     // Should now show private coaching content or redirect to /private
-    await expect(pageB).toHaveURL(
-      new RegExp(`/cases/${caseId}/private`),
-    );
+    await expect(pageB).toHaveURL(new RegExp(`/cases/${caseId}/private`));
   });
 });

@@ -54,9 +54,7 @@ describe("AC1: MarkdownContent renders markdown as formatted HTML elements", () 
   });
 
   it("renders plain text without markdown as a <p> element", () => {
-    const { container } = render(
-      <MarkdownContent content="Just plain text" />,
-    );
+    const { container } = render(<MarkdownContent content="Just plain text" />);
     const p = container.querySelector("p");
     expect(p).not.toBeNull();
     expect(p!.textContent).toBe("Just plain text");

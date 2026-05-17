@@ -11,7 +11,7 @@ pre-fetched `messages` array as a prop (it does not fetch data itself).
 ```tsx
 import { ChatWindow } from "@/components/chat/ChatWindow";
 
-<ChatWindow messages={messages} />
+<ChatWindow messages={messages} />;
 ```
 
 - Wrapping element: `role="log"` + `aria-live="polite"`
@@ -23,12 +23,12 @@ import { ChatWindow } from "@/components/chat/ChatWindow";
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `messages` | `ChatMessage[]` | — | Array of messages to render |
-| `onRetry` | `() => void` | — | Callback passed to the Retry button on messages with `ERROR` status |
-| `className` | `string` | — | Additional CSS class names |
-| `style` | `React.CSSProperties` | — | Inline style overrides applied to the root `role="log"` element |
+| Prop        | Type                  | Default | Description                                                         |
+| ----------- | --------------------- | ------- | ------------------------------------------------------------------- |
+| `messages`  | `ChatMessage[]`       | —       | Array of messages to render                                         |
+| `onRetry`   | `() => void`          | —       | Callback passed to the Retry button on messages with `ERROR` status |
+| `className` | `string`              | —       | Additional CSS class names                                          |
+| `style`     | `React.CSSProperties` | —       | Inline style overrides applied to the root `role="log"` element     |
 
 ## MessageBubble
 
@@ -44,41 +44,41 @@ import { MessageBubble } from "@/components/chat/MessageBubble";
   content="Let's try rephrasing that."
   createdAt={Date.now()}
   onCopy={() => {}}
-/>
+/>;
 ```
 
 ### Variants
 
-| Variant | CSS class | Usage |
-|---------|-----------|-------|
-| `user` | `.cc-bubble` | User's own messages |
-| `coach` | `.cc-bubble-coach` | Coach in private phase |
-| `coach-joint` | `.cc-bubble-coach-joint` | Coach in joint chat |
-| `coach-intervention` | `.cc-bubble-coach-intervention` | Coach intervention |
-| `party-initiator` | `.cc-bubble-party-initiator` | Initiator in joint chat |
-| `party-invitee` | `.cc-bubble-party-invitee` | Invitee in joint chat |
-| `error` | `.cc-bubble-error` | Error state |
+| Variant              | CSS class                       | Usage                   |
+| -------------------- | ------------------------------- | ----------------------- |
+| `user`               | `.cc-bubble`                    | User's own messages     |
+| `coach`              | `.cc-bubble-coach`              | Coach in private phase  |
+| `coach-joint`        | `.cc-bubble-coach-joint`        | Coach in joint chat     |
+| `coach-intervention` | `.cc-bubble-coach-intervention` | Coach intervention      |
+| `party-initiator`    | `.cc-bubble-party-initiator`    | Initiator in joint chat |
+| `party-invitee`      | `.cc-bubble-party-invitee`      | Invitee in joint chat   |
+| `error`              | `.cc-bubble-error`              | Error state             |
 
 ### Statuses
 
-| Status | Behavior |
-|--------|----------|
-| `STREAMING` | Shows content + blinking streaming cursor; no copy button |
-| `COMPLETE` | Shows full content + timestamp (hidden by default, visible on hover via `.cc-timestamp-hidden`) + Copy button |
-| `ERROR` | Error styling + optional Retry button (when `onRetry` provided) |
+| Status      | Behavior                                                                                                      |
+| ----------- | ------------------------------------------------------------------------------------------------------------- |
+| `STREAMING` | Shows content + blinking streaming cursor; no copy button                                                     |
+| `COMPLETE`  | Shows full content + timestamp (hidden by default, visible on hover via `.cc-timestamp-hidden`) + Copy button |
+| `ERROR`     | Error styling + optional Retry button (when `onRetry` provided)                                               |
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `variant` | `BubbleVariant` | — | Visual variant (see table above) |
-| `status` | `MessageStatus` | — | `"STREAMING"`, `"COMPLETE"`, or `"ERROR"` |
-| `content` | `string` | — | Message text |
-| `authorName` | `string` | — | Display name rendered as an avatar/label above the message (`.cc-bubble-avatar`) |
-| `createdAt` | `number` | — | Unix timestamp (ms) for the message |
-| `onRetry` | `() => void` | — | Callback for Retry button (ERROR status only) |
-| `onCopy` | `() => void` | — | Callback fired after copy-to-clipboard |
-| `className` | `string` | — | Additional CSS class names |
+| Prop         | Type            | Default | Description                                                                      |
+| ------------ | --------------- | ------- | -------------------------------------------------------------------------------- |
+| `variant`    | `BubbleVariant` | —       | Visual variant (see table above)                                                 |
+| `status`     | `MessageStatus` | —       | `"STREAMING"`, `"COMPLETE"`, or `"ERROR"`                                        |
+| `content`    | `string`        | —       | Message text                                                                     |
+| `authorName` | `string`        | —       | Display name rendered as an avatar/label above the message (`.cc-bubble-avatar`) |
+| `createdAt`  | `number`        | —       | Unix timestamp (ms) for the message                                              |
+| `onRetry`    | `() => void`    | —       | Callback for Retry button (ERROR status only)                                    |
+| `onCopy`     | `() => void`    | —       | Callback fired after copy-to-clipboard                                           |
+| `className`  | `string`        | —       | Additional CSS class names                                                       |
 
 ## MarkdownContent
 
@@ -91,26 +91,26 @@ output is safe React elements, preventing XSS.
 ```tsx
 import { MarkdownContent } from "@/components/chat/MarkdownContent";
 
-<MarkdownContent content="### Welcome\n- Point one\n- **Bold** point" />
+<MarkdownContent content="### Welcome\n- Point one\n- **Bold** point" />;
 ```
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `content` | `string` | — | Markdown source text to render |
-| `className` | `string` | — | Additional CSS class names on the wrapper `<span>` |
+| Prop        | Type     | Default | Description                                        |
+| ----------- | -------- | ------- | -------------------------------------------------- |
+| `content`   | `string` | —       | Markdown source text to render                     |
+| `className` | `string` | —       | Additional CSS class names on the wrapper `<span>` |
 
 ### Rendering rules
 
-| Syntax | Output element |
-|--------|---------------|
-| `### heading` | `<h3>` |
-| `- item` | `<ul><li>` |
-| `1. item` | `<ol><li>` |
-| `**bold**` | `<strong>` |
-| `*italic*` | `<em>` |
-| Plain line | `<p>` |
+| Syntax        | Output element |
+| ------------- | -------------- |
+| `### heading` | `<h3>`         |
+| `- item`      | `<ul><li>`     |
+| `1. item`     | `<ol><li>`     |
+| `**bold**`    | `<strong>`     |
+| `*italic*`    | `<em>`         |
+| Plain line    | `<p>`          |
 
 User-authored messages (variant `user`) continue to render as plain text;
 markdown rendering applies only to Coach/assistant variants.
@@ -122,7 +122,7 @@ Textarea + Send button with Enter-to-send and Shift+Enter for newline.
 ```tsx
 import { MessageInput } from "@/components/chat/MessageInput";
 
-<MessageInput onSend={(text) => sendMessage(text)} isAiResponding={false} />
+<MessageInput onSend={(text) => sendMessage(text)} isAiResponding={false} />;
 ```
 
 - **Enter** sends the message; **Shift+Enter** inserts a newline.
@@ -132,14 +132,14 @@ import { MessageInput } from "@/components/chat/MessageInput";
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `onSend` | `(text: string) => void` | — | Called with trimmed text on send |
-| `isAiResponding` | `boolean` | `false` | Disables the Send button while AI streams |
-| `placeholder` | `string` | `"Type a message..."` | Textarea placeholder text |
-| `className` | `string` | — | Additional CSS class names |
-| `autoFocus` | `boolean` | — | Auto-focus the textarea on mount |
-| `defaultValue` | `string` | — | Initial text to populate the textarea (e.g. for "Edit before sending") |
+| Prop             | Type                     | Default               | Description                                                            |
+| ---------------- | ------------------------ | --------------------- | ---------------------------------------------------------------------- |
+| `onSend`         | `(text: string) => void` | —                     | Called with trimmed text on send                                       |
+| `isAiResponding` | `boolean`                | `false`               | Disables the Send button while AI streams                              |
+| `placeholder`    | `string`                 | `"Type a message..."` | Textarea placeholder text                                              |
+| `className`      | `string`                 | —                     | Additional CSS class names                                             |
+| `autoFocus`      | `boolean`                | —                     | Auto-focus the textarea on mount                                       |
+| `defaultValue`   | `string`                 | —                     | Initial text to populate the textarea (e.g. for "Edit before sending") |
 
 ## StreamingIndicator
 
@@ -151,14 +151,14 @@ It is `aria-hidden="true"` since it is purely decorative.
 ```tsx
 import { StreamingIndicator } from "@/components/chat/StreamingIndicator";
 
-<StreamingIndicator />
+<StreamingIndicator />;
 ```
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `className` | `string` | — | Additional CSS class names |
+| Prop        | Type     | Default | Description                |
+| ----------- | -------- | ------- | -------------------------- |
+| `className` | `string` | —       | Additional CSS class names |
 
 ## ClosureModal
 
@@ -171,29 +171,33 @@ import { ClosureModal } from "@/components/chat/ClosureModal";
 <ClosureModal
   open={showClosure}
   onOpenChange={setShowClosure}
-  onProposeClosure={async (summary) => { /* call proposeClosure */ }}
-  onUnilateralClose={async (reason) => { /* call unilateralClose */ }}
+  onProposeClosure={async (summary) => {
+    /* call proposeClosure */
+  }}
+  onUnilateralClose={async (reason) => {
+    /* call unilateralClose */
+  }}
   otherPartyName="Jordan"
-/>
+/>;
 ```
 
 ### Paths
 
-| Path | Behaviour |
-|------|-----------|
-| **Resolved** | Shows a required textarea ("Briefly describe what you agreed to"), then calls `onProposeClosure` with the summary. The other party must confirm via the `ClosureConfirmBanner`. |
-| **Not resolved** | Warning-styled view with an optional reason textarea. Calls `onUnilateralClose` to immediately close the case as CLOSED_UNRESOLVED. |
-| **Take a break** | Closes the modal and the browser tab. No mutation — the case stays JOINT_ACTIVE. |
+| Path             | Behaviour                                                                                                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Resolved**     | Shows a required textarea ("Briefly describe what you agreed to"), then calls `onProposeClosure` with the summary. The other party must confirm via the `ClosureConfirmBanner`. |
+| **Not resolved** | Warning-styled view with an optional reason textarea. Calls `onUnilateralClose` to immediately close the case as CLOSED_UNRESOLVED.                                             |
+| **Take a break** | Closes the modal and the browser tab. No mutation — the case stays JOINT_ACTIVE.                                                                                                |
 
 ### Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `open` | `boolean` | Controls dialog visibility |
-| `onOpenChange` | `(open: boolean) => void` | Called when the dialog wants to open/close |
-| `onProposeClosure` | `(summary: string) => Promise<void>` | Resolved path callback |
-| `onUnilateralClose` | `(reason?: string) => Promise<void>` | Not-resolved path callback |
-| `otherPartyName` | `string` | Name shown in confirmation copy |
+| Prop                | Type                                 | Description                                |
+| ------------------- | ------------------------------------ | ------------------------------------------ |
+| `open`              | `boolean`                            | Controls dialog visibility                 |
+| `onOpenChange`      | `(open: boolean) => void`            | Called when the dialog wants to open/close |
+| `onProposeClosure`  | `(summary: string) => Promise<void>` | Resolved path callback                     |
+| `onUnilateralClose` | `(reason?: string) => Promise<void>` | Not-resolved path callback                 |
+| `otherPartyName`    | `string`                             | Name shown in confirmation copy            |
 
 ### Styling
 
@@ -214,17 +218,17 @@ import { ClosureConfirmBanner } from "@/components/chat/ClosureConfirmBanner";
   proposerName="Jordan"
   onConfirm={handleConfirm}
   onReject={handleReject}
-/>
+/>;
 ```
 
 ### Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `summary` | `string` | The closure summary written by the proposer |
-| `proposerName` | `string` | Display name of the party who proposed |
-| `onConfirm` | `() => void` | Fires when the user confirms — should call `confirmClosure` |
-| `onReject` | `() => void` | Fires when the user rejects — should call `rejectClosure` |
+| Prop           | Type         | Description                                                 |
+| -------------- | ------------ | ----------------------------------------------------------- |
+| `summary`      | `string`     | The closure summary written by the proposer                 |
+| `proposerName` | `string`     | Display name of the party who proposed                      |
+| `onConfirm`    | `() => void` | Fires when the user confirms — should call `confirmClosure` |
+| `onReject`     | `() => void` | Fires when the user rejects — should call `rejectClosure`   |
 
 ### Accessibility
 

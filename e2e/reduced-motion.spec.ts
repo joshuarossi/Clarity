@@ -35,8 +35,8 @@ test.describe("AC: prefers-reduced-motion disables animations", () => {
     const cursor = page.locator("#test-cursor");
     await expect(cursor).toBeVisible();
 
-    const animationName = await cursor.evaluate((el) =>
-      getComputedStyle(el).animationName,
+    const animationName = await cursor.evaluate(
+      (el) => getComputedStyle(el).animationName,
     );
     // Under reduced motion, animation should be "none"
     expect(animationName).toBe("none");
@@ -59,8 +59,8 @@ test.describe("AC: prefers-reduced-motion disables animations", () => {
     const cursor = page.locator("#test-cursor");
     await expect(cursor).toBeVisible();
 
-    const animationName = await cursor.evaluate((el) =>
-      getComputedStyle(el).animationName,
+    const animationName = await cursor.evaluate(
+      (el) => getComputedStyle(el).animationName,
     );
     // Under normal motion, animation should be cc-blink
     expect(animationName).toBe("cc-blink");
@@ -84,13 +84,13 @@ test.describe("AC: prefers-reduced-motion disables animations", () => {
     const bubble = page.locator("#test-bubble");
     await expect(bubble).toBeVisible();
 
-    const animationName = await bubble.evaluate((el) =>
-      getComputedStyle(el).animationName,
+    const animationName = await bubble.evaluate(
+      (el) => getComputedStyle(el).animationName,
     );
     expect(animationName).toBe("none");
 
-    const transitionDuration = await bubble.evaluate((el) =>
-      getComputedStyle(el).transitionDuration,
+    const transitionDuration = await bubble.evaluate(
+      (el) => getComputedStyle(el).transitionDuration,
     );
     // Transition should be 0s under reduced motion
     expect(transitionDuration).toBe("0s");

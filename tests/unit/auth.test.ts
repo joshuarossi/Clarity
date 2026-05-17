@@ -61,11 +61,9 @@ describe("AC1 — requireAuth", () => {
     const t = convexTest(schema);
     expect.assertions(4);
     try {
-      await t
-        .withIdentity({ email: "ghost@example.com" })
-        .run(async (ctx) => {
-          await requireAuth(ctx);
-        });
+      await t.withIdentity({ email: "ghost@example.com" }).run(async (ctx) => {
+        await requireAuth(ctx);
+      });
     } catch (err) {
       expect(err).toBeInstanceOf(ConvexError);
       const e = err as ConvexError<AuthErrorData>;

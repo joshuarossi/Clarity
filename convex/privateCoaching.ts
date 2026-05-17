@@ -1,21 +1,23 @@
 import { v } from "convex/values";
-import { query, mutation, internalAction, internalMutation, internalQuery } from "./_generated/server";
+import {
+  query,
+  mutation,
+  internalAction,
+  internalMutation,
+  internalQuery,
+} from "./_generated/server";
 import { internal } from "./_generated/api";
 import { requireAuth, requirePartyToCase } from "./lib/auth";
 import { conflict } from "./lib/errors";
-import {
-  assemblePrompt,
-  type PromptMessage,
-} from "./lib/prompts";
-import {
-  isClaudeMockEnabled,
-  getMockClaudeResponse,
-} from "./lib/claudeMock";
+import { assemblePrompt, type PromptMessage } from "./lib/prompts";
+import { isClaudeMockEnabled, getMockClaudeResponse } from "./lib/claudeMock";
 
 export const myMessages = query({
   args: {
     caseId: v.id("cases"),
-    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
+    partyRole: v.optional(
+      v.union(v.literal("INITIATOR"), v.literal("INVITEE")),
+    ),
   },
   handler: async (ctx, { caseId, partyRole }) => {
     const user = await requireAuth(ctx);
@@ -25,7 +27,10 @@ export const myMessages = query({
       messages = await ctx.db
         .query("privateMessages")
         .withIndex("by_case_user_role", (q) =>
-          q.eq("caseId", caseId).eq("userId", user._id).eq("partyRole", partyRole),
+          q
+            .eq("caseId", caseId)
+            .eq("userId", user._id)
+            .eq("partyRole", partyRole),
         )
         .collect();
     } else {
@@ -46,7 +51,9 @@ export const sendUserMessage = mutation({
   args: {
     caseId: v.id("cases"),
     content: v.string(),
-    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
+    partyRole: v.optional(
+      v.union(v.literal("INITIATOR"), v.literal("INVITEE")),
+    ),
   },
   handler: async (ctx, args) => {
     const user = await requireAuth(ctx);
@@ -86,7 +93,9 @@ export const sendUserMessage = mutation({
 export const markComplete = mutation({
   args: {
     caseId: v.id("cases"),
-    viewAsRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
+    viewAsRole: v.optional(
+      v.union(v.literal("INITIATOR"), v.literal("INVITEE")),
+    ),
   },
   handler: async (ctx, args) => {
     const user = await requireAuth(ctx);
@@ -159,21 +168,26 @@ export const retryLastAIResponse = mutation({
     const messages = await ctx.db
       .query("privateMessages")
       .withIndex("by_case_and_user", (q) =>
-        q.eq("caseId", args.caseId).eq("userId", user._id))
+        q.eq("caseId", args.caseId).eq("userId", user._id),
+      )
       .collect();
     const errorMsg = messages
-      .filter(m => m.role === "AI" && m.status === "ERROR")
+      .filter((m) => m.role === "AI" && m.status === "ERROR")
       .sort((a, b) => b.createdAt - a.createdAt)[0];
     if (!errorMsg) throw conflict("No error message to retry");
     const errorPartyRole = errorMsg.partyRole;
     // Delete the error row
     await ctx.db.delete(errorMsg._id);
     // Schedule new AI response
-    await ctx.scheduler.runAfter(0, internal.privateCoaching.generateAIResponse, {
-      caseId: args.caseId,
-      userId: user._id,
-      ...(errorPartyRole ? { partyRole: errorPartyRole } : {}),
-    });
+    await ctx.scheduler.runAfter(
+      0,
+      internal.privateCoaching.generateAIResponse,
+      {
+        caseId: args.caseId,
+        userId: user._id,
+        ...(errorPartyRole ? { partyRole: errorPartyRole } : {}),
+      },
+    );
   },
 });
 
@@ -185,7 +199,9 @@ export const insertStreamingMessage = internalMutation({
   args: {
     caseId: v.id("cases"),
     userId: v.id("users"),
-    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
+    partyRole: v.optional(
+      v.union(v.literal("INITIATOR"), v.literal("INVITEE")),
+    ),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("privateMessages", {
@@ -242,7 +258,9 @@ export const getPrivateMessagesForUser = internalQuery({
   args: {
     caseId: v.id("cases"),
     userId: v.id("users"),
-    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
+    partyRole: v.optional(
+      v.union(v.literal("INITIATOR"), v.literal("INVITEE")),
+    ),
   },
   handler: async (ctx, args) => {
     let messages;
@@ -250,7 +268,10 @@ export const getPrivateMessagesForUser = internalQuery({
       messages = await ctx.db
         .query("privateMessages")
         .withIndex("by_case_user_role", (q) =>
-          q.eq("caseId", args.caseId).eq("userId", args.userId).eq("partyRole", args.partyRole),
+          q
+            .eq("caseId", args.caseId)
+            .eq("userId", args.userId)
+            .eq("partyRole", args.partyRole),
         )
         .collect();
     } else {
@@ -293,7 +314,9 @@ export const generateAIResponse = internalAction({
   args: {
     caseId: v.id("cases"),
     userId: v.id("users"),
-    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
+    partyRole: v.optional(
+      v.union(v.literal("INITIATOR"), v.literal("INVITEE")),
+    ),
   },
   handler: async (ctx, args) => {
     // 1. Read party state for form fields
@@ -446,7 +469,13 @@ export const generateAIResponse = internalAction({
               } catch (flushErr) {
                 console.error(
                   "generateAIResponse: failed to flush streaming update",
-                  { messageId, error: flushErr instanceof Error ? flushErr.message : String(flushErr) },
+                  {
+                    messageId,
+                    error:
+                      flushErr instanceof Error
+                        ? flushErr.message
+                        : String(flushErr),
+                  },
                 );
               }
             }
@@ -477,10 +506,12 @@ export const generateAIResponse = internalAction({
           "status" in error &&
           (error as Record<string, unknown>).status === 429;
 
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        const statusCode = error instanceof Error && "status" in error
-          ? (error as Record<string, unknown>).status
-          : undefined;
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        const statusCode =
+          error instanceof Error && "status" in error
+            ? (error as Record<string, unknown>).status
+            : undefined;
 
         if (attempt < maxAttempts) {
           const delay = is429 ? 2000 * Math.pow(2, attempt - 1) : 2000;
@@ -492,7 +523,12 @@ export const generateAIResponse = internalAction({
         } else {
           console.error(
             `generateAIResponse: all ${maxAttempts} attempts failed, marking message as ERROR`,
-            { caseId: args.caseId, userId: args.userId, messageId, error: errorMessage },
+            {
+              caseId: args.caseId,
+              userId: args.userId,
+              messageId,
+              error: errorMessage,
+            },
           );
           await ctx.runMutation(internal.privateCoaching.markMessageError, {
             messageId,

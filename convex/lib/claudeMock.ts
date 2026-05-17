@@ -98,8 +98,7 @@ export function isClaudeMockEnabled(): boolean {
   return process.env.CLAUDE_MOCK === "true";
 }
 
-const MOCK_SUMMARY_RESPONSE =
-  `## Progress Summary
+const MOCK_SUMMARY_RESPONSE = `## Progress Summary
 
 Here's a summary of where you both agree:
 
@@ -117,7 +116,10 @@ This is encouraging progress. Keep building on these areas of alignment.`;
  * The response is always the same for a given role — no randomness.
  * When summaryMode is true and role is COACH, returns a summary-specific mock.
  */
-export function getMockClaudeResponse(role: PromptRole, summaryMode?: boolean): string {
+export function getMockClaudeResponse(
+  role: PromptRole,
+  summaryMode?: boolean,
+): string {
   if (summaryMode && role === "COACH") {
     return MOCK_SUMMARY_RESPONSE;
   }

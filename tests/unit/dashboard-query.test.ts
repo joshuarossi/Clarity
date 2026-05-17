@@ -281,8 +281,16 @@ describe("AC: Results sorted by updatedAt descending", () => {
       createdAt: NOW - 86_400_000 * 5,
       updatedAt: NOW - 86_400_000,
     });
-    await seedPartyState(t, { caseId: caseOld, userId: alice._id, role: "INITIATOR" });
-    await seedPartyState(t, { caseId: caseOld, userId: bob._id, role: "INVITEE" });
+    await seedPartyState(t, {
+      caseId: caseOld,
+      userId: alice._id,
+      role: "INITIATOR",
+    });
+    await seedPartyState(t, {
+      caseId: caseOld,
+      userId: bob._id,
+      role: "INVITEE",
+    });
 
     // Newer case
     const caseNew = await seedCase(t, {
@@ -294,8 +302,16 @@ describe("AC: Results sorted by updatedAt descending", () => {
       createdAt: NOW - 86_400_000 * 2,
       updatedAt: NOW,
     });
-    await seedPartyState(t, { caseId: caseNew, userId: alice._id, role: "INITIATOR" });
-    await seedPartyState(t, { caseId: caseNew, userId: bob._id, role: "INVITEE" });
+    await seedPartyState(t, {
+      caseId: caseNew,
+      userId: alice._id,
+      role: "INITIATOR",
+    });
+    await seedPartyState(t, {
+      caseId: caseNew,
+      userId: bob._id,
+      role: "INVITEE",
+    });
 
     const asAlice = t.withIdentity({ email: "alice@test.com" });
     const result = await asAlice.query(api.cases.listForDashboard, {});
@@ -313,8 +329,6 @@ describe("AC: listForDashboard requires authentication", () => {
   it("throws for unauthenticated callers", async () => {
     const t = convexTest(schema);
 
-    await expect(
-      t.query(api.cases.listForDashboard, {}),
-    ).rejects.toThrow();
+    await expect(t.query(api.cases.listForDashboard, {})).rejects.toThrow();
   });
 });

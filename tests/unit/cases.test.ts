@@ -234,8 +234,11 @@ describe("cases/get query", () => {
 
 describe("cases/partyStates query", () => {
   it("returns caller's full partyState and other's phase-level-only view", async () => {
-    const { t, userId: userAId, versionId } =
-      await seedEnv("initiator@test.com");
+    const {
+      t,
+      userId: userAId,
+      versionId,
+    } = await seedEnv("initiator@test.com");
     const userBId = await t.run(async (ctx) =>
       ctx.db.insert("users", {
         email: "invitee@test.com",
@@ -502,16 +505,14 @@ describe("cases/create pins templateVersionId at creation time", () => {
       return v2Id;
     });
 
-    await t
-      .withIdentity({ email: "pin@test.com" })
-      .run(async (ctx) =>
-        ctx.runMutation(api.cases.create, {
-          category: "family",
-          mainTopic: "Topic",
-          description: "Desc",
-          desiredOutcome: "Outcome",
-        }),
-      );
+    await t.withIdentity({ email: "pin@test.com" }).run(async (ctx) =>
+      ctx.runMutation(api.cases.create, {
+        category: "family",
+        mainTopic: "Topic",
+        description: "Desc",
+        desiredOutcome: "Outcome",
+      }),
+    );
 
     const allCases = await t.run(async (ctx) =>
       ctx.db.query("cases").collect(),
@@ -524,16 +525,14 @@ describe("cases/create pins templateVersionId at creation time", () => {
     const { t } = await seedEnv("notemplate@test.com");
 
     await expectConvexError(
-      t
-        .withIdentity({ email: "notemplate@test.com" })
-        .run(async (ctx) =>
-          ctx.runMutation(api.cases.create, {
-            category: "nonexistent",
-            mainTopic: "Topic",
-            description: "Desc",
-            desiredOutcome: "Outcome",
-          }),
-        ),
+      t.withIdentity({ email: "notemplate@test.com" }).run(async (ctx) =>
+        ctx.runMutation(api.cases.create, {
+          category: "nonexistent",
+          mainTopic: "Topic",
+          description: "Desc",
+          desiredOutcome: "Outcome",
+        }),
+      ),
       "INVALID_INPUT",
     );
   });
@@ -561,16 +560,14 @@ describe("cases/updateMyForm mutation", () => {
     );
     const updatedAtBefore = casesBefore[0].updatedAt;
 
-    await t
-      .withIdentity({ email: "updater@test.com" })
-      .run(async (ctx) =>
-        ctx.runMutation(api.cases.updateMyForm, {
-          caseId: created.caseId,
-          mainTopic: "Updated topic",
-          description: "Updated desc",
-          desiredOutcome: "Updated outcome",
-        }),
-      );
+    await t.withIdentity({ email: "updater@test.com" }).run(async (ctx) =>
+      ctx.runMutation(api.cases.updateMyForm, {
+        caseId: created.caseId,
+        mainTopic: "Updated topic",
+        description: "Updated desc",
+        desiredOutcome: "Updated outcome",
+      }),
+    );
 
     // Verify form fields updated
     const psRows = await t.run(async (ctx) =>
@@ -612,16 +609,14 @@ describe("cases/updateMyForm mutation", () => {
     );
     const statusBefore = casesBefore[0].status;
 
-    await t
-      .withIdentity({ email: "sm@test.com" })
-      .run(async (ctx) =>
-        ctx.runMutation(api.cases.updateMyForm, {
-          caseId: created.caseId,
-          mainTopic: "New Topic",
-          description: "New Desc",
-          desiredOutcome: "New Outcome",
-        }),
-      );
+    await t.withIdentity({ email: "sm@test.com" }).run(async (ctx) =>
+      ctx.runMutation(api.cases.updateMyForm, {
+        caseId: created.caseId,
+        mainTopic: "New Topic",
+        description: "New Desc",
+        desiredOutcome: "New Outcome",
+      }),
+    );
 
     const casesAfter = await t.run(async (ctx) =>
       ctx.db.query("cases").collect(),

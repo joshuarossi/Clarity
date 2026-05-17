@@ -1,6 +1,10 @@
 import * as React from "react";
 
-type StatusPillVariant = "pill-turn" | "pill-waiting" | "pill-ready" | "pill-closed";
+type StatusPillVariant =
+  | "pill-turn"
+  | "pill-waiting"
+  | "pill-ready"
+  | "pill-closed";
 
 interface StatusPillProps {
   variant: StatusPillVariant;
@@ -15,7 +19,11 @@ const dotShapeClass: Record<StatusPillVariant, string> = {
   "pill-closed": "cc-status-pill-dot--square",
 };
 
-export function StatusPill({ variant, label, className }: StatusPillProps): React.ReactElement {
+export function StatusPill({
+  variant,
+  label,
+  className,
+}: StatusPillProps): React.ReactElement {
   return (
     <span
       className={["cc-status-pill", `cc-status-pill--${variant}`, className]
@@ -23,8 +31,9 @@ export function StatusPill({ variant, label, className }: StatusPillProps): Reac
         .join(" ")}
     >
       <span
-        className={["cc-status-pill-dot", variant, dotShapeClass[variant]]
-          .join(" ")}
+        className={["cc-status-pill-dot", variant, dotShapeClass[variant]].join(
+          " ",
+        )}
         aria-hidden="true"
       />
       {label}

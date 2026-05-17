@@ -33,7 +33,10 @@ describe("AC: Vite config includes VITE_CONVEX_URL environment variable", () => 
     // The react plugin registers with name "vite:react-babel" (or similar)
     const plugins = result?.config.plugins?.flat() ?? [];
     const pluginNames = plugins
-      .filter((p): p is { name: string } => p !== null && typeof p === "object" && "name" in p)
+      .filter(
+        (p): p is { name: string } =>
+          p !== null && typeof p === "object" && "name" in p,
+      )
       .map((p) => p.name);
 
     expect(pluginNames.some((name) => name.includes("react"))).toBe(true);

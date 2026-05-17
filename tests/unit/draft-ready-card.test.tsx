@@ -12,7 +12,8 @@ afterEach(cleanup);
 
 describe("AC: DraftReadyCard renders draft in quoted card with 4 action buttons", () => {
   const defaultProps = {
-    draftText: "I appreciate your perspective and would like to find common ground.",
+    draftText:
+      "I appreciate your perspective and would like to find common ground.",
     onSend: vi.fn(),
     onEdit: vi.fn(),
     onKeepRefining: vi.fn(),
@@ -29,8 +30,8 @@ describe("AC: DraftReadyCard renders draft in quoted card with 4 action buttons"
   it("renders 'Send this message' button", () => {
     const { container } = render(<DraftReadyCard {...defaultProps} />);
     const buttons = container.querySelectorAll("button");
-    const sendButton = Array.from(buttons).find(
-      (b) => b.textContent?.includes("Send this message"),
+    const sendButton = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Send this message"),
     );
     expect(sendButton).not.toBeUndefined();
   });
@@ -38,8 +39,8 @@ describe("AC: DraftReadyCard renders draft in quoted card with 4 action buttons"
   it("renders 'Edit before sending' button", () => {
     const { container } = render(<DraftReadyCard {...defaultProps} />);
     const buttons = container.querySelectorAll("button");
-    const editButton = Array.from(buttons).find(
-      (b) => b.textContent?.includes("Edit before sending"),
+    const editButton = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Edit before sending"),
     );
     expect(editButton).not.toBeUndefined();
   });
@@ -47,8 +48,8 @@ describe("AC: DraftReadyCard renders draft in quoted card with 4 action buttons"
   it("renders 'Keep refining with Coach' button", () => {
     const { container } = render(<DraftReadyCard {...defaultProps} />);
     const buttons = container.querySelectorAll("button");
-    const refineButton = Array.from(buttons).find(
-      (b) => b.textContent?.includes("Keep refining with Coach"),
+    const refineButton = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Keep refining with Coach"),
     );
     expect(refineButton).not.toBeUndefined();
   });
@@ -56,8 +57,8 @@ describe("AC: DraftReadyCard renders draft in quoted card with 4 action buttons"
   it("renders 'Discard' button", () => {
     const { container } = render(<DraftReadyCard {...defaultProps} />);
     const buttons = container.querySelectorAll("button");
-    const discardButton = Array.from(buttons).find(
-      (b) => b.textContent?.includes("Discard"),
+    const discardButton = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Discard"),
     );
     expect(discardButton).not.toBeUndefined();
   });
@@ -66,9 +67,15 @@ describe("AC: DraftReadyCard renders draft in quoted card with 4 action buttons"
     const { container } = render(<DraftReadyCard {...defaultProps} />);
     const buttons = container.querySelectorAll("button");
     const buttonTexts = Array.from(buttons).map((b) => b.textContent?.trim());
-    const sendIdx = buttonTexts.findIndex((t) => t?.includes("Send this message"));
-    const editIdx = buttonTexts.findIndex((t) => t?.includes("Edit before sending"));
-    const refineIdx = buttonTexts.findIndex((t) => t?.includes("Keep refining with Coach"));
+    const sendIdx = buttonTexts.findIndex((t) =>
+      t?.includes("Send this message"),
+    );
+    const editIdx = buttonTexts.findIndex((t) =>
+      t?.includes("Edit before sending"),
+    );
+    const refineIdx = buttonTexts.findIndex((t) =>
+      t?.includes("Keep refining with Coach"),
+    );
     const discardIdx = buttonTexts.findIndex((t) => t?.includes("Discard"));
 
     expect(sendIdx).toBeGreaterThanOrEqual(0);
@@ -93,8 +100,8 @@ describe("AC: DraftReadyCard button callbacks", () => {
       />,
     );
     const buttons = container.querySelectorAll("button");
-    const sendButton = Array.from(buttons).find(
-      (b) => b.textContent?.includes("Send this message"),
+    const sendButton = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Send this message"),
     );
     fireEvent.click(sendButton!);
     expect(onSend).toHaveBeenCalledOnce();
@@ -112,8 +119,8 @@ describe("AC: DraftReadyCard button callbacks", () => {
       />,
     );
     const buttons = container.querySelectorAll("button");
-    const editButton = Array.from(buttons).find(
-      (b) => b.textContent?.includes("Edit before sending"),
+    const editButton = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Edit before sending"),
     );
     fireEvent.click(editButton!);
     expect(onEdit).toHaveBeenCalledOnce();
@@ -131,8 +138,8 @@ describe("AC: DraftReadyCard button callbacks", () => {
       />,
     );
     const buttons = container.querySelectorAll("button");
-    const refineButton = Array.from(buttons).find(
-      (b) => b.textContent?.includes("Keep refining with Coach"),
+    const refineButton = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Keep refining with Coach"),
     );
     fireEvent.click(refineButton!);
     expect(onKeepRefining).toHaveBeenCalledOnce();
@@ -150,8 +157,8 @@ describe("AC: DraftReadyCard button callbacks", () => {
       />,
     );
     const buttons = container.querySelectorAll("button");
-    const discardButton = Array.from(buttons).find(
-      (b) => b.textContent?.includes("Discard"),
+    const discardButton = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Discard"),
     );
     fireEvent.click(discardButton!);
     expect(onDiscard).toHaveBeenCalledOnce();
@@ -173,8 +180,8 @@ describe("AC: DraftReadyCard isSending disabled state", () => {
       />,
     );
     const buttons = container.querySelectorAll("button");
-    const sendButton = Array.from(buttons).find(
-      (b) => b.textContent?.includes("Send this message"),
+    const sendButton = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Send this message"),
     );
     expect(sendButton!.disabled).toBe(true);
   });
@@ -191,8 +198,8 @@ describe("AC: DraftReadyCard isSending disabled state", () => {
       />,
     );
     const buttons = container.querySelectorAll("button");
-    const sendButton = Array.from(buttons).find(
-      (b) => b.textContent?.includes("Send this message"),
+    const sendButton = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Send this message"),
     );
     expect(sendButton!.disabled).toBe(false);
   });
@@ -208,8 +215,8 @@ describe("AC: DraftReadyCard isSending disabled state", () => {
       />,
     );
     const buttons = container.querySelectorAll("button");
-    const sendButton = Array.from(buttons).find(
-      (b) => b.textContent?.includes("Send this message"),
+    const sendButton = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Send this message"),
     );
     expect(sendButton!.disabled).toBe(false);
   });

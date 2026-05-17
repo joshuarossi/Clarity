@@ -18,16 +18,13 @@ test.describe("AC: Solo mode cases skip invite sharing page", () => {
       .fill("Solo test topic");
 
     // Fill description
-    const descriptionTextarea = authenticatedPage.locator(
-      "textarea[rows='5']",
-    );
+    const descriptionTextarea = authenticatedPage.locator("textarea[rows='5']");
     await descriptionTextarea.fill("Solo test description");
 
     // Expand Advanced and enable solo mode
-    const advancedToggle =
-      authenticatedPage.locator("summary").or(
-        authenticatedPage.getByText(/advanced/i),
-      );
+    const advancedToggle = authenticatedPage
+      .locator("summary")
+      .or(authenticatedPage.getByText(/advanced/i));
     await advancedToggle.first().click();
 
     await authenticatedPage.getByRole("checkbox").click();
@@ -69,9 +66,7 @@ test.describe("AC: Non-solo case shows invite sharing page", () => {
       .fill("Non-solo test topic");
 
     // Fill description
-    const descriptionTextarea = authenticatedPage.locator(
-      "textarea[rows='5']",
-    );
+    const descriptionTextarea = authenticatedPage.locator("textarea[rows='5']");
     await descriptionTextarea.fill("Non-solo test description");
 
     // Fill other party name

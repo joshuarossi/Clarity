@@ -1,0 +1,13 @@
+# Generated / vendored — not hand-edited, must not be reformatted
+convex/_generated/
+
+# Build & tooling output
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+.vite/
+
+# Dependencies
+node_modules/

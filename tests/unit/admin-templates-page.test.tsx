@@ -15,9 +15,10 @@ vi.mock("convex/react", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom",
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -185,7 +186,9 @@ describe("AC: Archived templates have muted/grayed styling", () => {
   it("archived row has a muted visual class or reduced opacity", () => {
     const { container } = renderPage();
 
-    const rows = Array.from(container.querySelectorAll<HTMLElement>("tbody tr"));
+    const rows = Array.from(
+      container.querySelectorAll<HTMLElement>("tbody tr"),
+    );
     // Find the archived row (contains "Family Mediation")
     const archivedRow = rows.find((row) =>
       row.textContent?.includes("Family Mediation"),
@@ -200,8 +203,7 @@ describe("AC: Archived templates have muted/grayed styling", () => {
       archivedRow.classList.contains("muted") ||
       archivedRow.getAttribute("data-archived") === "true";
     const hasReducedOpacity =
-      archivedRow.style.opacity !== "" &&
-      archivedRow.style.opacity !== "1";
+      archivedRow.style.opacity !== "" && archivedRow.style.opacity !== "1";
 
     expect(hasArchivedClass || hasReducedOpacity).toBe(true);
   });

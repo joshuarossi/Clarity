@@ -25,9 +25,9 @@ Returns invite preview data for a given token string. **No authentication
 required** — logged-out users need the initiator's name for the invite page
 heading.
 
-| Argument | Type     | Description                |
-|----------|----------|----------------------------|
-| `token`  | `string` | The 32-char invite token   |
+| Argument | Type     | Description              |
+| -------- | -------- | ------------------------ |
+| `token`  | `string` | The 32-char invite token |
 
 **Returns:** one of three shapes depending on state:
 
@@ -46,8 +46,8 @@ Returns the active invite token and its full URL for a given case. Only the
 case initiator is allowed to call this query; all other callers receive a
 `FORBIDDEN` error.
 
-| Argument | Type         | Description          |
-|----------|--------------|----------------------|
+| Argument | Type          | Description         |
+| -------- | ------------- | ------------------- |
 | `caseId` | `Id<"cases">` | The case to look up |
 
 **Returns:** `{ token: string, url: string }` if an active invite token
@@ -56,10 +56,10 @@ has already been consumed or the case does not exist).
 
 **Error codes:**
 
-| Code        | When                                        |
-|-------------|---------------------------------------------|
-| `FORBIDDEN` | The caller is not the case initiator         |
-| `UNAUTHENTICATED` | No authenticated user session          |
+| Code              | When                                 |
+| ----------------- | ------------------------------------ |
+| `FORBIDDEN`       | The caller is not the case initiator |
+| `UNAUTHENTICATED` | No authenticated user session        |
 
 This query is used by the Invite Sharing page (`/cases/:caseId/invite`) to
 display the invite link and power the copy/share actions.
@@ -72,9 +72,9 @@ Redeems an invite token, joining the caller to the case as the invitee.
 The entire operation is atomic — if any step fails, no state changes
 persist.
 
-| Argument | Type     | Description                |
-|----------|----------|----------------------------|
-| `token`  | `string` | The 32-char invite token   |
+| Argument | Type     | Description              |
+| -------- | -------- | ------------------------ |
+| `token`  | `string` | The 32-char invite token |
 
 **Steps performed in a single Convex transaction:**
 
@@ -88,7 +88,7 @@ persist.
 
 **Returns:** `{ caseId }` — the ID of the case the caller joined.
 
-**Note:** Redeeming an invite does *not* change the case status. The
+**Note:** Redeeming an invite does _not_ change the case status. The
 transition from `DRAFT_PRIVATE_COACHING` to `BOTH_PRIVATE_COACHING`
 happens later when the invitee completes their intake form.
 
@@ -97,9 +97,9 @@ happens later when the invitee completes their intake form.
 Declines an invite: transitions the case to `CLOSED_ABANDONED` and marks the
 token `CONSUMED`. Auth required.
 
-| Argument | Type     | Description                |
-|----------|----------|----------------------------|
-| `token`  | `string` | The 32-char invite token   |
+| Argument | Type     | Description              |
+| -------- | -------- | ------------------------ |
+| `token`  | `string` | The 32-char invite token |
 
 **Steps performed in a single Convex transaction:**
 
@@ -114,11 +114,11 @@ token `CONSUMED`. Auth required.
 
 ## Error codes
 
-| Code | When |
-|------|------|
-| `TOKEN_INVALID` | Token does not exist, or has already been consumed or revoked |
-| `CONFLICT` | The caller is the initiator of the case (self-redeem or self-decline) |
-| `UNAUTHENTICATED` | No authenticated user session |
+| Code              | When                                                                  |
+| ----------------- | --------------------------------------------------------------------- |
+| `TOKEN_INVALID`   | Token does not exist, or has already been consumed or revoked         |
+| `CONFLICT`        | The caller is the initiator of the case (self-redeem or self-decline) |
+| `UNAUTHENTICATED` | No authenticated user session                                         |
 
 ## Invite URL format
 

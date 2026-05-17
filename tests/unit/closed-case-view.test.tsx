@@ -26,9 +26,10 @@ vi.mock("convex/react", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom",
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
   return {
     ...actual,
     useParams: mockUseParams,
@@ -87,7 +88,8 @@ const RESOLVED_CASE: CaseDoc = {
   status: "CLOSED_RESOLVED",
   category: "Workplace",
   closedAt: CLOSED_AT,
-  closureSummary: "Both parties agreed to weekly check-ins and a shared task tracker.",
+  closureSummary:
+    "Both parties agreed to weekly check-ins and a shared task tracker.",
   initiatorUserId: USER_ID,
   isSolo: false,
 };
@@ -144,7 +146,8 @@ const PRIVATE_MESSAGES: PrivateMessage[] = [
   {
     _id: "pm-2",
     role: "AI",
-    content: "That sounds challenging. Let's explore what good communication looks like for you.",
+    content:
+      "That sounds challenging. Let's explore what good communication looks like for you.",
     status: "SENT",
     createdAt: CLOSED_AT - 7100_000,
   },
@@ -303,9 +306,7 @@ describe("AC: Closure summary displayed when Resolved", () => {
 describe("AC: Read-only joint chat transcript", () => {
   it("renders joint chat messages in the default tab", () => {
     renderPage();
-    expect(
-      screen.getByText("Welcome to this joint session."),
-    ).toBeTruthy();
+    expect(screen.getByText("Welcome to this joint session.")).toBeTruthy();
     expect(
       screen.getByText("I think we should discuss the project timeline."),
     ).toBeTruthy();
@@ -318,9 +319,9 @@ describe("AC: Read-only joint chat transcript", () => {
 
   it("does NOT render a send button", () => {
     renderPage();
-    const sendButtons = screen.queryAllByRole("button").filter((btn) =>
-      /send/i.test(btn.textContent ?? ""),
-    );
+    const sendButtons = screen
+      .queryAllByRole("button")
+      .filter((btn) => /send/i.test(btn.textContent ?? ""));
     expect(sendButtons.length).toBe(0);
   });
 
@@ -331,9 +332,9 @@ describe("AC: Read-only joint chat transcript", () => {
 
   it("does NOT render a Draft Coach trigger button", () => {
     renderPage();
-    const draftCoachButtons = screen.queryAllByRole("button").filter((btn) =>
-      /draft.*coach/i.test(btn.textContent ?? ""),
-    );
+    const draftCoachButtons = screen
+      .queryAllByRole("button")
+      .filter((btn) => /draft.*coach/i.test(btn.textContent ?? ""));
     expect(draftCoachButtons.length).toBe(0);
   });
 });
@@ -406,9 +407,7 @@ describe("AC: Nav tabs work correctly", () => {
     renderPage();
     expect(screen.getByTestId("tabpanel-private")).toBeTruthy();
     expect(
-      screen.getByText(
-        "I feel frustrated about the lack of communication.",
-      ),
+      screen.getByText("I feel frustrated about the lack of communication."),
     ).toBeTruthy();
   });
 
@@ -429,9 +428,7 @@ describe("AC: Nav tabs work correctly", () => {
     mockSearchParams.set("tab", "guidance");
     synthesisFixture = null;
     renderPage();
-    expect(
-      screen.getByText("Synthesis not available."),
-    ).toBeTruthy();
+    expect(screen.getByText("Synthesis not available.")).toBeTruthy();
   });
 });
 

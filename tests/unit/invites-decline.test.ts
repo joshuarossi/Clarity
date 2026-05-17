@@ -295,13 +295,11 @@ describe("invites/decline — invalid token handling", () => {
     const { t } = await seedDeclineEnv();
 
     await expectConvexError(
-      t
-        .withIdentity({ email: "invitee@test.com" })
-        .run(async (ctx) =>
-          ctx.runMutation(anyApi.invites.decline, {
-            token: "nonexistent_token_value_here____",
-          }),
-        ),
+      t.withIdentity({ email: "invitee@test.com" }).run(async (ctx) =>
+        ctx.runMutation(anyApi.invites.decline, {
+          token: "nonexistent_token_value_here____",
+        }),
+      ),
       "TOKEN_INVALID",
     );
   });

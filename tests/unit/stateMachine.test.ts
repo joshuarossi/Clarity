@@ -1,9 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ConvexError } from "convex/values";
-import {
-  validateTransition,
-  TRANSITIONS,
-} from "../../convex/lib/stateMachine";
+import { validateTransition, TRANSITIONS } from "../../convex/lib/stateMachine";
 import type {
   CaseStatus,
   Transition,
@@ -125,9 +122,9 @@ describe("AC3 — illegal transitions throw CONFLICT", () => {
       "DECLINE_INVITE",
     ];
     for (const transition of allTransitions) {
-      expect(() =>
-        validateTransition("CLOSED_RESOLVED", transition),
-      ).toThrow(ConvexError);
+      expect(() => validateTransition("CLOSED_RESOLVED", transition)).toThrow(
+        ConvexError,
+      );
     }
   });
 
@@ -142,9 +139,9 @@ describe("AC3 — illegal transitions throw CONFLICT", () => {
       "DECLINE_INVITE",
     ];
     for (const transition of allTransitions) {
-      expect(() =>
-        validateTransition("CLOSED_UNRESOLVED", transition),
-      ).toThrow(ConvexError);
+      expect(() => validateTransition("CLOSED_UNRESOLVED", transition)).toThrow(
+        ConvexError,
+      );
     }
   });
 
@@ -159,9 +156,9 @@ describe("AC3 — illegal transitions throw CONFLICT", () => {
       "DECLINE_INVITE",
     ];
     for (const transition of allTransitions) {
-      expect(() =>
-        validateTransition("CLOSED_ABANDONED", transition),
-      ).toThrow(ConvexError);
+      expect(() => validateTransition("CLOSED_ABANDONED", transition)).toThrow(
+        ConvexError,
+      );
     }
   });
 });
@@ -170,9 +167,9 @@ describe("AC3 — illegal transitions throw CONFLICT", () => {
 // partyStates to have closureProposed=true and closureConfirmed=true
 describe("AC5 — RESOLVE closure precondition", () => {
   it("throws CONFLICT when no context is provided", () => {
-    expect(() =>
-      validateTransition("JOINT_ACTIVE", "RESOLVE"),
-    ).toThrow(ConvexError);
+    expect(() => validateTransition("JOINT_ACTIVE", "RESOLVE")).toThrow(
+      ConvexError,
+    );
 
     try {
       validateTransition("JOINT_ACTIVE", "RESOLVE");
@@ -224,9 +221,7 @@ describe("AC5 — RESOLVE closure precondition", () => {
 
   it("throws CONFLICT when partyStates has fewer than 2 entries", () => {
     const singlePartyContext: ClosureContext = {
-      partyStates: [
-        { closureProposed: true, closureConfirmed: true },
-      ],
+      partyStates: [{ closureProposed: true, closureConfirmed: true }],
     };
     expect(() =>
       validateTransition("JOINT_ACTIVE", "RESOLVE", singlePartyContext),

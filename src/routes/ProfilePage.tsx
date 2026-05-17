@@ -29,9 +29,21 @@ export function ProfilePage(): React.ReactElement {
 
   if (user === null) {
     return (
-      <main style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
-        <div className="cc-card" style={{ maxWidth: 400, width: "100%", padding: "2rem" }}>
-          <p role="alert">Unable to load your profile. Please try signing in again.</p>
+      <main
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <div
+          className="cc-card"
+          style={{ maxWidth: 400, width: "100%", padding: "2rem" }}
+        >
+          <p role="alert">
+            Unable to load your profile. Please try signing in again.
+          </p>
         </div>
       </main>
     );
@@ -47,7 +59,11 @@ export function ProfilePage(): React.ReactElement {
       await updateDisplayName({ displayName: trimmed });
       setSaved(true);
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Failed to save display name. Please try again.");
+      setSaveError(
+        err instanceof Error
+          ? err.message
+          : "Failed to save display name. Please try again.",
+      );
     } finally {
       setSaving(false);
     }
@@ -102,12 +118,26 @@ export function ProfilePage(): React.ReactElement {
             </Button>
           </div>
           {saved && (
-            <p role="status" style={{ fontSize: "0.875rem", color: "var(--cc-success, #16a34a)", marginTop: "0.25rem" }}>
+            <p
+              role="status"
+              style={{
+                fontSize: "0.875rem",
+                color: "var(--cc-success, #16a34a)",
+                marginTop: "0.25rem",
+              }}
+            >
               Display name updated.
             </p>
           )}
           {saveError && (
-            <p role="alert" style={{ color: "var(--cc-danger, #dc2626)", fontSize: "0.875rem", marginTop: "0.25rem" }}>
+            <p
+              role="alert"
+              style={{
+                color: "var(--cc-danger, #dc2626)",
+                fontSize: "0.875rem",
+                marginTop: "0.25rem",
+              }}
+            >
               {saveError}
             </p>
           )}
@@ -115,9 +145,7 @@ export function ProfilePage(): React.ReactElement {
 
         <div style={{ marginBottom: "1.5rem" }}>
           <span>Email</span>
-          <p style={{ marginTop: "0.25rem" }}>
-            {user.email}
-          </p>
+          <p style={{ marginTop: "0.25rem" }}>{user.email}</p>
         </div>
 
         <Button

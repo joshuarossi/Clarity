@@ -31,9 +31,10 @@ vi.mock("convex/react", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom",
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -219,9 +220,7 @@ describe("AC: Reads synthesis from jointChat/mySynthesis reactive query", () => 
   it("shows preparing message when synthesis is null", () => {
     synthesisFixture = null;
     renderPage();
-    expect(
-      screen.getByText(/synthesis is being prepared/i),
-    ).toBeDefined();
+    expect(screen.getByText(/synthesis is being prepared/i)).toBeDefined();
   });
 });
 
@@ -370,9 +369,7 @@ describe("AC: '[Name] will see you've entered when they enter too.' message belo
   it("renders the message with the other party's name", () => {
     renderPage();
     expect(
-      screen.getByText(
-        /Jordan will see you've entered when they enter too/,
-      ),
+      screen.getByText(/Jordan will see you've entered when they enter too/),
     ).toBeDefined();
   });
 
@@ -410,9 +407,7 @@ describe("Invariant: Page redirects when status is not READY_FOR_JOINT", () => {
 describe("Invariant: No input controls other than the CTA button", () => {
   it("does not render any text input or textarea elements", () => {
     renderPage();
-    const inputs = document.querySelectorAll(
-      'input[type="text"], textarea',
-    );
+    const inputs = document.querySelectorAll('input[type="text"], textarea');
     expect(inputs.length).toBe(0);
   });
 });
