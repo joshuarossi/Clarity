@@ -172,11 +172,46 @@ describe("WOR-108: E2E job", () => {
     expect(hasConvexDeploy).toBe(true);
   });
 
-  it("seeds test data", () => {
+  it("seeds test data via --preview-run on the deploy step (AC1)", () => {
     const e2e = workflow.jobs["e2e"];
-    const stepRuns = e2e.steps.filter((s) => s.run).map((s) => s.run);
-    const hasSeed = stepRuns.some((r) => r !== undefined && r.includes("seed"));
-    expect(hasSeed).toBe(true);
+    const deployStep = e2e.steps.find(
+      (s) => s.run !== undefined && s.run.includes("convex deploy"),
+    );
+    expect(deployStep, "e2e job must have a convex deploy step").toBeDefined();
+    expect(deployStep!.run).toContain("--preview-run seed:seed");
+  });
+
+  it("does not use standalone convex run in any e2e step (AC2)", () => {
+    const e2e = workflow.jobs["e2e"];
+    const stepRuns = e2e.steps.filter((s) => s.run).map((s) => s.run!);
+    // A standalone "convex run" is any step that invokes "convex run" outside
+    // of "convex deploy". The deploy step may contain "convex deploy ... --preview-run"
+    // which includes the substring "run" but is NOT standalone.
+    const hasStandaloneRun = stepRuns.some(
+      (r) => /\bconvex run\b/.test(r) && !r.includes("convex deploy"),
+    );
+    expect(hasStandaloneRun).toBe(false);
+  });
+
+  it("deploy step includes --preview-run so seed data is available before Playwright (AC3)", () => {
+    const e2e = workflow.jobs["e2e"];
+    const deployStep = e2e.steps.find(
+      (s) => s.run !== undefined && s.run.includes("convex deploy"),
+    );
+    expect(deployStep, "e2e job must have a convex deploy step").toBeDefined();
+    expect(deployStep!.run).toContain("convex deploy");
+    expect(deployStep!.run).toContain("--preview-run seed:seed");
+  });
+
+  it("consolidates deploy and seed into a single convex deploy invocation (AC4)", () => {
+    const e2e = workflow.jobs["e2e"];
+    const deploySteps = e2e.steps.filter(
+      (s) => s.run !== undefined && s.run.includes("convex deploy"),
+    );
+    expect(deploySteps.length).toBe(1);
+    const deployRun = deploySteps[0].run!;
+    expect(deployRun).toContain("--preview-run seed:seed");
+    expect(deployRun).toContain("--cmd");
   });
 
   it("uses CONVEX_DEPLOY_KEY from secrets (no hardcoded secrets)", () => {
