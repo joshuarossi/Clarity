@@ -296,7 +296,7 @@ describe("AC: Accept calls invites/redeem and routes to invitee form", () => {
     });
   });
 
-  it("navigates to /cases/:caseId/private after successful redeem", async () => {
+  it("navigates to /cases/:caseId (case detail orchestrator) after successful redeem", async () => {
     renderInviteAcceptPage();
     const acceptButton = screen.getByRole("button", {
       name: /accept invitation/i,
@@ -305,7 +305,7 @@ describe("AC: Accept calls invites/redeem and routes to invitee form", () => {
     fireEvent.click(acceptButton);
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/cases/case-123/private");
+      expect(mockNavigate).toHaveBeenCalledWith("/cases/case-123");
     });
   });
 });

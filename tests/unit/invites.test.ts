@@ -193,10 +193,11 @@ describe("invites/redeem mutation — successful redemption", () => {
     expect(psRows[0].role).toBe("INVITEE");
     expect(psRows[0].userId).toEqual(inviteeId);
     expect(psRows[0].caseId).toEqual(caseId);
-    // No form fields set yet — invitee fills form after redeeming
-    expect(psRows[0].mainTopic).toBeUndefined();
-    expect(psRows[0].description).toBeUndefined();
-    expect(psRows[0].desiredOutcome).toBeUndefined();
+    // Form fields initialized empty — invitee fills form after redeeming
+    expect(psRows[0].mainTopic).toBe("");
+    expect(psRows[0].description).toBe("");
+    expect(psRows[0].desiredOutcome).toBe("");
+    expect(psRows[0].formCompletedAt).toBeUndefined();
 
     // Verify inviteTokens status is CONSUMED with consumedAt and consumedByUserId
     const tokenRows = await t.run(async (ctx) =>

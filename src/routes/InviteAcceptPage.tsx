@@ -91,7 +91,7 @@ export function InviteAcceptPage(): React.ReactElement {
     setAcceptLoading(true);
     try {
       const result = await redeemMutation({ token });
-      navigate(`/cases/${result.caseId}/private`);
+      navigate(`/cases/${result.caseId}`);
     } catch (err) {
       const { message } = handleConvexError(err);
       setError(message);

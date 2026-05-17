@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -205,6 +205,11 @@ function CasePrivatePageInner({
     otherPartyNameResult === undefined
   ) {
     return <LoadingSpinner />;
+  }
+
+  // Guard: invitees must complete their intake form before accessing private coaching
+  if (partyStates.self.role === "INVITEE" && !partyStates.self.formCompletedAt) {
+    return <Navigate to={`/cases/${caseId}`} replace />;
   }
 
   const otherPartyName =
