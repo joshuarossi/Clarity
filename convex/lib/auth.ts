@@ -12,9 +12,10 @@ type DataModel = DataModelFromSchemaDefinition<typeof schema>;
 type Doc<T extends keyof DataModel & string> = DocumentByName<DataModel, T>;
 type Id<T extends keyof DataModel & string> = GenericId<T>;
 
-export async function requireAuth(
-  ctx: { auth: Auth; db: GenericDatabaseReader<DataModel> },
-): Promise<Doc<"users">> {
+export async function requireAuth(ctx: {
+  auth: Auth;
+  db: GenericDatabaseReader<DataModel>;
+}): Promise<Doc<"users">> {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) {
     throw new ConvexError({
@@ -91,9 +92,10 @@ export async function requirePartyToCase(
   return caseDoc;
 }
 
-export async function requireAdmin(
-  ctx: { auth: Auth; db: GenericDatabaseReader<DataModel> },
-): Promise<Doc<"users">> {
+export async function requireAdmin(ctx: {
+  auth: Auth;
+  db: GenericDatabaseReader<DataModel>;
+}): Promise<Doc<"users">> {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) {
     throw new ConvexError({

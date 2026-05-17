@@ -49,7 +49,9 @@ vi.mock("convex/react", () => ({
   useMutation: () => vi.fn(),
 }));
 
-function renderPanel(propsOverride: Partial<Parameters<typeof DraftCoachPanel>[0]> = {}) {
+function renderPanel(
+  propsOverride: Partial<Parameters<typeof DraftCoachPanel>[0]> = {},
+) {
   const defaultProps = {
     caseId: "case-123" as Parameters<typeof DraftCoachPanel>[0]["caseId"],
     otherPartyName: "Jordan",
@@ -169,8 +171,8 @@ describe("AC: AI error messages render inline with ERROR styling and Retry butto
   it("renders a Retry button when an AI message has ERROR status", () => {
     const { container } = renderPanel();
     const buttons = container.querySelectorAll("button");
-    const retryButton = Array.from(buttons).find(
-      (b) => b.textContent?.toLowerCase().includes("retry"),
+    const retryButton = Array.from(buttons).find((b) =>
+      b.textContent?.toLowerCase().includes("retry"),
     );
     expect(retryButton).not.toBeUndefined();
   });

@@ -75,9 +75,7 @@ describe("AC3 — user row created on first login", () => {
 
   it("creates exactly one users row for the email", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) =>
-      getUserByEmail(ctx, "onerow@example.com"),
-    );
+    await t.run(async (ctx) => getUserByEmail(ctx, "onerow@example.com"));
 
     const count = await t.run(async (ctx) => {
       const rows = await ctx.db
@@ -118,12 +116,8 @@ describe("AC4 — idempotent upsert on subsequent login", () => {
 
   it("does not create a second row on repeat login", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) =>
-      getUserByEmail(ctx, "nodup@example.com"),
-    );
-    await t.run(async (ctx) =>
-      getUserByEmail(ctx, "nodup@example.com"),
-    );
+    await t.run(async (ctx) => getUserByEmail(ctx, "nodup@example.com"));
+    await t.run(async (ctx) => getUserByEmail(ctx, "nodup@example.com"));
 
     const count = await t.run(async (ctx) => {
       const rows = await ctx.db
@@ -185,9 +179,7 @@ describe("AC8 — getUserIdentity returns authenticated identity", () => {
 
   it("returns null when no identity is set (unauthenticated)", async () => {
     const t = convexTest(schema);
-    const identity = await t.run(async (ctx) =>
-      ctx.auth.getUserIdentity(),
-    );
+    const identity = await t.run(async (ctx) => ctx.auth.getUserIdentity());
 
     expect(identity).toBeNull();
   });
@@ -212,9 +204,7 @@ describe("AC8 — getUserIdentity returns authenticated identity", () => {
     const user = await t.run(async (ctx) => {
       return ctx.db
         .query("users")
-        .withIndex("by_email", (q) =>
-          q.eq("email", "subsequent@example.com"),
-        )
+        .withIndex("by_email", (q) => q.eq("email", "subsequent@example.com"))
         .unique();
     });
     expect(user).not.toBeNull();

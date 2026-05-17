@@ -371,12 +371,8 @@ describe("AC 2: Anti-quotation instruction in SYNTHESIS system prompt", () => {
       actingUserId: "user_A",
       recentHistory: [],
       context: {
-        actingPartyPrivateMessages: [
-          { role: "user", content: "My message" },
-        ],
-        otherPartyPrivateMessages: [
-          { role: "user", content: "Their message" },
-        ],
+        actingPartyPrivateMessages: [{ role: "user", content: "My message" }],
+        otherPartyPrivateMessages: [{ role: "user", content: "Their message" }],
       },
     });
 
@@ -696,9 +692,7 @@ describe("AC 5: Retry logic and fallback on repeated filter failure", () => {
     expect(initiator!.synthesisText).toBe(
       GENERIC_FALLBACK_SYNTHESIS.forInitiator,
     );
-    expect(invitee!.synthesisText).toBe(
-      GENERIC_FALLBACK_SYNTHESIS.forInvitee,
-    );
+    expect(invitee!.synthesisText).toBe(GENERIC_FALLBACK_SYNTHESIS.forInvitee);
     expect(initiator!.synthesisGeneratedAt).toBeDefined();
     expect(invitee!.synthesisGeneratedAt).toBeDefined();
   });
@@ -722,9 +716,7 @@ describe("AC 5: Retry logic and fallback on repeated filter failure", () => {
       expect(ps.synthesisText).not.toBe(
         GENERIC_FALLBACK_SYNTHESIS.forInitiator,
       );
-      expect(ps.synthesisText).not.toBe(
-        GENERIC_FALLBACK_SYNTHESIS.forInvitee,
-      );
+      expect(ps.synthesisText).not.toBe(GENERIC_FALLBACK_SYNTHESIS.forInvitee);
     }
 
     // No audit log for privacy failure on happy path

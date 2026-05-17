@@ -338,12 +338,10 @@ describe("admin/publishNewVersion mutation", () => {
         category: "workplace",
         name: "Temp",
         createdAt: Date.now(),
-        createdByUserId: (
-          await ctx.db
-            .query("users")
-            .withIndex("by_email", (q) => q.eq("email", "admin@test.com"))
-            .unique()
-        )!._id,
+        createdByUserId: (await ctx.db
+          .query("users")
+          .withIndex("by_email", (q) => q.eq("email", "admin@test.com"))
+          .unique())!._id,
       });
       await ctx.db.delete(id);
       return id;
@@ -541,12 +539,10 @@ describe("admin/archive mutation", () => {
         category: "workplace",
         name: "Temp",
         createdAt: Date.now(),
-        createdByUserId: (
-          await ctx.db
-            .query("users")
-            .withIndex("by_email", (q) => q.eq("email", "admin@test.com"))
-            .unique()
-        )!._id,
+        createdByUserId: (await ctx.db
+          .query("users")
+          .withIndex("by_email", (q) => q.eq("email", "admin@test.com"))
+          .unique())!._id,
       });
       await ctx.db.delete(id);
       return id;

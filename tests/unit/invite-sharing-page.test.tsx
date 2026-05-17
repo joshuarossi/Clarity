@@ -42,9 +42,10 @@ vi.mock("@convex-dev/auth/react", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom",
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -88,36 +89,38 @@ beforeEach(() => {
 
   // Default query returns: case (non-solo), partyStates, invite URL
   const FN_NAME = Symbol.for("functionName");
-  mockUseQuery.mockImplementation((queryRef: Record<string | symbol, unknown>) => {
-    const name: string = (queryRef?.[FN_NAME] as string) ?? "";
-    if (name.includes("cases:get") || name.includes("cases.get")) {
-      return {
-        _id: "case123",
-        isSolo: false,
-        status: "DRAFT_PRIVATE_COACHING",
-        initiatorUserId: "user1",
-      };
-    }
-    if (
-      name.includes("cases:partyStates") ||
-      name.includes("cases.partyStates")
-    ) {
-      return {
-        self: { mainTopic: "project deadlines" },
-        other: null,
-      };
-    }
-    if (
-      name.includes("invites:getForCase") ||
-      name.includes("invites.getForCase")
-    ) {
-      return {
-        token: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef",
-        url: "http://localhost:5173/invite/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef",
-      };
-    }
-    return undefined;
-  });
+  mockUseQuery.mockImplementation(
+    (queryRef: Record<string | symbol, unknown>) => {
+      const name: string = (queryRef?.[FN_NAME] as string) ?? "";
+      if (name.includes("cases:get") || name.includes("cases.get")) {
+        return {
+          _id: "case123",
+          isSolo: false,
+          status: "DRAFT_PRIVATE_COACHING",
+          initiatorUserId: "user1",
+        };
+      }
+      if (
+        name.includes("cases:partyStates") ||
+        name.includes("cases.partyStates")
+      ) {
+        return {
+          self: { mainTopic: "project deadlines" },
+          other: null,
+        };
+      }
+      if (
+        name.includes("invites:getForCase") ||
+        name.includes("invites.getForCase")
+      ) {
+        return {
+          token: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef",
+          url: "http://localhost:5173/invite/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef",
+        };
+      }
+      return undefined;
+    },
+  );
 });
 
 afterEach(() => {
@@ -244,9 +247,7 @@ describe("AC: Expandable suggested language section", () => {
   it("suggested language content is collapsed by default", () => {
     renderInviteSharingPage();
     // The suggested language text must NOT be visible when collapsed
-    expect(
-      screen.queryByText(/I found this thing called Clarity/i),
-    ).toBeNull();
+    expect(screen.queryByText(/I found this thing called Clarity/i)).toBeNull();
   });
 
   it("clicking expands to show suggested language", async () => {
@@ -274,9 +275,7 @@ describe("AC: Secondary CTA links to private coaching", () => {
 
   it("secondary CTA links to /cases/:caseId/private", () => {
     const { container } = renderInviteSharingPage();
-    const link = container.querySelector(
-      "a[href='/cases/case123/private']",
-    );
+    const link = container.querySelector("a[href='/cases/case123/private']");
     expect(link).not.toBeNull();
     expect(link!.textContent).toMatch(/private coaching/i);
   });
@@ -311,9 +310,7 @@ describe("AC: Copy button shows 'Copied!' feedback for 2 seconds", () => {
 
     await waitFor(() => {
       expect(screen.queryByText(/copied!/i)).toBeNull();
-      expect(
-        screen.getByRole("button", { name: /copy link/i }),
-      ).toBeDefined();
+      expect(screen.getByRole("button", { name: /copy link/i })).toBeDefined();
     });
   });
 
@@ -329,30 +326,32 @@ describe("AC: Copy button shows 'Copied!' feedback for 2 seconds", () => {
 describe("AC: Solo mode cases redirect to private coaching", () => {
   it("redirects to /cases/:caseId/private when case.isSolo is true", async () => {
     const FN_NAME = Symbol.for("functionName");
-    mockUseQuery.mockImplementation((queryRef: Record<string | symbol, unknown>) => {
-      const name: string = (queryRef?.[FN_NAME] as string) ?? "";
-      if (name.includes("cases:get") || name.includes("cases.get")) {
-        return {
-          _id: "case123",
-          isSolo: true,
-          status: "DRAFT_PRIVATE_COACHING",
-          initiatorUserId: "user1",
-        };
-      }
-      if (
-        name.includes("cases:partyStates") ||
-        name.includes("cases.partyStates")
-      ) {
-        return { self: { mainTopic: "topic" }, other: null };
-      }
-      if (
-        name.includes("invites:getForCase") ||
-        name.includes("invites.getForCase")
-      ) {
-        return null;
-      }
-      return undefined;
-    });
+    mockUseQuery.mockImplementation(
+      (queryRef: Record<string | symbol, unknown>) => {
+        const name: string = (queryRef?.[FN_NAME] as string) ?? "";
+        if (name.includes("cases:get") || name.includes("cases.get")) {
+          return {
+            _id: "case123",
+            isSolo: true,
+            status: "DRAFT_PRIVATE_COACHING",
+            initiatorUserId: "user1",
+          };
+        }
+        if (
+          name.includes("cases:partyStates") ||
+          name.includes("cases.partyStates")
+        ) {
+          return { self: { mainTopic: "topic" }, other: null };
+        }
+        if (
+          name.includes("invites:getForCase") ||
+          name.includes("invites.getForCase")
+        ) {
+          return null;
+        }
+        return undefined;
+      },
+    );
 
     renderInviteSharingPage();
 
@@ -365,18 +364,20 @@ describe("AC: Solo mode cases redirect to private coaching", () => {
 
   it("does not render any invite sharing UI when case.isSolo is true", async () => {
     const FN_NAME = Symbol.for("functionName");
-    mockUseQuery.mockImplementation((queryRef: Record<string | symbol, unknown>) => {
-      const name: string = (queryRef?.[FN_NAME] as string) ?? "";
-      if (name.includes("cases:get") || name.includes("cases.get")) {
-        return {
-          _id: "case123",
-          isSolo: true,
-          status: "DRAFT_PRIVATE_COACHING",
-          initiatorUserId: "user1",
-        };
-      }
-      return undefined;
-    });
+    mockUseQuery.mockImplementation(
+      (queryRef: Record<string | symbol, unknown>) => {
+        const name: string = (queryRef?.[FN_NAME] as string) ?? "";
+        if (name.includes("cases:get") || name.includes("cases.get")) {
+          return {
+            _id: "case123",
+            isSolo: true,
+            status: "DRAFT_PRIVATE_COACHING",
+            initiatorUserId: "user1",
+          };
+        }
+        return undefined;
+      },
+    );
 
     renderInviteSharingPage();
 
@@ -433,36 +434,36 @@ describe("Edge case: Fallback name when router state is missing", () => {
 describe("Edge case: Token already consumed", () => {
   it("shows a message when getForCase returns null (token consumed)", () => {
     const FN_NAME = Symbol.for("functionName");
-    mockUseQuery.mockImplementation((queryRef: Record<string | symbol, unknown>) => {
-      const name: string = (queryRef?.[FN_NAME] as string) ?? "";
-      if (name.includes("cases:get") || name.includes("cases.get")) {
-        return {
-          _id: "case123",
-          isSolo: false,
-          status: "DRAFT_PRIVATE_COACHING",
-          initiatorUserId: "user1",
-        };
-      }
-      if (
-        name.includes("cases:partyStates") ||
-        name.includes("cases.partyStates")
-      ) {
-        return { self: { mainTopic: "topic" }, other: null };
-      }
-      if (
-        name.includes("invites:getForCase") ||
-        name.includes("invites.getForCase")
-      ) {
-        return null;
-      }
-      return undefined;
-    });
+    mockUseQuery.mockImplementation(
+      (queryRef: Record<string | symbol, unknown>) => {
+        const name: string = (queryRef?.[FN_NAME] as string) ?? "";
+        if (name.includes("cases:get") || name.includes("cases.get")) {
+          return {
+            _id: "case123",
+            isSolo: false,
+            status: "DRAFT_PRIVATE_COACHING",
+            initiatorUserId: "user1",
+          };
+        }
+        if (
+          name.includes("cases:partyStates") ||
+          name.includes("cases.partyStates")
+        ) {
+          return { self: { mainTopic: "topic" }, other: null };
+        }
+        if (
+          name.includes("invites:getForCase") ||
+          name.includes("invites.getForCase")
+        ) {
+          return null;
+        }
+        return undefined;
+      },
+    );
 
     renderInviteSharingPage();
 
     // Should show a message indicating the link has been used
-    expect(
-      screen.getByText(/link.*(used|already|joined)/i),
-    ).toBeDefined();
+    expect(screen.getByText(/link.*(used|already|joined)/i)).toBeDefined();
   });
 });

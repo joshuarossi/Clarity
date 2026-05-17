@@ -105,9 +105,7 @@ describe("AC: Privacy section", () => {
   it("renders privacy heading text", () => {
     renderLandingPage();
     expect(
-      screen.getByText(
-        "Your words are yours. Here's how we protect them.",
-      ),
+      screen.getByText("Your words are yours. Here's how we protect them."),
     ).toBeDefined();
   });
 

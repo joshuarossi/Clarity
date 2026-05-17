@@ -8,15 +8,15 @@ mediation flow. Every mutation that changes a case's status must call
 
 ## Statuses
 
-| Status                  | Phase                |
-|-------------------------|----------------------|
-| `DRAFT_PRIVATE_COACHING`| Initiator coaching   |
-| `BOTH_PRIVATE_COACHING` | Both parties coaching|
-| `READY_FOR_JOINT`       | Coaching complete    |
-| `JOINT_ACTIVE`          | Joint session        |
-| `CLOSED_RESOLVED`       | Terminal — resolved  |
-| `CLOSED_UNRESOLVED`     | Terminal — unresolved|
-| `CLOSED_ABANDONED`      | Terminal — abandoned |
+| Status                   | Phase                 |
+| ------------------------ | --------------------- |
+| `DRAFT_PRIVATE_COACHING` | Initiator coaching    |
+| `BOTH_PRIVATE_COACHING`  | Both parties coaching |
+| `READY_FOR_JOINT`        | Coaching complete     |
+| `JOINT_ACTIVE`           | Joint session         |
+| `CLOSED_RESOLVED`        | Terminal — resolved   |
+| `CLOSED_UNRESOLVED`      | Terminal — unresolved |
+| `CLOSED_ABANDONED`       | Terminal — abandoned  |
 
 ## Transitions
 

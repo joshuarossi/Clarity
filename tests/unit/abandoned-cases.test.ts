@@ -74,7 +74,14 @@ async function seedTestEnv() {
 async function insertCase(
   t: ReturnType<typeof convexTest>,
   opts: {
-    status: "DRAFT_PRIVATE_COACHING" | "BOTH_PRIVATE_COACHING" | "READY_FOR_JOINT" | "JOINT_ACTIVE" | "CLOSED_RESOLVED" | "CLOSED_UNRESOLVED" | "CLOSED_ABANDONED";
+    status:
+      | "DRAFT_PRIVATE_COACHING"
+      | "BOTH_PRIVATE_COACHING"
+      | "READY_FOR_JOINT"
+      | "JOINT_ACTIVE"
+      | "CLOSED_RESOLVED"
+      | "CLOSED_UNRESOLVED"
+      | "CLOSED_ABANDONED";
     updatedAt: number;
     initiatorUserId: Id<"users">;
     inviteeUserId?: Id<"users">;
@@ -165,7 +172,9 @@ describe("AC 2: Scan queries for JOINT_ACTIVE cases with updatedAt older than 30
     });
 
     // All cases should remain unchanged
-    const allCases = await t.run(async (ctx) => ctx.db.query("cases").collect());
+    const allCases = await t.run(async (ctx) =>
+      ctx.db.query("cases").collect(),
+    );
     expect(allCases).toHaveLength(3);
     expect(allCases[0].status).toBe("DRAFT_PRIVATE_COACHING");
     expect(allCases[1].status).toBe("BOTH_PRIVATE_COACHING");
@@ -189,7 +198,9 @@ describe("AC 2: Scan queries for JOINT_ACTIVE cases with updatedAt older than 30
       await ctx.runMutation(internal.abandonedCases.scanAndCloseAbandoned, {});
     });
 
-    const allCases = await t.run(async (ctx) => ctx.db.query("cases").collect());
+    const allCases = await t.run(async (ctx) =>
+      ctx.db.query("cases").collect(),
+    );
     expect(allCases).toHaveLength(1);
     expect(allCases[0].status).toBe("JOINT_ACTIVE");
   });
@@ -202,7 +213,9 @@ describe("AC 2: Scan queries for JOINT_ACTIVE cases with updatedAt older than 30
       await ctx.runMutation(internal.abandonedCases.scanAndCloseAbandoned, {});
     });
 
-    const allCases = await t.run(async (ctx) => ctx.db.query("cases").collect());
+    const allCases = await t.run(async (ctx) =>
+      ctx.db.query("cases").collect(),
+    );
     expect(allCases).toHaveLength(0);
   });
 });
@@ -226,7 +239,9 @@ describe("AC 3: Matching cases are transitioned to CLOSED_ABANDONED via state ma
       await ctx.runMutation(internal.abandonedCases.scanAndCloseAbandoned, {});
     });
 
-    const allCases = await t.run(async (ctx) => ctx.db.query("cases").collect());
+    const allCases = await t.run(async (ctx) =>
+      ctx.db.query("cases").collect(),
+    );
     expect(allCases).toHaveLength(1);
     expect(allCases[0].status).toBe("CLOSED_ABANDONED");
     expect(allCases[0].closedAt).toBeTypeOf("number");
@@ -258,7 +273,9 @@ describe("AC 3: Matching cases are transitioned to CLOSED_ABANDONED via state ma
       await ctx.runMutation(internal.abandonedCases.scanAndCloseAbandoned, {});
     });
 
-    const allCases = await t.run(async (ctx) => ctx.db.query("cases").collect());
+    const allCases = await t.run(async (ctx) =>
+      ctx.db.query("cases").collect(),
+    );
     expect(allCases).toHaveLength(2);
     for (const c of allCases) {
       expect(c.status).toBe("CLOSED_ABANDONED");
@@ -292,12 +309,8 @@ describe("AC 4: Affected parties are notified via dashboard badge", () => {
 
     expect(notifications).toHaveLength(2);
 
-    const initiatorNotif = notifications.find(
-      (n) => n.userId === initiatorId,
-    );
-    const inviteeNotif = notifications.find(
-      (n) => n.userId === inviteeId,
-    );
+    const initiatorNotif = notifications.find((n) => n.userId === initiatorId);
+    const inviteeNotif = notifications.find((n) => n.userId === inviteeId);
 
     expect(initiatorNotif).toBeDefined();
     expect(initiatorNotif!.caseId).toBe(caseId);
@@ -395,9 +408,7 @@ describe("AC 5: Case with recent activity NOT closed, case with 31-day-old activ
       await ctx.runMutation(internal.abandonedCases.scanAndCloseAbandoned, {});
     });
 
-    const boundaryCase = await t.run(async (ctx) =>
-      ctx.db.get(boundaryCaseId),
-    );
+    const boundaryCase = await t.run(async (ctx) => ctx.db.get(boundaryCaseId));
 
     expect(boundaryCase).not.toBeNull();
     expect(boundaryCase!.status).toBe("CLOSED_ABANDONED");

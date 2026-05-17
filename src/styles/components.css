@@ -161,7 +161,11 @@
   white-space: nowrap;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  transition: background-color var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast), opacity var(--dur-fast);
+  transition:
+    background-color var(--dur-fast),
+    border-color var(--dur-fast),
+    color var(--dur-fast),
+    opacity var(--dur-fast);
   cursor: pointer;
 }
 
@@ -387,7 +391,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  color: #FFFFFF;
+  color: #ffffff;
   font-weight: 600;
   flex-shrink: 0;
   user-select: none;
@@ -539,8 +543,12 @@
 
 /* ─── Dialog overlay ─── */
 @keyframes cc-dialog-overlay-enter {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes cc-dialog-content-enter {

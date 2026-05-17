@@ -10,7 +10,13 @@
  */
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  cleanup,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 
 // ── Mocks ───────────────────────────────────────────────────────────────
@@ -27,9 +33,10 @@ vi.mock("convex/react", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom",
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -46,7 +53,10 @@ function renderPage(initialRoute = "/admin/templates/new") {
   return render(
     <MemoryRouter initialEntries={[initialRoute]}>
       <Routes>
-        <Route path="/admin/templates/new" element={<AdminTemplateCreatePage />} />
+        <Route
+          path="/admin/templates/new"
+          element={<AdminTemplateCreatePage />}
+        />
       </Routes>
     </MemoryRouter>,
   );
@@ -82,9 +92,7 @@ describe("AC1: Create form renders at /admin/templates/new", () => {
   it("does not display an error or argument validation message", () => {
     renderPage();
 
-    expect(
-      screen.queryByText(/error|argumentvalidation/i),
-    ).toBeNull();
+    expect(screen.queryByText(/error|argumentvalidation/i)).toBeNull();
   });
 
   it("does not call useQuery for api.admin.get (no invalid ID fetch)", () => {
@@ -201,7 +209,9 @@ describe("AC4: Navigation after successful creation", () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/admin/templates/templates:newId123");
+      expect(mockNavigate).toHaveBeenCalledWith(
+        "/admin/templates/templates:newId123",
+      );
     });
   });
 });

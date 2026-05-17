@@ -26,9 +26,12 @@ interface MockCreateParams {
 }
 
 function createMockClient(summaryText: string) {
-  const createFn = vi.fn<
-    (params: MockCreateParams) => Promise<{ content: Array<{ text: string }> }>
-  >();
+  const createFn =
+    vi.fn<
+      (
+        params: MockCreateParams,
+      ) => Promise<{ content: Array<{ text: string }> }>
+    >();
   createFn.mockResolvedValue({
     content: [{ text: summaryText }],
   });
@@ -46,7 +49,7 @@ function makeMessages(count: number, wordsPer: number): CompressibleMessage[] {
   for (let i = 0; i < count; i++) {
     const words = Array.from(
       { length: wordsPer },
-      (_, w) => `word${i}_${w}`
+      (_, w) => `word${i}_${w}`,
     ).join(" ");
     result.push({
       role: i % 2 === 0 ? "user" : "assistant",
@@ -112,7 +115,7 @@ describe("AC 1: messages under budget are returned unchanged", () => {
     ];
     const totalTokens = messages.reduce(
       (sum, m) => sum + estimateTokens(m.content),
-      0
+      0,
     );
     const { client, createFn } = createMockClient("should not be called");
 
@@ -261,10 +264,19 @@ describe("AC 4: summaries are cached by content hash", () => {
     // Use unique wordsPer (35) to avoid cache pollution from AC 2/3 tests
     const messagesA = makeMessages(4, 35);
     const messagesB: CompressibleMessage[] = [
-      { role: "user", content: "completely different conversation content alpha" },
-      { role: "assistant", content: "completely different response content beta" },
+      {
+        role: "user",
+        content: "completely different conversation content alpha",
+      },
+      {
+        role: "assistant",
+        content: "completely different response content beta",
+      },
       { role: "user", content: "completely different followup content gamma" },
-      { role: "assistant", content: "completely different closing content delta" },
+      {
+        role: "assistant",
+        content: "completely different closing content delta",
+      },
     ];
     const { client, createFn } = createMockClient("summary");
 
@@ -280,7 +292,8 @@ describe("AC 4: summaries are cached by content hash", () => {
 
 describe("AC 5: comprehensive Vitest suite", () => {
   it("compressed result contains the Haiku-generated summary text", async () => {
-    const summaryText = "Important decisions were made about project direction.";
+    const summaryText =
+      "Important decisions were made about project direction.";
     const messages = makeMessages(6, 50);
     const { client } = createMockClient(summaryText);
 

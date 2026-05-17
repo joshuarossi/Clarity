@@ -42,9 +42,9 @@ ascending. If the caller has no messages (or is not a party to the case),
 an empty array is returned — no error is thrown, to avoid leaking
 information about message existence.
 
-| Argument | Type        | Description            |
-|----------|-------------|------------------------|
-| `caseId` | `Id<"cases">` | The case to query    |
+| Argument    | Type                                  | Description                                                                       |
+| ----------- | ------------------------------------- | --------------------------------------------------------------------------------- |
+| `caseId`    | `Id<"cases">`                         | The case to query                                                                 |
 | `partyRole` | `"INITIATOR" \| "INVITEE"` (optional) | Solo-mode filter: when provided, only messages tagged with this role are returned |
 
 **Privacy:** Uses the `by_case_user_role` index when `partyRole` is
@@ -62,10 +62,10 @@ assembly and is never exposed through a client-facing query.
 Inserts a private message with `role=USER` and `status=COMPLETE`, then
 schedules the `generateAIResponse` internal action.
 
-| Argument  | Type           | Description                  |
-|-----------|----------------|------------------------------|
-| `caseId`  | `Id<"cases">`  | The case to send a message in |
-| `content` | `string`       | The message text             |
+| Argument    | Type                                  | Description                                                            |
+| ----------- | ------------------------------------- | ---------------------------------------------------------------------- |
+| `caseId`    | `Id<"cases">`                         | The case to send a message in                                          |
+| `content`   | `string`                              | The message text                                                       |
 | `partyRole` | `"INITIATOR" \| "INVITEE"` (optional) | Solo-mode tag: stored on the message and propagated to the AI response |
 
 **Status guard:** The case must be in `DRAFT_PRIVATE_COACHING` or
@@ -78,9 +78,9 @@ Sets the caller's `privateCoachingCompletedAt` timestamp on their
 `partyStates` row. When both parties have completed, the
 `synthesis/generate` action is automatically scheduled.
 
-| Argument | Type           | Description                       |
-|----------|----------------|-----------------------------------|
-| `caseId` | `Id<"cases">`  | The case to mark coaching complete |
+| Argument | Type          | Description                        |
+| -------- | ------------- | ---------------------------------- |
+| `caseId` | `Id<"cases">` | The case to mark coaching complete |
 
 Returns `{ synthesisScheduled: boolean }`.
 
@@ -92,9 +92,9 @@ will not re-trigger synthesis.
 Deletes the most recent AI message with `status=ERROR` for the caller and
 reschedules `generateAIResponse`.
 
-| Argument | Type           | Description                      |
-|----------|----------------|----------------------------------|
-| `caseId` | `Id<"cases">`  | The case to retry AI response in |
+| Argument | Type          | Description                      |
+| -------- | ------------- | -------------------------------- |
+| `caseId` | `Id<"cases">` | The case to retry AI response in |
 
 **Status guard:** The case must be in `DRAFT_PRIVATE_COACHING` or
 `BOTH_PRIVATE_COACHING` status. If not, a `CONFLICT` error is thrown.
@@ -135,10 +135,10 @@ No template content is applied (per PRD US-06 AC).
 
 ### Error handling & retries
 
-| Scenario            | Behaviour                                         |
-|---------------------|---------------------------------------------------|
-| Non-429 API failure | Retry once after 2 s backoff                      |
-| 429 rate limit      | Retry once with exponential backoff (per §6.5)    |
+| Scenario            | Behaviour                                          |
+| ------------------- | -------------------------------------------------- |
+| Non-429 API failure | Retry once after 2 s backoff                       |
+| 429 rate limit      | Retry once with exponential backoff (per §6.5)     |
 | Persistent failure  | Mark message `status=ERROR` via `markMessageError` |
 
 ### Test / mock mode

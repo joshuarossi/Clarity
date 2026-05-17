@@ -207,8 +207,8 @@ export function ClosureModal({
         {view === "not-resolved" && (
           <>
             <DialogDescription>
-              This closes the case immediately for both of you.{" "}
-              {otherPartyName} will be notified.
+              This closes the case immediately for both of you. {otherPartyName}{" "}
+              will be notified.
             </DialogDescription>
             <textarea
               value={reason}

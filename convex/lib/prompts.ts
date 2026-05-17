@@ -8,7 +8,11 @@
 // Types
 // ---------------------------------------------------------------------------
 
-export type PromptRole = "PRIVATE_COACH" | "COACH" | "DRAFT_COACH" | "SYNTHESIS";
+export type PromptRole =
+  | "PRIVATE_COACH"
+  | "COACH"
+  | "DRAFT_COACH"
+  | "SYNTHESIS";
 
 export interface PromptMessage {
   role: "user" | "assistant";
@@ -69,8 +73,10 @@ function buildFormFieldsContext(formFields?: FormFields): string {
   if (!formFields) return "";
   const parts: string[] = [];
   if (formFields.mainTopic) parts.push(`Main topic: ${formFields.mainTopic}`);
-  if (formFields.description) parts.push(`Description: ${formFields.description}`);
-  if (formFields.desiredOutcome) parts.push(`Desired outcome: ${formFields.desiredOutcome}`);
+  if (formFields.description)
+    parts.push(`Description: ${formFields.description}`);
+  if (formFields.desiredOutcome)
+    parts.push(`Desired outcome: ${formFields.desiredOutcome}`);
   if (parts.length === 0) return "";
   return parts.join("\n");
 }
@@ -87,9 +93,11 @@ function appendTemplate(
 
   let instructions: string | undefined;
   if (role === "COACH") {
-    instructions = templateVersion.coachInstructions || templateVersion.globalGuidance;
+    instructions =
+      templateVersion.coachInstructions || templateVersion.globalGuidance;
   } else if (role === "DRAFT_COACH") {
-    instructions = templateVersion.draftCoachInstructions || templateVersion.globalGuidance;
+    instructions =
+      templateVersion.draftCoachInstructions || templateVersion.globalGuidance;
   }
 
   if (instructions) {
@@ -149,7 +157,9 @@ function assembleSynthesis(opts: AssemblePromptOpts): AssemblePromptResult {
       role: "user",
       content:
         "[Party A private coaching messages]\n" +
-        opts.context.actingPartyPrivateMessages.map((m) => `${m.role}: ${m.content}`).join("\n"),
+        opts.context.actingPartyPrivateMessages
+          .map((m) => `${m.role}: ${m.content}`)
+          .join("\n"),
     });
   }
 
@@ -159,7 +169,9 @@ function assembleSynthesis(opts: AssemblePromptOpts): AssemblePromptResult {
       role: "user",
       content:
         "[Party B private coaching messages]\n" +
-        opts.context.otherPartyPrivateMessages.map((m) => `${m.role}: ${m.content}`).join("\n"),
+        opts.context.otherPartyPrivateMessages
+          .map((m) => `${m.role}: ${m.content}`)
+          .join("\n"),
     });
   }
 
@@ -169,7 +181,9 @@ function assembleSynthesis(opts: AssemblePromptOpts): AssemblePromptResult {
   return { system, messages };
 }
 
-function assembleCoach(opts: AssemblePromptOpts & { summaryMode?: boolean }): AssemblePromptResult {
+function assembleCoach(
+  opts: AssemblePromptOpts & { summaryMode?: boolean },
+): AssemblePromptResult {
   // COACH: joint chat history + both synthesis texts. No raw private messages.
   // Anti-quotation rule included. Template applied if available.
   let system = [
@@ -190,10 +204,14 @@ function assembleCoach(opts: AssemblePromptOpts & { summaryMode?: boolean }): As
   // Inject synthesis texts as context
   const synthesisParts: string[] = [];
   if (opts.context.actingPartySynthesis) {
-    synthesisParts.push(`Acting party synthesis: ${opts.context.actingPartySynthesis}`);
+    synthesisParts.push(
+      `Acting party synthesis: ${opts.context.actingPartySynthesis}`,
+    );
   }
   if (opts.context.otherPartySynthesis) {
-    synthesisParts.push(`Other party synthesis: ${opts.context.otherPartySynthesis}`);
+    synthesisParts.push(
+      `Other party synthesis: ${opts.context.otherPartySynthesis}`,
+    );
   }
   if (synthesisParts.length > 0) {
     messages.push({
@@ -256,7 +274,9 @@ export const COACH_SUMMARY_INSTRUCTION =
 // Main entry point
 // ---------------------------------------------------------------------------
 
-export function assemblePrompt(opts: AssemblePromptOpts & { summaryMode?: boolean }): AssemblePromptResult {
+export function assemblePrompt(
+  opts: AssemblePromptOpts & { summaryMode?: boolean },
+): AssemblePromptResult {
   switch (opts.role) {
     case "PRIVATE_COACH":
       return assemblePrivateCoach(opts);
@@ -268,4 +288,3 @@ export function assemblePrompt(opts: AssemblePromptOpts & { summaryMode?: boolea
       return assembleDraftCoach(opts);
   }
 }
-

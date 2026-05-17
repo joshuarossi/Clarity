@@ -16,7 +16,7 @@ import { LoginPage } from "../../src/routes/LoginPage";
 const { mockSignIn, mockUseConvexAuth } = vi.hoisted(() => ({
   mockSignIn: vi.fn(() => Promise.resolve()),
   mockUseConvexAuth: vi.fn(
-    () => ({ isLoading: false, isAuthenticated: false } as const),
+    () => ({ isLoading: false, isAuthenticated: false }) as const,
   ),
 }));
 
@@ -88,9 +88,7 @@ describe("AC: Magic-link submit and confirmation state", () => {
     fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "user@example.com" },
     });
-    fireEvent.click(
-      screen.getByRole("button", { name: /send magic link/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /send magic link/i }));
 
     expect(mockSignIn).toHaveBeenCalledWith("magic-link", {
       email: "user@example.com",
@@ -107,9 +105,7 @@ describe("AC: Magic-link submit and confirmation state", () => {
     fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "user@example.com" },
     });
-    fireEvent.click(
-      screen.getByRole("button", { name: /send magic link/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /send magic link/i }));
 
     await waitFor(() => {
       expect(screen.queryByLabelText(/email/i)).toBeNull();
@@ -161,9 +157,7 @@ describe("AC: Error state on magic-link failure", () => {
     fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "fail@example.com" },
     });
-    fireEvent.click(
-      screen.getByRole("button", { name: /send magic link/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /send magic link/i }));
 
     await waitFor(() => {
       const errorElement = container.querySelector("[role='alert']");
@@ -179,9 +173,7 @@ describe("AC: Error state on magic-link failure", () => {
     fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "retry@example.com" },
     });
-    fireEvent.click(
-      screen.getByRole("button", { name: /send magic link/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /send magic link/i }));
 
     await waitFor(() => {
       expect(screen.getByLabelText(/email/i)).toBeDefined();

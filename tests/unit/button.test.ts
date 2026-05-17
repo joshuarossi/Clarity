@@ -31,14 +31,11 @@ describe("AC: shadcn/ui Button with Clarity variants", () => {
   });
 
   describe("buttonVariants produces a class string for each size", () => {
-    it.each(SIZES)(
-      'size="%s" returns a non-empty class string',
-      (size) => {
-        const classes = buttonVariants({ size });
-        expect(typeof classes).toBe("string");
-        expect(classes.length).toBeGreaterThan(0);
-      },
-    );
+    it.each(SIZES)('size="%s" returns a non-empty class string', (size) => {
+      const classes = buttonVariants({ size });
+      expect(typeof classes).toBe("string");
+      expect(classes.length).toBeGreaterThan(0);
+    });
   });
 
   it("different variants produce different class strings", () => {
@@ -49,9 +46,7 @@ describe("AC: shadcn/ui Button with Clarity variants", () => {
   });
 
   it("different sizes produce different class strings", () => {
-    const classSet = new Set(
-      SIZES.map((size) => buttonVariants({ size })),
-    );
+    const classSet = new Set(SIZES.map((size) => buttonVariants({ size })));
     expect(classSet.size).toBe(SIZES.length);
   });
 

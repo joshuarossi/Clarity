@@ -21,7 +21,9 @@ const {
   mockNavigate: vi.fn(),
   mockUseQuery: vi.fn(),
   mockUseMutation: vi.fn(),
-  mockUseParams: vi.fn((): { caseId: string | undefined } => ({ caseId: "case-abc123" })),
+  mockUseParams: vi.fn((): { caseId: string | undefined } => ({
+    caseId: "case-abc123",
+  })),
   mockUpdateMyForm: vi.fn(() => Promise.resolve(null)),
 }));
 
@@ -31,9 +33,10 @@ vi.mock("convex/react", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom",
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -376,8 +379,7 @@ describe("Edge: Loading state while case query returns undefined", () => {
     caseFixture = undefined;
     renderPage();
     const spinner =
-      screen.queryByRole("status") ??
-      screen.queryByText(/loading/i);
+      screen.queryByRole("status") ?? screen.queryByText(/loading/i);
     expect(spinner).not.toBeNull();
   });
 });

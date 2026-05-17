@@ -6,12 +6,12 @@ coaching flows.
 
 ## What it creates
 
-| Record | Details |
-|---|---|
-| Admin user | `admin@clarity-dev.local`, role `ADMIN` |
-| Workplace template | "Workplace Conflict" with v1 guidance |
-| Family template | "Family Conflict" with v1 guidance |
-| Personal template | "Personal Conflict" with v1 guidance |
+| Record             | Details                                 |
+| ------------------ | --------------------------------------- |
+| Admin user         | `admin@clarity-dev.local`, role `ADMIN` |
+| Workplace template | "Workplace Conflict" with v1 guidance   |
+| Family template    | "Family Conflict" with v1 guidance      |
+| Personal template  | "Personal Conflict" with v1 guidance    |
 
 Each template is created with an initial `templateVersion` (version 1)
 containing default `globalGuidance` text, and the template's

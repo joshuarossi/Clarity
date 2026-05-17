@@ -6,10 +6,7 @@ import { LoadingSpinner } from "./LoadingSpinner";
 
 export function AdminRoute({ children }: { children: React.ReactNode }) {
   const { isLoading, isAuthenticated } = useConvexAuth();
-  const user = useQuery(
-    api.users.me,
-    isAuthenticated ? {} : "skip",
-  );
+  const user = useQuery(api.users.me, isAuthenticated ? {} : "skip");
 
   if (isLoading) {
     return <LoadingSpinner />;

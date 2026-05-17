@@ -14,10 +14,10 @@ leaks before AI-generated text reaches a user.
 
 ### `filterResponse(candidateText, otherPartyMessages): FilterResult`
 
-| Parameter | Type | Description |
-|---|---|---|
-| `candidateText` | `string` | The AI-generated text to check. |
-| `otherPartyMessages` | `string[]` | Private messages from the *other* party. |
+| Parameter            | Type       | Description                              |
+| -------------------- | ---------- | ---------------------------------------- |
+| `candidateText`      | `string`   | The AI-generated text to check.          |
+| `otherPartyMessages` | `string[]` | Private messages from the _other_ party. |
 
 Returns:
 
@@ -65,10 +65,10 @@ Convex runtime dependencies. Callers are responsible for:
 
 ## Edge cases
 
-| Scenario | Result |
-|---|---|
-| Empty `otherPartyMessages` array | Always passes |
-| Message shorter than 8 tokens | Skipped (cannot match) |
-| Empty `candidateText` | Always passes |
-| ALL-CAPS copy of original | Fails (case-insensitive) |
-| One word substituted mid-run | Passes (breaks consecutive match) |
+| Scenario                         | Result                            |
+| -------------------------------- | --------------------------------- |
+| Empty `otherPartyMessages` array | Always passes                     |
+| Message shorter than 8 tokens    | Skipped (cannot match)            |
+| Empty `candidateText`            | Always passes                     |
+| ALL-CAPS copy of original        | Fails (case-insensitive)          |
+| One word substituted mid-run     | Passes (breaks consecutive match) |

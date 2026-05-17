@@ -71,7 +71,14 @@ function ConfirmCompleteDialog({
           on to the joint session with {otherPartyName}?
         </DialogDescription>
         {error && (
-          <p role="alert" style={{ color: "var(--text-error, #dc2626)", fontSize: "0.875rem", marginTop: 8 }}>
+          <p
+            role="alert"
+            style={{
+              color: "var(--text-error, #dc2626)",
+              fontSize: "0.875rem",
+              marginTop: 8,
+            }}
+          >
             {error}
           </p>
         )}
@@ -172,11 +179,15 @@ function CasePrivatePageInner({
 
   const sendUserMessage = useMutation(api.privateCoaching.sendUserMessage);
   const markComplete = useMutation(api.privateCoaching.markComplete);
-  const retryLastAIResponse = useMutation(api.privateCoaching.retryLastAIResponse);
+  const retryLastAIResponse = useMutation(
+    api.privateCoaching.retryLastAIResponse,
+  );
 
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   const [sendError, setSendError] = React.useState<string | null>(null);
-  const [markCompleteError, setMarkCompleteError] = React.useState<string | null>(null);
+  const [markCompleteError, setMarkCompleteError] = React.useState<
+    string | null
+  >(null);
   const [markCompleteLoading, setMarkCompleteLoading] = React.useState(false);
   const [retryLoading, setRetryLoading] = React.useState(false);
 
@@ -208,12 +219,14 @@ function CasePrivatePageInner({
   }
 
   // Guard: invitees must complete their intake form before accessing private coaching
-  if (partyStates.self.role === "INVITEE" && !partyStates.self.formCompletedAt) {
+  if (
+    partyStates.self.role === "INVITEE" &&
+    !partyStates.self.formCompletedAt
+  ) {
     return <Navigate to={`/cases/${caseId}`} replace />;
   }
 
-  const otherPartyName =
-    otherPartyNameResult?.displayName ?? "The other party";
+  const otherPartyName = otherPartyNameResult?.displayName ?? "The other party";
 
   // Solo mode toggle label names
   const userName = otherPartyNameResult?.displayName;
@@ -223,7 +236,8 @@ function CasePrivatePageInner({
     solo.actingRole === "INVITEE" ? "invitee" : "initiator";
 
   const isCompleted = Boolean(partyStates.self.privateCoachingCompletedAt);
-  const bothComplete = isCompleted && Boolean(partyStates.other?.hasCompletedPC);
+  const bothComplete =
+    isCompleted && Boolean(partyStates.other?.hasCompletedPC);
 
   const isInPrivateCoachingPhase = PRIVATE_COACHING_STATUSES.includes(
     caseDoc.status,
@@ -245,7 +259,9 @@ function CasePrivatePageInner({
     } catch (err) {
       console.error("Failed to send message:", err);
       setSendError(
-        err instanceof Error ? err.message : "Failed to send message. Please try again.",
+        err instanceof Error
+          ? err.message
+          : "Failed to send message. Please try again.",
       );
     }
   };
@@ -273,7 +289,9 @@ function CasePrivatePageInner({
     } catch (err) {
       console.error("Failed to mark coaching complete:", err);
       setMarkCompleteError(
-        err instanceof Error ? err.message : "Failed to complete. Please try again.",
+        err instanceof Error
+          ? err.message
+          : "Failed to complete. Please try again.",
       );
     } finally {
       setMarkCompleteLoading(false);
@@ -360,8 +378,16 @@ function CasePrivatePageInner({
                 status={msg.status}
                 content={content}
                 createdAt={msg.createdAt}
-                onRetry={msg.status === "ERROR" && !retryLoading ? handleRetry : undefined}
-                onCopy={msg.status === "COMPLETE" ? () => handleCopy(msg.content) : undefined}
+                onRetry={
+                  msg.status === "ERROR" && !retryLoading
+                    ? handleRetry
+                    : undefined
+                }
+                onCopy={
+                  msg.status === "COMPLETE"
+                    ? () => handleCopy(msg.content)
+                    : undefined
+                }
               />
             </div>
           );

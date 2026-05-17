@@ -16,11 +16,11 @@ of the conversation.
 
 ### `compressTranscript(messages, budgetTokens, options?)`
 
-| Parameter | Type | Description |
-|---|---|---|
-| `messages` | `CompressibleMessage[]` | The conversation messages to compress. |
-| `budgetTokens` | `number` | Maximum token budget (e.g. 60 000 for generation, 10 000 for classification). |
-| `options.client` | `AnthropicClient` | Anthropic SDK client instance — required when compression fires. |
+| Parameter        | Type                    | Description                                                                   |
+| ---------------- | ----------------------- | ----------------------------------------------------------------------------- |
+| `messages`       | `CompressibleMessage[]` | The conversation messages to compress.                                        |
+| `budgetTokens`   | `number`                | Maximum token budget (e.g. 60 000 for generation, 10 000 for classification). |
+| `options.client` | `AnthropicClient`       | Anthropic SDK client instance — required when compression fires.              |
 
 Returns `Promise<CompressibleMessage[]>` — a message array that fits
 within `budgetTokens`.

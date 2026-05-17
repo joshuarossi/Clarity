@@ -13,7 +13,10 @@ import type { CaseStatus } from "../../convex/lib/stateMachine";
 
 /* ---------- Pure helpers ---------- */
 
-function statusToPhase(status: CaseStatus): { phaseName: string; subroute: string } {
+function statusToPhase(status: CaseStatus): {
+  phaseName: string;
+  subroute: string;
+} {
   switch (status) {
     case "DRAFT_PRIVATE_COACHING":
     case "BOTH_PRIVATE_COACHING":
@@ -62,7 +65,10 @@ function InviteeFormView({
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  const isValid = mainTopic.trim() !== "" && description.trim() !== "" && desiredOutcome.trim() !== "";
+  const isValid =
+    mainTopic.trim() !== "" &&
+    description.trim() !== "" &&
+    desiredOutcome.trim() !== "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +95,14 @@ function InviteeFormView({
       <h2>Share Your Perspective</h2>
       <p>Category: {category}</p>
       <form onSubmit={handleSubmit}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+            marginTop: 16,
+          }}
+        >
           <label>
             <span>Main Topic</span>
             <input
@@ -124,7 +137,13 @@ function InviteeFormView({
             />
           </label>
           {error && (
-            <p role="alert" style={{ color: "var(--text-error, #dc2626)", fontSize: "0.875rem" }}>
+            <p
+              role="alert"
+              style={{
+                color: "var(--text-error, #dc2626)",
+                fontSize: "0.875rem",
+              }}
+            >
               {error}
             </p>
           )}
@@ -182,7 +201,11 @@ class CaseErrorBoundary extends React.Component<
 
 /* ---------- Inner orchestrator ---------- */
 
-function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElement {
+function CaseDetailInner({
+  caseId,
+}: {
+  caseId: Id<"cases">;
+}): React.ReactElement {
   const solo = useSoloActingParty(caseId);
   const caseDoc = useQuery(api.cases.get, { caseId });
 
@@ -201,7 +224,11 @@ function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElemen
 
   // Focus management on phase transitions (NFR-A11Y)
   React.useEffect(() => {
-    if (caseDoc && prevStatusRef.current && prevStatusRef.current !== caseDoc.status) {
+    if (
+      caseDoc &&
+      prevStatusRef.current &&
+      prevStatusRef.current !== caseDoc.status
+    ) {
       headingRef.current?.focus();
     }
     if (caseDoc) {
@@ -223,7 +250,8 @@ function CaseDetailInner({ caseId }: { caseId: Id<"cases"> }): React.ReactElemen
   const isPrivateCoachingStatus =
     status === "DRAFT_PRIVATE_COACHING" || status === "BOTH_PRIVATE_COACHING";
 
-  const showInviteeForm = isInvitee && formNotCompleted && isPrivateCoachingStatus;
+  const showInviteeForm =
+    isInvitee && formNotCompleted && isPrivateCoachingStatus;
 
   // Solo mode toggle labels
   const initiatorLabel = "Initiator";

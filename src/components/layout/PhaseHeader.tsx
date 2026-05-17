@@ -18,7 +18,11 @@ export function PhaseHeader({
   return (
     <header className="cc-phase-header">
       <div className="cc-phase-header-left">
-        <Link to={backTo} aria-label="Back to Dashboard" className="cc-phase-header-back">
+        <Link
+          to={backTo}
+          aria-label="Back to Dashboard"
+          className="cc-phase-header-back"
+        >
           <ArrowLeft size={14} />
         </Link>
         <Link to={backTo} className="cc-phase-header-back-text">
@@ -32,9 +36,7 @@ export function PhaseHeader({
           {phaseName}
         </h1>
       </div>
-      <div className="cc-phase-header-right">
-        {children}
-      </div>
+      <div className="cc-phase-header-right">{children}</div>
     </header>
   );
 }

@@ -37,7 +37,9 @@ export function DraftCoachPanel({
   const [startingSession, setStartingSession] = React.useState(false);
   const [sessionError, setSessionError] = React.useState<string | null>(null);
   const [sendError, setSendError] = React.useState<string | null>(null);
-  const [sendFinalError, setSendFinalError] = React.useState<string | null>(null);
+  const [sendFinalError, setSendFinalError] = React.useState<string | null>(
+    null,
+  );
 
   // Start session if none exists
   React.useEffect(() => {
@@ -47,7 +49,9 @@ export function DraftCoachPanel({
         console.error("Failed to start draft session:", err);
         setStartingSession(false);
         setSessionError(
-          err instanceof Error ? err.message : "Failed to start coaching session.",
+          err instanceof Error
+            ? err.message
+            : "Failed to start coaching session.",
         );
       });
     }
@@ -70,7 +74,9 @@ export function DraftCoachPanel({
         console.error("Failed to start fresh draft session:", err);
         setStartingSession(false);
         setSessionError(
-          err instanceof Error ? err.message : "Failed to start coaching session.",
+          err instanceof Error
+            ? err.message
+            : "Failed to start coaching session.",
         );
       });
     }
@@ -157,7 +163,9 @@ export function DraftCoachPanel({
     } catch (err) {
       console.error("Failed to send draft coach message:", err);
       setSendError(
-        err instanceof Error ? err.message : "Failed to send message. Please try again.",
+        err instanceof Error
+          ? err.message
+          : "Failed to send message. Please try again.",
       );
     }
   };
@@ -170,7 +178,9 @@ export function DraftCoachPanel({
     } catch (err) {
       console.error("Failed to request draft:", err);
       setSendError(
-        err instanceof Error ? err.message : "Failed to request draft. Please try again.",
+        err instanceof Error
+          ? err.message
+          : "Failed to request draft. Please try again.",
       );
     }
   };
@@ -185,7 +195,9 @@ export function DraftCoachPanel({
     } catch (err) {
       console.error("Failed to send final draft:", err);
       setSendFinalError(
-        err instanceof Error ? err.message : "Failed to send draft to joint chat. Please try again.",
+        err instanceof Error
+          ? err.message
+          : "Failed to send draft to joint chat. Please try again.",
       );
     } finally {
       setIsSending(false);
@@ -202,7 +214,10 @@ export function DraftCoachPanel({
     if (!session) return;
     // Send a continuation message — backend clears finalDraft when new message arrives
     try {
-      await sendMessage({ sessionId: session._id, content: "I'd like to refine this further." });
+      await sendMessage({
+        sessionId: session._id,
+        content: "I'd like to refine this further.",
+      });
     } catch (err) {
       console.error("Failed to continue coaching:", err);
     }
@@ -221,7 +236,9 @@ export function DraftCoachPanel({
     } catch (err) {
       console.error("Failed to discard session:", err);
       setSendFinalError(
-        err instanceof Error ? err.message : "Failed to discard session. Please try again.",
+        err instanceof Error
+          ? err.message
+          : "Failed to discard session. Please try again.",
       );
     }
   };
@@ -304,7 +321,13 @@ export function DraftCoachPanel({
       <div style={{ flex: 1, overflow: "hidden", fontSize: "14px" }}>
         {sessionError ? (
           <div style={{ padding: 16, textAlign: "center" }}>
-            <p style={{ color: "var(--danger)", fontSize: 13, margin: "0 0 8px" }}>
+            <p
+              style={{
+                color: "var(--danger)",
+                fontSize: 13,
+                margin: "0 0 8px",
+              }}
+            >
               {sessionError}
             </p>
             <button
@@ -331,7 +354,14 @@ export function DraftCoachPanel({
 
       {/* Send final error feedback */}
       {sendFinalError && (
-        <p style={{ color: "var(--danger)", fontSize: 13, padding: "0 16px", margin: 0 }}>
+        <p
+          style={{
+            color: "var(--danger)",
+            fontSize: 13,
+            padding: "0 16px",
+            margin: 0,
+          }}
+        >
           {sendFinalError}
         </p>
       )}
@@ -350,7 +380,14 @@ export function DraftCoachPanel({
 
       {/* Send error feedback */}
       {sendError && (
-        <p style={{ color: "var(--danger)", fontSize: 13, padding: "0 16px", margin: 0 }}>
+        <p
+          style={{
+            color: "var(--danger)",
+            fontSize: 13,
+            padding: "0 16px",
+            margin: 0,
+          }}
+        >
           {sendError}
         </p>
       )}

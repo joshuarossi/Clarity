@@ -61,7 +61,11 @@ function ClosedCaseViewInner({
   const synthesis = useQuery(api.jointChat.mySynthesis, queryArgs);
 
   // Loading state
-  if (caseDoc === undefined || partyStates === undefined || jointMessages === undefined) {
+  if (
+    caseDoc === undefined ||
+    partyStates === undefined ||
+    jointMessages === undefined
+  ) {
     return <LoadingSpinner />;
   }
 
@@ -116,13 +120,15 @@ function ClosedCaseViewInner({
   });
 
   // Map private coaching messages
-  const privateChatMessages: ChatMessage[] = (privateMessages ?? []).map((msg) => ({
-    id: msg._id,
-    variant: (msg.role === "USER" ? "user" : "coach") as BubbleVariant,
-    status: msg.status,
-    content: msg.content,
-    createdAt: msg.createdAt,
-  }));
+  const privateChatMessages: ChatMessage[] = (privateMessages ?? []).map(
+    (msg) => ({
+      id: msg._id,
+      variant: (msg.role === "USER" ? "user" : "coach") as BubbleVariant,
+      status: msg.status,
+      content: msg.content,
+      createdAt: msg.createdAt,
+    }),
+  );
 
   // Keyboard navigation for tabs
   const handleTabKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -213,7 +219,11 @@ function ClosedCaseViewInner({
       </div>
 
       {/* Tab bar */}
-      <div role="tablist" aria-label="Case sections" style={{ padding: "0 16px" }}>
+      <div
+        role="tablist"
+        aria-label="Case sections"
+        style={{ padding: "0 16px" }}
+      >
         <button
           role="tab"
           id="tab-joint"

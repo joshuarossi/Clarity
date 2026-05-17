@@ -193,9 +193,15 @@ afterEach(() => {
 describe("generateAIResponse — prompt assembly (PRIVATE_COACH role)", () => {
   it("assemblePrompt produces correct output when called with role PRIVATE_COACH, form fields, and acting user history", () => {
     const recentHistory: PromptMessage[] = [
-      { role: "user", content: "I feel frustrated about the project direction" },
+      {
+        role: "user",
+        content: "I feel frustrated about the project direction",
+      },
       { role: "assistant", content: "Tell me more about what frustrates you" },
-      { role: "user", content: "The other person keeps changing plans without consulting me" },
+      {
+        role: "user",
+        content: "The other person keeps changing plans without consulting me",
+      },
     ];
 
     const result = assemblePrompt({
@@ -221,8 +227,12 @@ describe("generateAIResponse — prompt assembly (PRIVATE_COACH role)", () => {
     // First message is the form-fields context injection
     expect(result.messages[0].role).toBe("user");
     expect(result.messages[0].content).toContain("[Context — my situation]");
-    expect(result.messages[0].content).toContain("Disagreement about project direction");
-    expect(result.messages[0].content).toContain("We cannot agree on the next steps");
+    expect(result.messages[0].content).toContain(
+      "Disagreement about project direction",
+    );
+    expect(result.messages[0].content).toContain(
+      "We cannot agree on the next steps",
+    );
     expect(result.messages[0].content).toContain("Find common ground");
 
     // Remaining messages are the recentHistory verbatim
@@ -754,8 +764,11 @@ describe("generateAIResponse — first token latency", () => {
     const elapsedWith50ms = Date.now() - start;
 
     // Run again with 1ms delay to measure near-zero streaming overhead
-    const { t: t2, userAId: userAId2, caseId: caseId2 } =
-      await seedTwoPartyEnvWithMessages();
+    const {
+      t: t2,
+      userAId: userAId2,
+      caseId: caseId2,
+    } = await seedTwoPartyEnvWithMessages();
     process.env.CLAUDE_MOCK_DELAY_MS = "1";
 
     const start2 = Date.now();

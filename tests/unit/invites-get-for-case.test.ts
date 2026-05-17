@@ -123,9 +123,7 @@ describe("invites/getForCase — successful retrieval", () => {
 
     const result = await t
       .withIdentity({ email: "initiator@test.com" })
-      .run(async (ctx) =>
-        ctx.runQuery(anyApi.invites.getForCase, { caseId }),
-      );
+      .run(async (ctx) => ctx.runQuery(anyApi.invites.getForCase, { caseId }));
 
     expect(result).not.toBeNull();
     expect(result!.token).toBe(tokenString);
@@ -150,9 +148,7 @@ describe("invites/getForCase — consumed token", () => {
 
     const result = await t
       .withIdentity({ email: "initiator@test.com" })
-      .run(async (ctx) =>
-        ctx.runQuery(anyApi.invites.getForCase, { caseId }),
-      );
+      .run(async (ctx) => ctx.runQuery(anyApi.invites.getForCase, { caseId }));
 
     expect(result).toBeNull();
   });
@@ -165,9 +161,7 @@ describe("invites/getForCase — auth enforcement", () => {
     const { t, caseId } = await seedGetForCaseEnv();
 
     await expectConvexError(
-      t.run(async (ctx) =>
-        ctx.runQuery(anyApi.invites.getForCase, { caseId }),
-      ),
+      t.run(async (ctx) => ctx.runQuery(anyApi.invites.getForCase, { caseId })),
       "UNAUTHENTICATED",
     );
   });

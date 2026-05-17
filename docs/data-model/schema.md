@@ -6,19 +6,19 @@ validators and TypeScript types used end-to-end.
 
 ## Tables
 
-| Table | Purpose |
-|---|---|
-| `users` | Registered user accounts (email, displayName, role) |
-| `cases` | Mediation cases with lifecycle status and template reference |
-| `partyStates` | Per-party progress within a case (form data, coaching, synthesis) |
-| `privateMessages` | Private coaching chat messages between a user and the AI |
-| `jointMessages` | Joint-session messages visible to both parties and the AI coach |
-| `draftSessions` | Draft-message authoring sessions within a joint session |
-| `draftMessages` | Individual messages within a draft session |
-| `inviteTokens` | Invite links for the second party to join a case |
-| `templates` | Coaching prompt template definitions |
-| `templateVersions` | Versioned snapshots of a template's guidance text |
-| `auditLog` | Immutable event log of user and system actions |
+| Table              | Purpose                                                           |
+| ------------------ | ----------------------------------------------------------------- |
+| `users`            | Registered user accounts (email, displayName, role)               |
+| `cases`            | Mediation cases with lifecycle status and template reference      |
+| `partyStates`      | Per-party progress within a case (form data, coaching, synthesis) |
+| `privateMessages`  | Private coaching chat messages between a user and the AI          |
+| `jointMessages`    | Joint-session messages visible to both parties and the AI coach   |
+| `draftSessions`    | Draft-message authoring sessions within a joint session           |
+| `draftMessages`    | Individual messages within a draft session                        |
+| `inviteTokens`     | Invite links for the second party to join a case                  |
+| `templates`        | Coaching prompt template definitions                              |
+| `templateVersions` | Versioned snapshots of a template's guidance text                 |
+| `auditLog`         | Immutable event log of user and system actions                    |
 
 ## Case lifecycle statuses
 

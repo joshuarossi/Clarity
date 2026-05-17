@@ -48,7 +48,9 @@ test.describe("AC: Admin-only route gating", () => {
     await page.waitForLoadState("networkidle");
 
     expect(page.url()).toContain("/admin/templates");
-    await expect(page.getByRole("heading", { name: "Templates" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Templates" }),
+    ).toBeVisible();
     await context.close();
   });
 });
@@ -70,9 +72,13 @@ test.describe("AC: Table columns render with seeded data", () => {
 
     await expect(table.locator("th", { hasText: "Category" })).toBeVisible();
     await expect(table.locator("th", { hasText: "Name" })).toBeVisible();
-    await expect(table.locator("th", { hasText: "Current Version" })).toBeVisible();
+    await expect(
+      table.locator("th", { hasText: "Current Version" }),
+    ).toBeVisible();
     await expect(table.locator("th", { hasText: "Status" })).toBeVisible();
-    await expect(table.locator("th", { hasText: "Pinned Cases" })).toBeVisible();
+    await expect(
+      table.locator("th", { hasText: "Pinned Cases" }),
+    ).toBeVisible();
     await context.close();
   });
 
@@ -94,7 +100,9 @@ test.describe("AC: Table columns render with seeded data", () => {
 // ── AC: + New Template button opens creation form ────────────────────────
 
 test.describe("AC: + New Template button navigation", () => {
-  test("clicking + New Template navigates to creation route", async ({ browser }) => {
+  test("clicking + New Template navigates to creation route", async ({
+    browser,
+  }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await loginAsAdmin(page);
@@ -115,7 +123,9 @@ test.describe("AC: + New Template button navigation", () => {
 // ── AC: Click on table row routes to /admin/templates/:id ────────────────
 
 test.describe("AC: Row click navigates to template detail", () => {
-  test("clicking a table row navigates to /admin/templates/:id", async ({ browser }) => {
+  test("clicking a table row navigates to /admin/templates/:id", async ({
+    browser,
+  }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await loginAsAdmin(page);
@@ -137,7 +147,9 @@ test.describe("AC: Row click navigates to template detail", () => {
 // ── AC: Archived templates visually distinguished (muted/grayed styling) ─
 
 test.describe("AC: Archived templates have muted styling", () => {
-  test("archived template row is visually distinguished from active rows", async ({ browser }) => {
+  test("archived template row is visually distinguished from active rows", async ({
+    browser,
+  }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await loginAsAdmin(page);
@@ -146,7 +158,10 @@ test.describe("AC: Archived templates have muted styling", () => {
     await page.waitForLoadState("networkidle");
 
     // Find a row that contains "Archived" badge
-    const archivedRow = page.locator("tbody tr").filter({ hasText: "Archived" }).first();
+    const archivedRow = page
+      .locator("tbody tr")
+      .filter({ hasText: "Archived" })
+      .first();
     await expect(archivedRow).toBeVisible();
 
     // Verify the archived row has visual distinction — either a CSS class
@@ -169,7 +184,9 @@ test.describe("AC: Archived templates have muted styling", () => {
 // ── AC: Empty state message ──────────────────────────────────────────────
 
 test.describe("AC: Empty state displays verbatim message", () => {
-  test("when no templates exist, the empty state message is shown", async ({ browser }) => {
+  test("when no templates exist, the empty state message is shown", async ({
+    browser,
+  }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await loginAsAdmin(page);
@@ -185,7 +202,9 @@ test.describe("AC: Empty state displays verbatim message", () => {
     await context.close();
   });
 
-  test("+ New Template button is visible even in empty state", async ({ browser }) => {
+  test("+ New Template button is visible even in empty state", async ({
+    browser,
+  }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await loginAsAdmin(page);

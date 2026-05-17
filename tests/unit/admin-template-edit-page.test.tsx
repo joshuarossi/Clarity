@@ -13,7 +13,13 @@
  */
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  cleanup,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 
 // ── Mocks ───────────────────────────────────────────────────────────────
@@ -45,7 +51,8 @@ const TEMPLATE_GET_FIXTURE = {
     _id: "templateVersions:ver456" as const,
     templateId: "templates:abc123" as const,
     version: 3,
-    globalGuidance: "Help parties identify shared goals and communicate clearly.",
+    globalGuidance:
+      "Help parties identify shared goals and communicate clearly.",
     coachInstructions: "Focus on active listening techniques.",
     draftCoachInstructions: "Suggest non-violent communication patterns.",
     notes: "Updated tone for v3 release",
@@ -60,7 +67,8 @@ const VERSIONS_FIXTURE = [
     _id: "templateVersions:ver456" as const,
     templateId: "templates:abc123" as const,
     version: 3,
-    globalGuidance: "Help parties identify shared goals and communicate clearly.",
+    globalGuidance:
+      "Help parties identify shared goals and communicate clearly.",
     coachInstructions: "Focus on active listening techniques.",
     draftCoachInstructions: "Suggest non-violent communication patterns.",
     notes: "Updated tone for v3 release",
@@ -92,7 +100,10 @@ function renderPage() {
   return render(
     <MemoryRouter initialEntries={["/admin/templates/abc123"]}>
       <Routes>
-        <Route path="/admin/templates/:id" element={<AdminTemplateEditPage />} />
+        <Route
+          path="/admin/templates/:id"
+          element={<AdminTemplateEditPage />}
+        />
       </Routes>
     </MemoryRouter>,
   );
@@ -252,7 +263,8 @@ describe("AC: Publish New Version button behavior", () => {
     await waitFor(() => {
       expect(mockPublish).toHaveBeenCalledWith({
         templateId: expect.stringContaining("abc123"),
-        globalGuidance: "Help parties identify shared goals and communicate clearly.",
+        globalGuidance:
+          "Help parties identify shared goals and communicate clearly.",
         coachInstructions: "Focus on active listening techniques.",
         draftCoachInstructions: "Suggest non-violent communication patterns.",
         notes: expect.stringMatching(/.*/),

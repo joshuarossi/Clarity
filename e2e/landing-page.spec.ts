@@ -18,9 +18,7 @@ test.describe("AC: Responsive landing page", () => {
 
     // Verify key sections are visible
     await expect(
-      page.getByText(
-        "A calm place to work through a difficult conversation.",
-      ),
+      page.getByText("A calm place to work through a difficult conversation."),
     ).toBeVisible();
     await expect(page.getByText("Private Coaching")).toBeVisible();
     await expect(page.getByText("Shared Conversation")).toBeVisible();
@@ -49,9 +47,7 @@ test.describe("AC: Responsive landing page", () => {
 
     // Verify key sections are visible
     await expect(
-      page.getByText(
-        "A calm place to work through a difficult conversation.",
-      ),
+      page.getByText("A calm place to work through a difficult conversation."),
     ).toBeVisible();
     await expect(page.getByText("Private Coaching")).toBeVisible();
     await expect(page.getByText("Shared Conversation")).toBeVisible();

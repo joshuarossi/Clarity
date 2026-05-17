@@ -22,10 +22,7 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
-      <RadixDialog.Close
-        className="cc-dialog-close"
-        aria-label="Close"
-      >
+      <RadixDialog.Close className="cc-dialog-close" aria-label="Close">
         <X size={16} />
       </RadixDialog.Close>
     </RadixDialog.Content>

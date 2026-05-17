@@ -85,7 +85,10 @@ function ReadyForJointViewInner({
       }}
     >
       {/* Phase header with solo toggle */}
-      <PhaseHeader caseName={caseDoc.category} phaseName="Ready for Joint Session">
+      <PhaseHeader
+        caseName={caseDoc.category}
+        phaseName="Ready for Joint Session"
+      >
         {solo.isSolo && (
           <PartyToggle
             initiatorName={initiatorLabel}
@@ -123,7 +126,13 @@ function ReadyForJointViewInner({
       )}
 
       {/* Transition prompt */}
-      <p style={{ marginTop: 24, marginBottom: 16, color: "var(--text-secondary)" }}>
+      <p
+        style={{
+          marginTop: 24,
+          marginBottom: 16,
+          color: "var(--text-secondary)",
+        }}
+      >
         Take your time reading this. When you're ready:
       </p>
 

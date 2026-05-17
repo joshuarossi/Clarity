@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  filterResponse,
-  tokenize,
-} from "../../convex/lib/privacyFilter";
+import { filterResponse, tokenize } from "../../convex/lib/privacyFilter";
 import type { FilterResult } from "../../convex/lib/privacyFilter";
 
 /**
@@ -36,7 +33,16 @@ const MESSAGE_SECOND =
 describe("tokenize", () => {
   it("splits on whitespace and punctuation boundaries", () => {
     const result = tokenize("Hello, world! How are you?");
-    expect(result).toEqual(["hello", ",", "world", "!", "how", "are", "you", "?"]);
+    expect(result).toEqual([
+      "hello",
+      ",",
+      "world",
+      "!",
+      "how",
+      "are",
+      "you",
+      "?",
+    ]);
   });
 
   it("collapses multiple whitespace characters", () => {
@@ -169,10 +175,7 @@ describe("core filter scenarios", () => {
   it("multiple messages: each checked independently, match in second message triggers failure", () => {
     const candidate =
       "She told me that she wants to move out by next month and find a new place";
-    const result = filterResponse(candidate, [
-      MESSAGE_SHORT,
-      MESSAGE_SECOND,
-    ]);
+    const result = filterResponse(candidate, [MESSAGE_SHORT, MESSAGE_SECOND]);
     expect(result.passed).toBe(false);
   });
 
@@ -188,8 +191,7 @@ describe("core filter scenarios", () => {
   it("tokens must come from a single message, not split across messages", () => {
     // 4 tokens from MESSAGE_10_TOKENS + 4 tokens from MESSAGE_SECOND
     // should NOT combine to form an 8-token match
-    const candidate =
-      "I feel really frustrated she wants to move out";
+    const candidate = "I feel really frustrated she wants to move out";
     const result = filterResponse(candidate, [
       MESSAGE_10_TOKENS,
       MESSAGE_SECOND,
@@ -204,8 +206,7 @@ describe("adversarial cases", () => {
   it("quoted text with one word substituted in the middle of an 8-token run: passed is true", () => {
     // Original: "I feel really frustrated because my partner never"
     // Substitute "frustrated" with "angry" — breaks the consecutive run
-    const candidate =
-      "I feel really angry because my partner never listens";
+    const candidate = "I feel really angry because my partner never listens";
     const result = filterResponse(candidate, [MESSAGE_10_TOKENS]);
     expect(result.passed).toBe(true);
   });

@@ -28,7 +28,15 @@ export function InviteAcceptPage(): React.ReactElement {
   // Invalid token — no record found
   if (invite === null) {
     return (
-      <main style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", padding: "2rem 1rem" }}>
+      <main
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          padding: "2rem 1rem",
+        }}
+      >
         <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
           <h1>This invite link is not valid.</h1>
           <p style={{ marginTop: "1rem", color: "var(--text-secondary)" }}>
@@ -36,9 +44,13 @@ export function InviteAcceptPage(): React.ReactElement {
           </p>
           <div style={{ marginTop: "1.5rem" }}>
             {isAuthenticated ? (
-              <Button variant="primary" onClick={() => navigate("/dashboard")}>Go to dashboard</Button>
+              <Button variant="primary" onClick={() => navigate("/dashboard")}>
+                Go to dashboard
+              </Button>
             ) : (
-              <Button variant="primary" onClick={() => navigate("/login")}>Sign in</Button>
+              <Button variant="primary" onClick={() => navigate("/login")}>
+                Sign in
+              </Button>
             )}
           </div>
         </div>
@@ -49,7 +61,15 @@ export function InviteAcceptPage(): React.ReactElement {
   // Consumed token
   if (invite.status === "CONSUMED") {
     return (
-      <main style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", padding: "2rem 1rem" }}>
+      <main
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          padding: "2rem 1rem",
+        }}
+      >
         <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
           <h1>This invite has already been accepted.</h1>
           <p style={{ marginTop: "1rem", color: "var(--text-secondary)" }}>
@@ -57,9 +77,13 @@ export function InviteAcceptPage(): React.ReactElement {
           </p>
           <div style={{ marginTop: "1.5rem" }}>
             {isAuthenticated ? (
-              <Button variant="primary" onClick={() => navigate("/dashboard")}>Go to dashboard</Button>
+              <Button variant="primary" onClick={() => navigate("/dashboard")}>
+                Go to dashboard
+              </Button>
             ) : (
-              <Button variant="primary" onClick={() => navigate("/login")}>Sign in</Button>
+              <Button variant="primary" onClick={() => navigate("/login")}>
+                Sign in
+              </Button>
             )}
           </div>
         </div>
@@ -70,14 +94,31 @@ export function InviteAcceptPage(): React.ReactElement {
   // ACTIVE token — logged-out view
   if (!isAuthenticated) {
     return (
-      <main style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", padding: "2rem 1rem" }}>
+      <main
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          padding: "2rem 1rem",
+        }}
+      >
         <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
-          <h1>{invite.initiatorName} has invited you to work through something together</h1>
+          <h1>
+            {invite.initiatorName} has invited you to work through something
+            together
+          </h1>
           <p style={{ marginTop: "1rem", color: "var(--text-secondary)" }}>
-            Clarity is a private mediation tool. You'll each talk with an AI coach privately before having a facilitated conversation together.
+            Clarity is a private mediation tool. You'll each talk with an AI
+            coach privately before having a facilitated conversation together.
           </p>
           <div style={{ marginTop: "1.5rem" }}>
-            <Button variant="primary" onClick={() => navigate(`/login?redirect=/invite/${token}`)}>Sign in to continue</Button>
+            <Button
+              variant="primary"
+              onClick={() => navigate(`/login?redirect=/invite/${token}`)}
+            >
+              Sign in to continue
+            </Button>
           </div>
         </div>
       </main>
@@ -116,28 +157,63 @@ export function InviteAcceptPage(): React.ReactElement {
   };
 
   return (
-    <main style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", padding: "2rem 1rem" }}>
+    <main
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        padding: "2rem 1rem",
+      }}
+    >
       <div style={{ maxWidth: 480, width: "100%" }}>
         <h1 style={{ textAlign: "center" }}>
-          {invite.initiatorName} has invited you to work through something together
+          {invite.initiatorName} has invited you to work through something
+          together
         </h1>
 
-        <div style={{ marginTop: "1.5rem", padding: "1rem", background: "var(--surface-secondary, #f5f5f5)", borderRadius: "0.5rem" }}>
-          <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>{invite.category}</p>
+        <div
+          style={{
+            marginTop: "1.5rem",
+            padding: "1rem",
+            background: "var(--surface-secondary, #f5f5f5)",
+            borderRadius: "0.5rem",
+          }}
+        >
+          <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>
+            {invite.category}
+          </p>
           <p>{invite.mainTopic}</p>
         </div>
 
-        <p style={{ marginTop: "1rem", fontStyle: "italic", color: "var(--text-secondary)" }}>
-          {invite.initiatorName} wrote this in the shared summary. You'll have your own private space to share your perspective.
+        <p
+          style={{
+            marginTop: "1rem",
+            fontStyle: "italic",
+            color: "var(--text-secondary)",
+          }}
+        >
+          {invite.initiatorName} wrote this in the shared summary. You'll have
+          your own private space to share your perspective.
         </p>
 
         {error && (
-          <p role="alert" style={{ marginTop: "1rem", color: "var(--text-error, #dc2626)" }}>
+          <p
+            role="alert"
+            style={{ marginTop: "1rem", color: "var(--text-error, #dc2626)" }}
+          >
             {error}
           </p>
         )}
 
-        <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+        <div
+          style={{
+            marginTop: "1.5rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.75rem",
+          }}
+        >
           <Button
             variant="primary"
             onClick={handleAccept}

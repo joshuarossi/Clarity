@@ -404,10 +404,7 @@ test.describe("AC: Pagination controls for large data sets", () => {
     await page.waitForLoadState("networkidle");
 
     // Capture the first row content before pagination
-    const firstRowBefore = await page
-      .locator("tbody tr")
-      .last()
-      .textContent();
+    const firstRowBefore = await page.locator("tbody tr").last().textContent();
 
     // Click Load More / Next
     const loadMore = page.getByRole("button", {

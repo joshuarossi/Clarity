@@ -6,12 +6,12 @@ these tokens instead of hard-coded color, spacing, or typography values.
 
 ## File layout
 
-| File | Purpose |
-|---|---|
-| `src/styles/globals.css` | All CSS custom property tokens and base styles |
-| `src/styles/components.css` | Reusable class recipes (chat bubbles, buttons, banners) |
-| `src/styles/theme.ts` | TypeScript mirror of token values for JS-driven visuals |
-| `src/components/ui/button.tsx` | shadcn/ui Button with Clarity variant overrides |
+| File                           | Purpose                                                 |
+| ------------------------------ | ------------------------------------------------------- |
+| `src/styles/globals.css`       | All CSS custom property tokens and base styles          |
+| `src/styles/components.css`    | Reusable class recipes (chat bubbles, buttons, banners) |
+| `src/styles/theme.ts`          | TypeScript mirror of token values for JS-driven visuals |
+| `src/components/ui/button.tsx` | shadcn/ui Button with Clarity variant overrides         |
 
 ## Color palettes
 
@@ -66,15 +66,15 @@ To toggle the theme programmatically, set `localStorage.theme` to
 
 Defined in `components.css`:
 
-| Class | Use |
-|---|---|
-| `.cc-bubble` | Base bubble (user message) |
-| `.cc-bubble-coach` | AI coach message |
-| `.cc-bubble-coach-joint` | Coach message in joint session |
-| `.cc-bubble-coach-intervention` | Coach intervention prompt |
-| `.cc-bubble-party-initiator` | Initiator party message |
-| `.cc-bubble-party-invitee` | Invitee party message |
-| `.cc-bubble-error` | Error/system message |
+| Class                           | Use                            |
+| ------------------------------- | ------------------------------ |
+| `.cc-bubble`                    | Base bubble (user message)     |
+| `.cc-bubble-coach`              | AI coach message               |
+| `.cc-bubble-coach-joint`        | Coach message in joint session |
+| `.cc-bubble-coach-intervention` | Coach intervention prompt      |
+| `.cc-bubble-party-initiator`    | Initiator party message        |
+| `.cc-bubble-party-invitee`      | Invitee party message          |
+| `.cc-bubble-error`              | Error/system message           |
 
 All bubbles share: `padding: 12px 16px`, `border-radius: var(--radius-lg)`,
 `max-width: min(640px, 80%)`, and a 150 ms fade-in enter animation.
@@ -83,14 +83,14 @@ All bubbles share: `padding: 12px 16px`, `border-radius: var(--radius-lg)`,
 
 Defined in `components.css`:
 
-| Class | Use |
-|---|---|
-| `.cc-banner-privacy` | Privacy banner with `--private-tint` background and lock icon |
-| `.cc-status-pill--pill-turn` | StatusPill — active turn (green filled circle) |
-| `.cc-status-pill--pill-waiting` | StatusPill — waiting (gray hollow circle) |
-| `.cc-status-pill--pill-ready` | StatusPill — ready (amber filled circle) |
-| `.cc-status-pill--pill-closed` | StatusPill — closed (neutral square) |
-| `.cc-phase-header` | PhaseHeader top bar (56 px, `--bg-surface` background) |
+| Class                           | Use                                                           |
+| ------------------------------- | ------------------------------------------------------------- |
+| `.cc-banner-privacy`            | Privacy banner with `--private-tint` background and lock icon |
+| `.cc-status-pill--pill-turn`    | StatusPill — active turn (green filled circle)                |
+| `.cc-status-pill--pill-waiting` | StatusPill — waiting (gray hollow circle)                     |
+| `.cc-status-pill--pill-ready`   | StatusPill — ready (amber filled circle)                      |
+| `.cc-status-pill--pill-closed`  | StatusPill — closed (neutral square)                          |
+| `.cc-phase-header`              | PhaseHeader top bar (56 px, `--bg-surface` background)        |
 
 See [UI Primitives](ui-primitives.md) for component usage and props.
 

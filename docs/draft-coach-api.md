@@ -17,26 +17,26 @@ final, approved message appears in the joint chat.
 
 ### `draftSessions`
 
-| Field         | Type                              | Description                          |
-|---------------|-----------------------------------|--------------------------------------|
-| `caseId`      | Id\<"cases"\>                     | The case this session belongs to     |
-| `userId`      | Id\<"users"\>                     | The party who owns the session       |
+| Field         | Type                                | Description                       |
+| ------------- | ----------------------------------- | --------------------------------- |
+| `caseId`      | Id\<"cases"\>                       | The case this session belongs to  |
+| `userId`      | Id\<"users"\>                       | The party who owns the session    |
 | `status`      | `"ACTIVE" \| "SENT" \| "DISCARDED"` | Session lifecycle state           |
-| `createdAt`   | number                            | Epoch ms when session was started    |
-| `completedAt` | number \| undefined               | Epoch ms when session ended          |
-| `finalDraft`  | string \| undefined               | The AI-produced draft text           |
+| `createdAt`   | number                              | Epoch ms when session was started |
+| `completedAt` | number \| undefined                 | Epoch ms when session ended       |
+| `finalDraft`  | string \| undefined                 | The AI-produced draft text        |
 
 Index: `by_case_and_user` — (`caseId`, `userId`)
 
 ### `draftMessages`
 
-| Field            | Type                                   | Description                       |
-|------------------|----------------------------------------|-----------------------------------|
-| `draftSessionId` | Id\<"draftSessions"\>                 | Parent session                    |
-| `role`           | `"USER" \| "AI"`                      | Who sent the message              |
-| `content`        | string                                 | Message body                      |
-| `status`         | `"STREAMING" \| "COMPLETE" \| "ERROR"` | Delivery state                   |
-| `createdAt`      | number                                 | Epoch ms                          |
+| Field            | Type                                   | Description          |
+| ---------------- | -------------------------------------- | -------------------- |
+| `draftSessionId` | Id\<"draftSessions"\>                  | Parent session       |
+| `role`           | `"USER" \| "AI"`                       | Who sent the message |
+| `content`        | string                                 | Message body         |
+| `status`         | `"STREAMING" \| "COMPLETE" \| "ERROR"` | Delivery state       |
+| `createdAt`      | number                                 | Epoch ms             |
 
 Index: `by_draft_session` — (`draftSessionId`)
 
@@ -180,12 +180,12 @@ full-screen bottom sheet on viewports narrower than 768 px.
 Displays the polished draft in a quoted card and offers four action buttons
 (stacked vertically):
 
-| Button                   | Style          | Action                                          |
-|--------------------------|----------------|-------------------------------------------------|
-| Send this message        | Primary        | Calls `sendFinalDraft`; posts to joint chat     |
-| Edit before sending      | Secondary      | Drops text into joint-chat input; closes panel  |
-| Keep refining with Coach | Ghost          | Continues coaching conversation                 |
-| Discard                  | Ghost / danger | Calls `discardSession`; closes panel            |
+| Button                   | Style          | Action                                         |
+| ------------------------ | -------------- | ---------------------------------------------- |
+| Send this message        | Primary        | Calls `sendFinalDraft`; posts to joint chat    |
+| Edit before sending      | Secondary      | Drops text into joint-chat input; closes panel |
+| Keep refining with Coach | Ghost          | Continues coaching conversation                |
+| Discard                  | Ghost / danger | Calls `discardSession`; closes panel           |
 
 ## Authorization
 

@@ -71,9 +71,15 @@ export default defineSchema({
     userId: v.id("users"),
     role: v.union(v.literal("USER"), v.literal("AI")),
     content: v.string(),
-    status: v.union(v.literal("STREAMING"), v.literal("COMPLETE"), v.literal("ERROR")),
+    status: v.union(
+      v.literal("STREAMING"),
+      v.literal("COMPLETE"),
+      v.literal("ERROR"),
+    ),
     tokens: v.optional(v.number()),
-    partyRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
+    partyRole: v.optional(
+      v.union(v.literal("INITIATOR"), v.literal("INVITEE")),
+    ),
     createdAt: v.number(),
   })
     .index("by_case_and_user", ["caseId", "userId"])
@@ -85,7 +91,11 @@ export default defineSchema({
     authorType: v.union(v.literal("USER"), v.literal("COACH")),
     authorUserId: v.optional(v.id("users")),
     content: v.string(),
-    status: v.union(v.literal("STREAMING"), v.literal("COMPLETE"), v.literal("ERROR")),
+    status: v.union(
+      v.literal("STREAMING"),
+      v.literal("COMPLETE"),
+      v.literal("ERROR"),
+    ),
     isIntervention: v.optional(v.boolean()),
     replyToId: v.optional(v.id("jointMessages")),
     createdAt: v.number(),
@@ -94,7 +104,11 @@ export default defineSchema({
   draftSessions: defineTable({
     caseId: v.id("cases"),
     userId: v.id("users"),
-    status: v.union(v.literal("ACTIVE"), v.literal("SENT"), v.literal("DISCARDED")),
+    status: v.union(
+      v.literal("ACTIVE"),
+      v.literal("SENT"),
+      v.literal("DISCARDED"),
+    ),
     createdAt: v.number(),
     completedAt: v.optional(v.number()),
     finalDraft: v.optional(v.string()),
@@ -104,14 +118,22 @@ export default defineSchema({
     draftSessionId: v.id("draftSessions"),
     role: v.union(v.literal("USER"), v.literal("AI")),
     content: v.string(),
-    status: v.union(v.literal("STREAMING"), v.literal("COMPLETE"), v.literal("ERROR")),
+    status: v.union(
+      v.literal("STREAMING"),
+      v.literal("COMPLETE"),
+      v.literal("ERROR"),
+    ),
     createdAt: v.number(),
   }).index("by_draft_session", ["draftSessionId"]),
 
   inviteTokens: defineTable({
     caseId: v.id("cases"),
     token: v.string(),
-    status: v.union(v.literal("ACTIVE"), v.literal("CONSUMED"), v.literal("REVOKED")),
+    status: v.union(
+      v.literal("ACTIVE"),
+      v.literal("CONSUMED"),
+      v.literal("REVOKED"),
+    ),
     createdAt: v.number(),
     consumedAt: v.optional(v.number()),
     consumedByUserId: v.optional(v.id("users")),

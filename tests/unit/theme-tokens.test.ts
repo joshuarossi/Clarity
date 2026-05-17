@@ -105,10 +105,7 @@ describe("AC: globals.css color tokens for both light and dark themes", () => {
   it("declares all color tokens under :root (light theme)", () => {
     const rootBlock = extractCssBlock(globalsCss, /^\s*:root\s*\{/);
     for (const token of COLOR_TOKENS) {
-      expect(
-        rootBlock,
-        `Missing ${token} in :root`,
-      ).toContain(token);
+      expect(rootBlock, `Missing ${token} in :root`).toContain(token);
     }
   });
 
@@ -118,19 +115,18 @@ describe("AC: globals.css color tokens for both light and dark themes", () => {
       /\[data-theme=["']dark["']\]/,
     );
     for (const token of COLOR_TOKENS) {
-      expect(
-        darkBlock,
-        `Missing ${token} in [data-theme="dark"]`,
-      ).toContain(token);
+      expect(darkBlock, `Missing ${token} in [data-theme="dark"]`).toContain(
+        token,
+      );
     }
   });
 
   it("every token declared in :root is also declared in dark theme (parity)", () => {
     // Extract all custom property names from :root
     const rootBlock = extractCssBlock(globalsCss, /^\s*:root\s*\{/);
-    const rootTokens = [
-      ...rootBlock.matchAll(/(--[\w-]+)\s*:/g),
-    ].map((m) => m[1]);
+    const rootTokens = [...rootBlock.matchAll(/(--[\w-]+)\s*:/g)].map(
+      (m) => m[1],
+    );
 
     const darkBlock = extractCssBlock(
       globalsCss,
@@ -170,32 +166,19 @@ describe("AC: spacing, radius, shadow, and motion tokens", () => {
     "--shadow-3",
   ];
 
-  const MOTION_TOKENS = [
-    "--ease-out",
-    "--dur-fast",
-    "--dur-medium",
-  ];
+  const MOTION_TOKENS = ["--ease-out", "--dur-fast", "--dur-medium"];
 
-  it.each(RADIUS_TOKENS)(
-    "declares radius token %s",
-    (token) => {
-      expect(globalsCss).toContain(token);
-    },
-  );
+  it.each(RADIUS_TOKENS)("declares radius token %s", (token) => {
+    expect(globalsCss).toContain(token);
+  });
 
-  it.each(SHADOW_TOKENS)(
-    "declares shadow token %s",
-    (token) => {
-      expect(globalsCss).toContain(token);
-    },
-  );
+  it.each(SHADOW_TOKENS)("declares shadow token %s", (token) => {
+    expect(globalsCss).toContain(token);
+  });
 
-  it.each(MOTION_TOKENS)(
-    "declares motion token %s",
-    (token) => {
-      expect(globalsCss).toContain(token);
-    },
-  );
+  it.each(MOTION_TOKENS)("declares motion token %s", (token) => {
+    expect(globalsCss).toContain(token);
+  });
 });
 
 // ── AC: Google Fonts loaded (Inter + JetBrains Mono) ─────────────────
@@ -249,9 +232,7 @@ describe("AC: typography scale CSS variables", () => {
   it.each(TYPOGRAPHY_ROLES)(
     "declares font-size variable for role: %s",
     (role) => {
-      expect(globalsCss).toMatch(
-        new RegExp(`--font-size-${role}\\s*:`),
-      );
+      expect(globalsCss).toMatch(new RegExp(`--font-size-${role}\\s*:`));
     },
   );
 
@@ -332,9 +313,7 @@ describe("AC: chat bubble variants in components.css", () => {
     },
   );
 
-  it.each(
-    BUBBLE_CLASSES.filter((b) => b.border !== null),
-  )(
+  it.each(BUBBLE_CLASSES.filter((b) => b.border !== null))(
     "contains $selector class with correct border token",
     ({ selector, border }) => {
       const selectorEscaped = selector.replace(/\./g, "\\.");
@@ -355,10 +334,7 @@ describe("AC: chat bubble variants in components.css", () => {
 
   it("defines .cc-streaming-cursor class with cc-blink animation", () => {
     expect(componentsCss).toMatch(/\.cc-streaming-cursor/);
-    const block = extractCssBlock(
-      componentsCss,
-      /\.cc-streaming-cursor\s*\{/,
-    );
+    const block = extractCssBlock(componentsCss, /\.cc-streaming-cursor\s*\{/);
     expect(block).toContain("cc-blink");
   });
 });
@@ -428,16 +404,17 @@ describe("prefers-reduced-motion in globals.css", () => {
   });
 
   it("contains @media (prefers-reduced-motion) declaration", () => {
-    expect(globalsCss).toMatch(
-      /@media\s*\(\s*prefers-reduced-motion/,
-    );
+    expect(globalsCss).toMatch(/@media\s*\(\s*prefers-reduced-motion/);
   });
 });
 
 // ── Invariant: theme.ts values match CSS tokens ─────────────────────
 
 describe("theme.ts token mirror", () => {
-  let themeModule: { light: Record<string, string>; dark: Record<string, string> };
+  let themeModule: {
+    light: Record<string, string>;
+    dark: Record<string, string>;
+  };
 
   beforeAll(async () => {
     // Dynamic import of the theme module — convert to Record via Object.fromEntries
@@ -481,21 +458,15 @@ describe("theme.ts token mirror", () => {
     "privateTint",
   ];
 
-  it.each(EXPECTED_THEME_KEYS)(
-    "light theme contains key: %s",
-    (key) => {
-      expect(themeModule.light).toHaveProperty(key);
-      expect(typeof themeModule.light[key]).toBe("string");
-    },
-  );
+  it.each(EXPECTED_THEME_KEYS)("light theme contains key: %s", (key) => {
+    expect(themeModule.light).toHaveProperty(key);
+    expect(typeof themeModule.light[key]).toBe("string");
+  });
 
-  it.each(EXPECTED_THEME_KEYS)(
-    "dark theme contains key: %s",
-    (key) => {
-      expect(themeModule.dark).toHaveProperty(key);
-      expect(typeof themeModule.dark[key]).toBe("string");
-    },
-  );
+  it.each(EXPECTED_THEME_KEYS)("dark theme contains key: %s", (key) => {
+    expect(themeModule.dark).toHaveProperty(key);
+    expect(typeof themeModule.dark[key]).toBe("string");
+  });
 
   it("light.bgCanvas matches the StyleGuide value", () => {
     expect(themeModule.light.bgCanvas.toLowerCase()).toBe("#faf8f5");

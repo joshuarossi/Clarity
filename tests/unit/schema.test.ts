@@ -35,10 +35,7 @@ const EXPECTED_CASE_STATUSES = [
   "CLOSED_ABANDONED",
 ] as const;
 
-const EXPECTED_INDEXES: Record<
-  string,
-  { name: string; fields: string[] }[]
-> = {
+const EXPECTED_INDEXES: Record<string, { name: string; fields: string[] }[]> = {
   users: [{ name: "by_email", fields: ["email"] }],
   cases: [
     { name: "by_initiator", fields: ["initiatorUserId"] },
@@ -95,7 +92,10 @@ describe("AC2 — all 15 indexes defined", () => {
           (idx: { indexDescriptor: string; fields: string[] }) =>
             idx.indexDescriptor === expected.name,
         );
-        expect(found, `index "${expected.name}" on table "${tableName}"`).toBeDefined();
+        expect(
+          found,
+          `index "${expected.name}" on table "${tableName}"`,
+        ).toBeDefined();
         expect(found?.fields).toEqual(expected.fields);
       }
     },
@@ -120,17 +120,14 @@ describe("AC3 — cases.status union has exactly 7 states", () => {
     expect(statusField.members).toHaveLength(7);
   });
 
-  it.each(EXPECTED_CASE_STATUSES)(
-    "status union includes '%s'",
-    (status) => {
-      const casesValidator = schema.tables.cases.validator;
-      const statusField = casesValidator.fields.status;
-      const literalValues = statusField.members.map(
-        (m: { value: string }) => m.value,
-      );
-      expect(literalValues).toContain(status);
-    },
-  );
+  it.each(EXPECTED_CASE_STATUSES)("status union includes '%s'", (status) => {
+    const casesValidator = schema.tables.cases.validator;
+    const statusField = casesValidator.fields.status;
+    const literalValues = statusField.members.map(
+      (m: { value: string }) => m.value,
+    );
+    expect(literalValues).toContain(status);
+  });
 
   it("status union contains no extra states beyond the expected 7", () => {
     const casesValidator = schema.tables.cases.validator;

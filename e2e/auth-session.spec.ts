@@ -145,40 +145,37 @@ test.describe("AC6 — logout clears session client + server side", () => {
 
 // ── AC: Post-login redirect preserves original destination via ?redirect= ──
 
-test.describe(
-  "AC — post-login redirect via ?redirect= param (WOR-110)",
-  () => {
-    test("logging in after redirect from /profile lands on /profile, not /dashboard", async ({
-      page,
-    }) => {
-      // Navigate to a protected route while logged out
-      await page.goto("/profile");
+test.describe("AC — post-login redirect via ?redirect= param (WOR-110)", () => {
+  test("logging in after redirect from /profile lands on /profile, not /dashboard", async ({
+    page,
+  }) => {
+    // Navigate to a protected route while logged out
+    await page.goto("/profile");
 
-      // ProtectedRoute should redirect to /login with ?redirect= param
-      await page.waitForURL("**/login**", { timeout: 10000 });
-      expect(page.url()).toContain("/login");
-      expect(page.url()).toContain("redirect=");
+    // ProtectedRoute should redirect to /login with ?redirect= param
+    await page.waitForURL("**/login**", { timeout: 10000 });
+    expect(page.url()).toContain("/login");
+    expect(page.url()).toContain("redirect=");
 
-      // Complete the login flow inline (not using signInWithMagicLink which
-      // navigates to /login fresh, losing the ?redirect= param)
-      const emailInput = page.getByLabel(/email/i);
-      await emailInput.fill("redirect-test@example.com");
+    // Complete the login flow inline (not using signInWithMagicLink which
+    // navigates to /login fresh, losing the ?redirect= param)
+    const emailInput = page.getByLabel(/email/i);
+    await emailInput.fill("redirect-test@example.com");
 
-      const submitButton = page.getByRole("button", {
-        name: /send magic link/i,
-      });
-      await submitButton.click();
-
-      // Wait for auth to complete and redirect away from /login
-      await page.waitForURL((url) => !url.pathname.includes("/login"), {
-        timeout: 15000,
-      });
-
-      // Should land on /profile (the original destination), not /dashboard
-      expect(page.url()).toContain("/profile");
+    const submitButton = page.getByRole("button", {
+      name: /send magic link/i,
     });
-  },
-);
+    await submitButton.click();
+
+    // Wait for auth to complete and redirect away from /login
+    await page.waitForURL((url) => !url.pathname.includes("/login"), {
+      timeout: 15000,
+    });
+
+    // Should land on /profile (the original destination), not /dashboard
+    expect(page.url()).toContain("/profile");
+  });
+});
 
 // ── AC: Logout from profile page redirects to /login (WOR-110) ──────────
 

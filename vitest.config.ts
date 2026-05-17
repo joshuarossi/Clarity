@@ -13,6 +13,14 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: false,
+    // `e2e/` holds Playwright specs (`*.spec.ts` using `test.describe()` from
+    // @playwright/test). They are run by the separate `test:e2e` script
+    // (`playwright test`), not vitest. Without this exclude, vitest's default
+    // glob picks them up and every e2e file errors with "Playwright Test did
+    // not expect test.describe() to be called here." `node_modules`/`dist`
+    // are vitest defaults, restated here because specifying `exclude`
+    // replaces the default list rather than extending it.
+    exclude: ["**/node_modules/**", "**/dist/**", "e2e/**"],
     server: {
       deps: {
         inline: ["convex-test"],

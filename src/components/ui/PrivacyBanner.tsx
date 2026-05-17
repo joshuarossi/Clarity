@@ -13,11 +13,12 @@ interface PrivacyBannerProps {
   className?: string;
 }
 
-export function PrivacyBanner({ copy, className }: PrivacyBannerProps): React.ReactElement {
+export function PrivacyBanner({
+  copy,
+  className,
+}: PrivacyBannerProps): React.ReactElement {
   return (
-    <div
-      className={["cc-banner-privacy", className].filter(Boolean).join(" ")}
-    >
+    <div className={["cc-banner-privacy", className].filter(Boolean).join(" ")}>
       <Dialog>
         <DialogTrigger asChild>
           <button

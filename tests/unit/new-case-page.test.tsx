@@ -16,7 +16,7 @@ const { mockNavigate, mockMutate, mockUseConvexAuth } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
   mockMutate: vi.fn(),
   mockUseConvexAuth: vi.fn(
-    () => ({ isLoading: false, isAuthenticated: true } as const),
+    () => ({ isLoading: false, isAuthenticated: true }) as const,
   ),
 }));
 
@@ -29,9 +29,10 @@ vi.mock("@convex-dev/auth/react", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom",
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -121,9 +122,7 @@ describe("AC: Main topic field with label, helper text, and character counter", 
 
   it("renders helper text mentioning visibility to the other person", () => {
     renderNewCasePage();
-    expect(
-      screen.getByText(/visible to the other person/i),
-    ).toBeDefined();
+    expect(screen.getByText(/visible to the other person/i)).toBeDefined();
   });
 
   it("shows character counter '0/140' initially", () => {
@@ -133,9 +132,7 @@ describe("AC: Main topic field with label, helper text, and character counter", 
 
   it("counter updates as user types and shows warning styling past 140 characters", () => {
     renderNewCasePage();
-    const input = screen.getByLabelText(
-      /in one sentence, what.?s this about/i,
-    );
+    const input = screen.getByLabelText(/in one sentence, what.?s this about/i);
 
     // Type exactly 140 characters
     const text140 = "a".repeat(140);
@@ -158,9 +155,7 @@ describe("AC: Main topic field with label, helper text, and character counter", 
 
   it("does not hard-limit the input at 140 characters (no maxLength)", () => {
     renderNewCasePage();
-    const input = screen.getByLabelText(
-      /in one sentence, what.?s this about/i,
-    );
+    const input = screen.getByLabelText(/in one sentence, what.?s this about/i);
     expect(input.getAttribute("maxLength")).toBeNull();
   });
 });
@@ -257,27 +252,21 @@ describe("AC: Solo mode checkbox under 'Advanced' expandable disclosure", () => 
     const { container } = renderNewCasePage();
     // Find and click the Advanced disclosure toggle
     const summary =
-      container.querySelector("summary") ??
-      screen.getByText(/advanced/i);
+      container.querySelector("summary") ?? screen.getByText(/advanced/i);
     fireEvent.click(summary);
 
     const checkbox = screen.getByRole("checkbox");
     expect(checkbox).toBeDefined();
-    expect(
-      screen.getByText(/solo test case/i),
-    ).toBeDefined();
+    expect(screen.getByText(/solo test case/i)).toBeDefined();
   });
 
   it("solo checkbox label contains 'I'll play both parties'", () => {
     const { container } = renderNewCasePage();
     const summary =
-      container.querySelector("summary") ??
-      screen.getByText(/advanced/i);
+      container.querySelector("summary") ?? screen.getByText(/advanced/i);
     fireEvent.click(summary);
 
-    expect(
-      screen.getByText(/i.?ll play both parties/i),
-    ).toBeDefined();
+    expect(screen.getByText(/i.?ll play both parties/i)).toBeDefined();
   });
 });
 
@@ -363,8 +352,7 @@ describe("AC: Submit calls mutation and routes to post-create invite page", () =
 
     // Expand Advanced and check solo
     const summary =
-      container.querySelector("summary") ??
-      screen.getByText(/advanced/i);
+      container.querySelector("summary") ?? screen.getByText(/advanced/i);
     fireEvent.click(summary);
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -403,8 +391,7 @@ describe("AC: Submit calls mutation and routes to post-create invite page", () =
 
     // Enable solo mode
     const summary =
-      container.querySelector("summary") ??
-      screen.getByText(/advanced/i);
+      container.querySelector("summary") ?? screen.getByText(/advanced/i);
     fireEvent.click(summary);
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -604,9 +591,7 @@ describe("Edge case: Empty state renders correctly", () => {
   it("loads with no radio card selected", () => {
     renderNewCasePage();
     const radios = screen.getAllByRole("radio");
-    const checkedRadios = radios.filter(
-      (r) => (r as HTMLInputElement).checked,
-    );
+    const checkedRadios = radios.filter((r) => (r as HTMLInputElement).checked);
     expect(checkedRadios).toHaveLength(0);
   });
 

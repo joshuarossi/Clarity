@@ -20,7 +20,9 @@ export function AdminAuditLogPage(): React.ReactElement {
   const [actionFilter, setActionFilter] = React.useState("");
   const [dateFrom, setDateFrom] = React.useState("");
   const [dateTo, setDateTo] = React.useState("");
-  const [selectedEntry, setSelectedEntry] = React.useState<AuditEntry | null>(null);
+  const [selectedEntry, setSelectedEntry] = React.useState<AuditEntry | null>(
+    null,
+  );
 
   const queryArgs: Record<string, string | number> = {};
   if (actorFilter) queryArgs.actor = actorFilter;
@@ -31,7 +33,7 @@ export function AdminAuditLogPage(): React.ReactElement {
   const { results, status, loadMore } = usePaginatedQuery(
     api.admin.listAuditLog,
     queryArgs,
-    { initialNumItems: 25 }
+    { initialNumItems: 25 },
   );
 
   return (
@@ -41,7 +43,11 @@ export function AdminAuditLogPage(): React.ReactElement {
       </h1>
 
       {/* Filter bar */}
-      <div className="flex flex-wrap gap-4 mb-6" role="search" aria-label="Audit log filters">
+      <div
+        className="flex flex-wrap gap-4 mb-6"
+        role="search"
+        aria-label="Audit log filters"
+      >
         <input
           type="text"
           placeholder="Filter by actor ID..."
@@ -86,19 +92,35 @@ export function AdminAuditLogPage(): React.ReactElement {
         <table className="w-full" aria-label="Audit Log">
           <thead>
             <tr className="border-b">
-              <th scope="col" className="text-left py-2 px-3 font-medium">Actor</th>
-              <th scope="col" className="text-left py-2 px-3 font-medium">Action</th>
-              <th scope="col" className="text-left py-2 px-3 font-medium">Target</th>
-              <th scope="col" className="text-left py-2 px-3 font-medium">Timestamp</th>
+              <th scope="col" className="text-left py-2 px-3 font-medium">
+                Actor
+              </th>
+              <th scope="col" className="text-left py-2 px-3 font-medium">
+                Action
+              </th>
+              <th scope="col" className="text-left py-2 px-3 font-medium">
+                Target
+              </th>
+              <th scope="col" className="text-left py-2 px-3 font-medium">
+                Timestamp
+              </th>
             </tr>
           </thead>
           <tbody>
             {[1, 2, 3].map((i) => (
               <tr key={i} className="animate-pulse">
-                <td className="py-2 px-3"><div className="h-4 bg-gray-200 rounded w-24" /></td>
-                <td className="py-2 px-3"><div className="h-4 bg-gray-200 rounded w-32" /></td>
-                <td className="py-2 px-3"><div className="h-4 bg-gray-200 rounded w-28" /></td>
-                <td className="py-2 px-3"><div className="h-4 bg-gray-200 rounded w-36" /></td>
+                <td className="py-2 px-3">
+                  <div className="h-4 bg-gray-200 rounded w-24" />
+                </td>
+                <td className="py-2 px-3">
+                  <div className="h-4 bg-gray-200 rounded w-32" />
+                </td>
+                <td className="py-2 px-3">
+                  <div className="h-4 bg-gray-200 rounded w-28" />
+                </td>
+                <td className="py-2 px-3">
+                  <div className="h-4 bg-gray-200 rounded w-36" />
+                </td>
               </tr>
             ))}
           </tbody>
@@ -115,13 +137,25 @@ export function AdminAuditLogPage(): React.ReactElement {
       {/* Data table */}
       {status !== "LoadingFirstPage" && results.length > 0 && (
         <>
-          <table className="w-full" aria-label="Audit Log" data-testid="audit-log-table">
+          <table
+            className="w-full"
+            aria-label="Audit Log"
+            data-testid="audit-log-table"
+          >
             <thead>
               <tr className="border-b">
-                <th scope="col" className="text-left py-2 px-3 font-medium">Actor</th>
-                <th scope="col" className="text-left py-2 px-3 font-medium">Action</th>
-                <th scope="col" className="text-left py-2 px-3 font-medium">Target</th>
-                <th scope="col" className="text-left py-2 px-3 font-medium">Timestamp</th>
+                <th scope="col" className="text-left py-2 px-3 font-medium">
+                  Actor
+                </th>
+                <th scope="col" className="text-left py-2 px-3 font-medium">
+                  Action
+                </th>
+                <th scope="col" className="text-left py-2 px-3 font-medium">
+                  Target
+                </th>
+                <th scope="col" className="text-left py-2 px-3 font-medium">
+                  Timestamp
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -142,13 +176,19 @@ export function AdminAuditLogPage(): React.ReactElement {
                   <td className="py-2 px-3">{entry.actorDisplayName}</td>
                   <td className="py-2 px-3">
                     {entry.action}
-                    {entry.metadata && (entry.metadata as Record<string, unknown>).isSolo && (
-                      <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded" data-testid="solo-badge">
-                        SOLO
-                      </span>
-                    )}
+                    {entry.metadata &&
+                      (entry.metadata as Record<string, unknown>).isSolo && (
+                        <span
+                          className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded"
+                          data-testid="solo-badge"
+                        >
+                          SOLO
+                        </span>
+                      )}
                   </td>
-                  <td className="py-2 px-3">{entry.targetType}:{entry.targetId}</td>
+                  <td className="py-2 px-3">
+                    {entry.targetType}:{entry.targetId}
+                  </td>
                   <td className="py-2 px-3">
                     {new Date(entry.createdAt).toLocaleString()}
                   </td>
@@ -180,7 +220,9 @@ export function AdminAuditLogPage(): React.ReactElement {
       {/* Detail drawer (right-side sheet) with focus trap via Radix Dialog */}
       <RadixDialog.Root
         open={selectedEntry !== null}
-        onOpenChange={(open) => { if (!open) setSelectedEntry(null); }}
+        onOpenChange={(open) => {
+          if (!open) setSelectedEntry(null);
+        }}
       >
         <RadixDialog.Portal>
           <RadixDialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
@@ -214,14 +256,20 @@ export function AdminAuditLogPage(): React.ReactElement {
                   </div>
                   <div>
                     <dt className="font-medium text-gray-600">Target</dt>
-                    <dd>{selectedEntry.targetType}:{selectedEntry.targetId}</dd>
+                    <dd>
+                      {selectedEntry.targetType}:{selectedEntry.targetId}
+                    </dd>
                   </div>
                   <div>
                     <dt className="font-medium text-gray-600">Timestamp</dt>
-                    <dd>{new Date(selectedEntry.createdAt).toLocaleString()}</dd>
+                    <dd>
+                      {new Date(selectedEntry.createdAt).toLocaleString()}
+                    </dd>
                   </div>
                 </dl>
-                <h3 className="text-sm font-medium text-gray-600 mb-2">Metadata</h3>
+                <h3 className="text-sm font-medium text-gray-600 mb-2">
+                  Metadata
+                </h3>
                 <pre
                   className="bg-gray-100 p-4 rounded text-xs overflow-x-auto"
                   style={{ fontFamily: "'JetBrains Mono', monospace" }}

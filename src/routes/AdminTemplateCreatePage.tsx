@@ -13,7 +13,8 @@ export function AdminTemplateCreatePage(): React.ReactElement {
   const [name, setName] = React.useState("");
   const [globalGuidance, setGlobalGuidance] = React.useState("");
   const [coachInstructions, setCoachInstructions] = React.useState("");
-  const [draftCoachInstructions, setDraftCoachInstructions] = React.useState("");
+  const [draftCoachInstructions, setDraftCoachInstructions] =
+    React.useState("");
   const [creating, setCreating] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -46,12 +47,18 @@ export function AdminTemplateCreatePage(): React.ReactElement {
   };
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8" data-testid="page-admin-template-create">
+    <main
+      className="mx-auto max-w-3xl px-4 py-8"
+      data-testid="page-admin-template-create"
+    >
       <h1 className="text-2xl font-bold mb-6">New Template</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="template-category">
+          <label
+            className="block text-sm font-medium mb-1"
+            htmlFor="template-category"
+          >
             Category
           </label>
           <input
@@ -66,7 +73,10 @@ export function AdminTemplateCreatePage(): React.ReactElement {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="template-name">
+          <label
+            className="block text-sm font-medium mb-1"
+            htmlFor="template-name"
+          >
             Name
           </label>
           <input
@@ -81,7 +91,10 @@ export function AdminTemplateCreatePage(): React.ReactElement {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="global-guidance">
+          <label
+            className="block text-sm font-medium mb-1"
+            htmlFor="global-guidance"
+          >
             Global Guidance
           </label>
           <textarea
@@ -95,7 +108,10 @@ export function AdminTemplateCreatePage(): React.ReactElement {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="coach-instructions">
+          <label
+            className="block text-sm font-medium mb-1"
+            htmlFor="coach-instructions"
+          >
             Coach Instructions
           </label>
           <textarea
@@ -109,7 +125,10 @@ export function AdminTemplateCreatePage(): React.ReactElement {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="draft-coach-instructions">
+          <label
+            className="block text-sm font-medium mb-1"
+            htmlFor="draft-coach-instructions"
+          >
             Draft Coach Instructions
           </label>
           <textarea
@@ -123,7 +142,9 @@ export function AdminTemplateCreatePage(): React.ReactElement {
         </div>
 
         {error && (
-          <p className="text-red-600 text-sm" role="alert">{error}</p>
+          <p className="text-red-600 text-sm" role="alert">
+            {error}
+          </p>
         )}
 
         <div className="flex gap-3 pt-4">

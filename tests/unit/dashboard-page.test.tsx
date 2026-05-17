@@ -11,9 +11,10 @@ import { DashboardPage } from "../../src/routes/DashboardPage";
 // ── Mock react-router-dom's useNavigate ─────────────────────────────────
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom",
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
   return { ...actual, useNavigate: () => mockNavigate };
 });
 
@@ -222,10 +223,8 @@ describe("AC: Closed Cases section collapsed by default", () => {
     const riley = screen.queryByText("Riley");
     // In a collapsed disclosure/details element, the content is hidden.
     // Either queryByText returns null or the element is not visible.
-    const morganHidden =
-      morgan === null || morgan.closest("[open]") === null;
-    const rileyHidden =
-      riley === null || riley.closest("[open]") === null;
+    const morganHidden = morgan === null || morgan.closest("[open]") === null;
+    const rileyHidden = riley === null || riley.closest("[open]") === null;
     expect(morganHidden).toBe(true);
     expect(rileyHidden).toBe(true);
   });
@@ -265,7 +264,9 @@ describe("AC: Case row displays all required fields", () => {
   it("displays a formatted created date", () => {
     const { container } = renderDashboard();
     const createdDate = new Date(activeCases[0].createdAt);
-    const row = container.querySelector("[data-testid='case-row-case_active_1']");
+    const row = container.querySelector(
+      "[data-testid='case-row-case_active_1']",
+    );
     expect(row).not.toBeNull();
     const rowText = row!.textContent ?? "";
     // At minimum the row must contain the month and day from createdAt
@@ -277,13 +278,17 @@ describe("AC: Case row displays all required fields", () => {
 
   it("displays a formatted last activity time", () => {
     const { container } = renderDashboard();
-    const row = container.querySelector("[data-testid='case-row-case_active_1']");
+    const row = container.querySelector(
+      "[data-testid='case-row-case_active_1']",
+    );
     expect(row).not.toBeNull();
     const rowText = row!.textContent ?? "";
     // activeCases[0].updatedAt = NOW - 60_000 (1 minute before NOW).
     // The implementation may render as relative ("1 min ago") or absolute time.
     const updatedDate = new Date(activeCases[0].updatedAt);
-    const updatedMonth = updatedDate.toLocaleDateString("en-US", { month: "short" });
+    const updatedMonth = updatedDate.toLocaleDateString("en-US", {
+      month: "short",
+    });
     const updatedDay = String(updatedDate.getDate());
     expect(rowText).toContain(updatedMonth);
     expect(rowText).toContain(updatedDay);
@@ -293,7 +298,9 @@ describe("AC: Case row displays all required fields", () => {
     const { container } = renderDashboard();
     // The case row for case_active_1 should contain a PartyAvatar element.
     // PartyAvatar typically renders with an initial letter of the other party's name.
-    const row = container.querySelector("[data-testid='case-row-case_active_1']");
+    const row = container.querySelector(
+      "[data-testid='case-row-case_active_1']",
+    );
     expect(row).not.toBeNull();
     const rowText = row!.textContent ?? "";
     // Jordan's initial "J" should appear (from the PartyAvatar)
@@ -422,8 +429,6 @@ describe("AC: Skeleton loading state renders exactly 3 skeleton rows", () => {
 
   it("still renders the '+ New Case' button during loading", () => {
     renderDashboard();
-    expect(
-      screen.getByRole("button", { name: /new case/i }),
-    ).toBeDefined();
+    expect(screen.getByRole("button", { name: /new case/i })).toBeDefined();
   });
 });

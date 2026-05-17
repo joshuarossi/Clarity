@@ -10,9 +10,7 @@ test.describe("AC: Full form submission happy path", () => {
     await authenticatedPage.waitForLoadState("domcontentloaded");
 
     // Select a category radio card
-    await authenticatedPage
-      .getByLabel("Workplace")
-      .click();
+    await authenticatedPage.getByLabel("Workplace").click();
 
     // Fill main topic
     await authenticatedPage
@@ -91,9 +89,7 @@ test.describe("AC: Keyboard navigation — tab order matches visual order", () =
     const hasTextarea = focusedElements.some((el) =>
       el.startsWith("textarea:"),
     );
-    const hasButton = focusedElements.some((el) =>
-      el.startsWith("button:"),
-    );
+    const hasButton = focusedElements.some((el) => el.startsWith("button:"));
 
     expect(hasRadio).toBe(true);
     expect(hasTextarea).toBe(true);
@@ -118,10 +114,7 @@ test.describe("AC: Accessibility — focus visibility and markup", () => {
       const el = document.activeElement;
       if (!el) return false;
       const style = window.getComputedStyle(el);
-      return (
-        style.outlineStyle !== "none" ||
-        style.boxShadow !== "none"
-      );
+      return style.outlineStyle !== "none" || style.boxShadow !== "none";
     });
     expect(hasFocusStyle).toBe(true);
   });

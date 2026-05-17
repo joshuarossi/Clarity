@@ -469,7 +469,7 @@ describe("AC 6: Template version injection", () => {
     expect(withTemplate.system).toContain(ANTI_QUOTATION_INSTRUCTION);
     expect(withoutTemplate.system).toContain(ANTI_QUOTATION_INSTRUCTION);
     expect(withTemplate.system.length).toBeGreaterThan(
-      withoutTemplate.system.length
+      withoutTemplate.system.length,
     );
   });
 });

@@ -83,11 +83,9 @@ describe("admin/listAuditLog query — admin gate", () => {
     await seedRegularUser(t);
 
     await expectConvexError(
-      t
-        .withIdentity({ email: "user@test.com" })
-        .query(api.admin.listAuditLog, {
-          paginationOpts: { numItems: 25, cursor: null },
-        }),
+      t.withIdentity({ email: "user@test.com" }).query(api.admin.listAuditLog, {
+        paginationOpts: { numItems: 25, cursor: null },
+      }),
       "FORBIDDEN",
     );
   });

@@ -16,7 +16,11 @@ export function PartyToggle({
   return (
     <div className="party-toggle" data-testid="party-toggle">
       <span className="party-toggle-label">VIEWING AS</span>
-      <div className="party-toggle-buttons" role="group" aria-label="Party toggle">
+      <div
+        className="party-toggle-buttons"
+        role="group"
+        aria-label="Party toggle"
+      >
         <button
           type="button"
           className="party-toggle-btn"

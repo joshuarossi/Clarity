@@ -44,7 +44,9 @@ export const get = query({
 export const partyStates = query({
   args: {
     caseId: v.id("cases"),
-    viewAsRole: v.optional(v.union(v.literal("INITIATOR"), v.literal("INVITEE"))),
+    viewAsRole: v.optional(
+      v.union(v.literal("INITIATOR"), v.literal("INVITEE")),
+    ),
   },
   handler: async (ctx, { caseId, viewAsRole }) => {
     const user = await requireAuth(ctx);
@@ -67,9 +69,7 @@ export const partyStates = query({
       otherPartyState = allPartyStates.find((ps) => ps.role === otherRole);
     } else {
       self = allPartyStates.find((ps) => ps.userId === user._id);
-      otherPartyState = allPartyStates.find(
-        (ps) => ps.userId !== user._id,
-      );
+      otherPartyState = allPartyStates.find((ps) => ps.userId !== user._id);
     }
 
     if (!self) {
@@ -83,9 +83,7 @@ export const partyStates = query({
     const other = otherPartyState
       ? {
           role: otherPartyState.role,
-          hasCompletedPC: Boolean(
-            otherPartyState.privateCoachingCompletedAt,
-          ),
+          hasCompletedPC: Boolean(otherPartyState.privateCoachingCompletedAt),
           closureProposed: Boolean(otherPartyState.closureProposed),
         }
       : null;
@@ -213,7 +211,8 @@ export const listForDashboard = query({
       if (callerIsInitiator) {
         if (caseDoc.inviteeUserId) {
           const inviteeUser = await ctx.db.get(caseDoc.inviteeUserId);
-          otherPartyName = inviteeUser?.displayName ?? inviteeUser?.name ?? null;
+          otherPartyName =
+            inviteeUser?.displayName ?? inviteeUser?.name ?? null;
         }
       } else {
         const initiatorUser = await ctx.db.get(caseDoc.initiatorUserId);
@@ -222,7 +221,11 @@ export const listForDashboard = query({
       }
 
       // Determine status variant and label
-      let statusVariant: "pill-turn" | "pill-waiting" | "pill-ready" | "pill-closed";
+      let statusVariant:
+        | "pill-turn"
+        | "pill-waiting"
+        | "pill-ready"
+        | "pill-closed";
       let statusLabel: string;
 
       const status = caseDoc.status;
@@ -293,7 +296,9 @@ export const otherPartyName = query({
     const user = await requireAuth(ctx);
     const caseDoc = await requirePartyToCase(ctx, caseId, user._id);
     const callerIsInitiator = caseDoc.initiatorUserId === user._id;
-    const otherUserId = callerIsInitiator ? caseDoc.inviteeUserId : caseDoc.initiatorUserId;
+    const otherUserId = callerIsInitiator
+      ? caseDoc.inviteeUserId
+      : caseDoc.initiatorUserId;
     if (!otherUserId) return { displayName: null };
     const otherUser = await ctx.db.get(otherUserId);
     return { displayName: otherUser?.displayName ?? otherUser?.name ?? null };
@@ -340,4 +345,3 @@ export const updateMyForm = mutation({
     return null;
   },
 });
-

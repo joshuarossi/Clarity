@@ -61,9 +61,7 @@ test.describe("Solo mode — party toggle and message isolation", () => {
     await expect(initiatorBtn).toBeVisible();
 
     // Click the inactive (invitee) button
-    const inviteeBtn = toggle.locator(
-      ".party-toggle-btn[data-active='false']",
-    );
+    const inviteeBtn = toggle.locator(".party-toggle-btn[data-active='false']");
     await inviteeBtn.click();
 
     // URL should now have ?as=invitee
@@ -83,9 +81,7 @@ test.describe("Solo mode — party toggle and message isolation", () => {
     await expect(toggle).toBeVisible({ timeout: 10_000 });
 
     // Verify invitee is the active party
-    const activeBtn = toggle.locator(
-      ".party-toggle-btn[data-active='true']",
-    );
+    const activeBtn = toggle.locator(".party-toggle-btn[data-active='true']");
     await expect(activeBtn).toBeVisible();
 
     // Refresh the page
@@ -113,16 +109,12 @@ test.describe("Solo mode — party toggle and message isolation", () => {
     const textarea = pageA.getByRole("textbox", { name: /message input/i });
     await expect(textarea).toBeVisible({ timeout: 10_000 });
 
-    await textarea.fill(
-      "This is the initiator's private coaching message.",
-    );
+    await textarea.fill("This is the initiator's private coaching message.");
     await textarea.press("Enter");
 
     // Verify the initiator message appears
     await expect(
-      pageA.getByText(
-        "This is the initiator's private coaching message.",
-      ),
+      pageA.getByText("This is the initiator's private coaching message."),
     ).toBeVisible({ timeout: 5_000 });
 
     // Wait for AI response to complete
@@ -141,9 +133,7 @@ test.describe("Solo mode — party toggle and message isolation", () => {
 
     // Step 3: Initiator's messages should NOT be visible
     await expect(
-      pageA.getByText(
-        "This is the initiator's private coaching message.",
-      ),
+      pageA.getByText("This is the initiator's private coaching message."),
     ).not.toBeVisible({ timeout: 5_000 });
   });
 
@@ -209,9 +199,7 @@ test.describe("Solo mode — party toggle and message isolation", () => {
     await expect(inviteeCoachBubbles).toHaveCount(0, { timeout: 5_000 });
   });
 
-  test("party toggle is NOT visible on non-solo cases", async ({
-    pageA,
-  }) => {
+  test("party toggle is NOT visible on non-solo cases", async ({ pageA }) => {
     // Create a non-solo case
     const nonSoloResult = await createTestCase({
       initiatorEmail: "testusera@example.com",
@@ -293,10 +281,9 @@ test.describe("Solo mode — ready page → joint session entry → synthesis ac
     await ctaButton.click();
 
     // Should navigate to the joint chat page
-    await expect(pageA).toHaveURL(
-      new RegExp(`/cases/${caseId}/joint`),
-      { timeout: 10_000 },
-    );
+    await expect(pageA).toHaveURL(new RegExp(`/cases/${caseId}/joint`), {
+      timeout: 10_000,
+    });
   });
 
   test("AC: synthesis remains accessible via 'View my guidance' link after entering joint session", async ({
@@ -424,10 +411,9 @@ test.describe("Solo mode — closure modal and confirmation banner", () => {
     await confirmBtn.click();
 
     // Case should transition to CLOSED_RESOLVED — redirected to closed page
-    await expect(pageA).toHaveURL(
-      new RegExp(`/cases/${caseId}/closed`),
-      { timeout: 10_000 },
-    );
+    await expect(pageA).toHaveURL(new RegExp(`/cases/${caseId}/closed`), {
+      timeout: 10_000,
+    });
   });
 });
 
@@ -511,9 +497,7 @@ test.describe("Solo mode — take a break path", () => {
     await expect(dialogContent).not.toBeVisible({ timeout: 5_000 });
 
     // Should still be on the joint chat page (case remains JOINT_ACTIVE)
-    await expect(pageA).toHaveURL(
-      new RegExp(`/cases/${breakCaseId}/joint`),
-    );
+    await expect(pageA).toHaveURL(new RegExp(`/cases/${breakCaseId}/joint`));
   });
 });
 
@@ -573,8 +557,6 @@ test.describe("Solo mode — reject closure proposal", () => {
     await expect(bannerText).not.toBeVisible({ timeout: 5_000 });
 
     // Case should remain JOINT_ACTIVE — still on the joint chat page
-    await expect(pageA).toHaveURL(
-      new RegExp(`/cases/${rejectCaseId}/joint`),
-    );
+    await expect(pageA).toHaveURL(new RegExp(`/cases/${rejectCaseId}/joint`));
   });
 });

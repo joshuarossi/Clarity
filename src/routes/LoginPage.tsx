@@ -41,7 +41,11 @@ export function LoginPage(): React.ReactElement {
       await signIn("magic-link", { email });
       setMagicLinkSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send magic link. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to send magic link. Please try again.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -55,7 +59,11 @@ export function LoginPage(): React.ReactElement {
         window.location.href = result.redirect.toString();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Google sign-in failed. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Google sign-in failed. Please try again.",
+      );
     }
   }
 
@@ -77,7 +85,12 @@ export function LoginPage(): React.ReactElement {
         {magicLinkSent ? (
           <div role="status">
             <p>Check your email for a sign-in link.</p>
-            <p style={{ fontSize: "0.875rem", color: "var(--cc-text-muted, #6b7280)" }}>
+            <p
+              style={{
+                fontSize: "0.875rem",
+                color: "var(--cc-text-muted, #6b7280)",
+              }}
+            >
               We sent a magic link to <strong>{email}</strong>.
             </p>
           </div>
@@ -95,10 +108,21 @@ export function LoginPage(): React.ReactElement {
                   required
                   disabled={isLoading || submitting}
                   autoComplete="email"
-                  style={{ display: "block", width: "100%", marginTop: "0.25rem" }}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    marginTop: "0.25rem",
+                  }}
                 />
                 {error && (
-                  <p role="alert" style={{ color: "var(--cc-danger, #dc2626)", fontSize: "0.875rem", marginTop: "0.25rem" }}>
+                  <p
+                    role="alert"
+                    style={{
+                      color: "var(--cc-danger, #dc2626)",
+                      fontSize: "0.875rem",
+                      marginTop: "0.25rem",
+                    }}
+                  >
                     {error}
                   </p>
                 )}
@@ -122,7 +146,14 @@ export function LoginPage(): React.ReactElement {
               }}
             >
               <hr style={{ flex: 1 }} />
-              <span style={{ fontSize: "0.75rem", color: "var(--cc-text-muted, #6b7280)" }}>or</span>
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  color: "var(--cc-text-muted, #6b7280)",
+                }}
+              >
+                or
+              </span>
               <hr style={{ flex: 1 }} />
             </div>
 
@@ -136,7 +167,14 @@ export function LoginPage(): React.ReactElement {
               Continue with Google
             </Button>
 
-            <p style={{ fontSize: "0.75rem", color: "var(--cc-text-muted, #6b7280)", marginTop: "1.5rem", textAlign: "center" }}>
+            <p
+              style={{
+                fontSize: "0.75rem",
+                color: "var(--cc-text-muted, #6b7280)",
+                marginTop: "1.5rem",
+                textAlign: "center",
+              }}
+            >
               By signing in, you agree to our Terms and Privacy Policy
             </p>
           </>

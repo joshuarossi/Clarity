@@ -126,11 +126,12 @@ None. This module is a pure function operating on string status values and an op
 **Terminal statuses are absorbing.** CLOSED_RESOLVED, CLOSED_UNRESOLVED, and CLOSED_ABANDONED have no outbound transitions. Any attempt to transition from a terminal status throws CONFLICT. This is a consequence of those statuses not appearing as a `from` value in any transition entry.
 
 **RESOLVE requires full closure confirmation.** The RESOLVE transition (JOINT_ACTIVE → CLOSED_RESOLVED) is the only transition that requires `context`. It validates:
+
 1. `context` is provided (throws CONFLICT if missing).
 2. `context.partyStates` has exactly 2 entries.
 3. Both entries have `closureProposed === true`.
 4. Both entries have `closureConfirmed === true`.
-If any condition fails, it throws CONFLICT with a message describing which precondition failed (e.g., "Cannot resolve: not all parties have confirmed closure").
+   If any condition fails, it throws CONFLICT with a message describing which precondition failed (e.g., "Cannot resolve: not all parties have confirmed closure").
 
 **Error shape matches TechSpec §7.4.** Errors are thrown as `new ConvexError({ code: "CONFLICT", message: "...", httpStatus: 409 })`. The message is human-readable and names both the current status and the attempted transition (e.g., `"Cannot transition from DRAFT_PRIVATE_COACHING via START_JOINT — transition is not allowed from this state"`). This error shape is compatible with the `convex/lib/errors.ts` helper from task T4, but this module constructs the error directly since T4 may not yet be implemented when this module ships (they are sibling tasks, both depending only on T1).
 
@@ -161,6 +162,7 @@ If any condition fails, it throws CONFLICT with a message describing which preco
 **AC 2 (all 7 legal transitions) → `tests/unit/stateMachine.test.ts` (unit).** Parameterized test (`test.each` or equivalent) with a tuple array of all 7 `[currentStatus, transition, expectedNewStatus]` entries. The RESOLVE case must also provide valid `ClosureContext`. Each call asserts the returned status matches the expected value and does not throw.
 
 **AC 3 (illegal transitions throw CONFLICT) → `tests/unit/stateMachine.test.ts` (unit).** Parameterized test with at least 5 illegal `[currentStatus, transition]` pairs:
+
 1. `DRAFT_PRIVATE_COACHING` + `START_JOINT` (skipping phases)
 2. `CLOSED_RESOLVED` + `ACCEPT_INVITE` (transition from terminal)
 3. `READY_FOR_JOINT` + `DECLINE_INVITE` (wrong source for this transition)
@@ -172,6 +174,7 @@ Each call asserts: throws, the thrown value is a `ConvexError`, the error's data
 **AC 4 (test coverage completeness) → covered by AC 2 + AC 3 parameterized tests.** No additional test file needed.
 
 **AC 5 (closure precondition) → `tests/unit/stateMachine.test.ts` (unit).** Three sub-cases:
+
 1. Call RESOLVE with no context → throws CONFLICT.
 2. Call RESOLVE with context where one party has `closureConfirmed: false` → throws CONFLICT.
 3. Call RESOLVE with context where both parties have `closureProposed: true, closureConfirmed: true` → returns `"CLOSED_RESOLVED"`.

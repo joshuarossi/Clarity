@@ -22,7 +22,9 @@ describe("AC1 — admin user with role ADMIN and known email", () => {
 
   it("creates exactly one user with the admin email after seeding", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     const users = await t.run(async (ctx) => {
       return ctx.db
@@ -36,7 +38,9 @@ describe("AC1 — admin user with role ADMIN and known email", () => {
 
   it("admin user has role 'ADMIN'", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     const users = await t.run(async (ctx) => {
       return ctx.db
@@ -57,7 +61,9 @@ describe("AC2 — 3 default templates: workplace, family, personal", () => {
 
   it("creates a template for each default category", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     for (const category of DEFAULT_CATEGORIES) {
       const templates = await t.run(async (ctx) => {
@@ -75,7 +81,9 @@ describe("AC2 — 3 default templates: workplace, family, personal", () => {
 
   it("each template has a non-null currentVersionId", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     for (const category of DEFAULT_CATEGORIES) {
       const templates = await t.run(async (ctx) => {
@@ -93,7 +101,9 @@ describe("AC2 — 3 default templates: workplace, family, personal", () => {
 
   it("each linked templateVersion has version 1 and non-empty globalGuidance", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     for (const category of DEFAULT_CATEGORIES) {
       const result = await t.run(async (ctx) => {
@@ -122,7 +132,9 @@ describe("AC2 — 3 default templates: workplace, family, personal", () => {
 
   it("each templateVersion has a publishedAt timestamp", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     const versions = await t.run(async (ctx) => {
       return ctx.db.query("templateVersions").collect();
@@ -136,7 +148,9 @@ describe("AC2 — 3 default templates: workplace, family, personal", () => {
 
   it("each template's createdByUserId references the admin user", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     const adminUser = await t.run(async (ctx) => {
       const users = await ctx.db
@@ -157,7 +171,9 @@ describe("AC2 — 3 default templates: workplace, family, personal", () => {
 
   it("each templateVersion's publishedByUserId references the admin user", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     const adminUser = await t.run(async (ctx) => {
       const users = await ctx.db
@@ -182,8 +198,12 @@ describe("AC2 — 3 default templates: workplace, family, personal", () => {
 describe("AC3 — seed is idempotent (no duplicates on second run)", () => {
   it("running seed twice yields exactly 1 admin user", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     const users = await t.run(async (ctx) => {
       return ctx.db
@@ -196,8 +216,12 @@ describe("AC3 — seed is idempotent (no duplicates on second run)", () => {
 
   it("running seed twice yields exactly 3 templates (not 6)", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     const templates = await t.run(async (ctx) => {
       return ctx.db.query("templates").collect();
@@ -207,8 +231,12 @@ describe("AC3 — seed is idempotent (no duplicates on second run)", () => {
 
   it("running seed twice yields exactly 3 template versions (not 6)", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     const versions = await t.run(async (ctx) => {
       return ctx.db.query("templateVersions").collect();
@@ -218,7 +246,9 @@ describe("AC3 — seed is idempotent (no duplicates on second run)", () => {
 
   it("second seed run does not alter the admin user's data", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     const userBefore = await t.run(async (ctx) => {
       const users = await ctx.db
@@ -228,7 +258,9 @@ describe("AC3 — seed is idempotent (no duplicates on second run)", () => {
       return users[0];
     });
 
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     const userAfter = await t.run(async (ctx) => {
       const users = await ctx.db
@@ -259,7 +291,11 @@ describe("AC4 — seed throws in production environment", () => {
   it("throws an error when IS_PRODUCTION is 'true'", async () => {
     process.env.IS_PRODUCTION = "true";
     const t = convexTest(schema);
-    await expect(t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); })).rejects.toThrow();
+    await expect(
+      t.run(async (ctx) => {
+        await ctx.runMutation(internal.seed.seed, {});
+      }),
+    ).rejects.toThrow();
   });
 
   it("users table remains empty after production-guarded rejection", async () => {
@@ -267,7 +303,9 @@ describe("AC4 — seed throws in production environment", () => {
     const t = convexTest(schema);
 
     try {
-      await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+      await t.run(async (ctx) => {
+        await ctx.runMutation(internal.seed.seed, {});
+      });
     } catch {
       // expected — production guard
     }
@@ -283,7 +321,9 @@ describe("AC4 — seed throws in production environment", () => {
     const t = convexTest(schema);
 
     try {
-      await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+      await t.run(async (ctx) => {
+        await ctx.runMutation(internal.seed.seed, {});
+      });
     } catch {
       // expected — production guard
     }
@@ -297,7 +337,9 @@ describe("AC4 — seed throws in production environment", () => {
   it("succeeds when IS_PRODUCTION is unset", async () => {
     delete process.env.IS_PRODUCTION;
     const t = convexTest(schema);
-    await t.run(async (ctx) => { await ctx.runMutation(internal.seed.seed, {}); });
+    await t.run(async (ctx) => {
+      await ctx.runMutation(internal.seed.seed, {});
+    });
 
     const users = await t.run(async (ctx) => {
       return ctx.db.query("users").collect();

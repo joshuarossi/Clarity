@@ -28,9 +28,12 @@ test.describe("Draft Coach Panel — layout and open/close", () => {
     authenticatedPage: page,
   }) => {
     await page.goto(`/cases/${caseId}/joint`);
-    await page.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await page.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     // Click "Draft with Coach" to open the panel
     const draftButton = page.getByRole("button", { name: /draft with coach/i });
@@ -59,9 +62,12 @@ test.describe("Draft Coach Panel — layout and open/close", () => {
     authenticatedPage: page,
   }) => {
     await page.goto(`/cases/${caseId}/joint`);
-    await page.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await page.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     const draftButton = page.getByRole("button", { name: /draft with coach/i });
     await draftButton.click();
@@ -99,9 +105,12 @@ test.describe("Draft Coach Panel — mobile bottom sheet", () => {
     // Set mobile viewport (< 768px)
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto(`/cases/${caseId}/joint`);
-    await page.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await page.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     const draftButton = page.getByRole("button", { name: /draft with coach/i });
     await draftButton.click();
@@ -136,9 +145,12 @@ test.describe("Draft Coach Panel — header elements", () => {
     authenticatedPage: page,
   }) => {
     await page.goto(`/cases/${caseId}/joint`);
-    await page.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await page.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     const draftButton = page.getByRole("button", { name: /draft with coach/i });
     await draftButton.click();
@@ -154,7 +166,9 @@ test.describe("Draft Coach Panel — header elements", () => {
     await expect(closeButton).toBeVisible();
 
     // Lock icon (check for aria-label or title on the lock element)
-    const lockIcon = panel.locator("[aria-label*='private'], [aria-label*='lock'], [title*=\"can't see\"]");
+    const lockIcon = panel.locator(
+      "[aria-label*='private'], [aria-label*='lock'], [title*=\"can't see\"]",
+    );
     await expect(lockIcon.first()).toBeVisible();
   });
 });
@@ -178,9 +192,12 @@ test.describe("Draft Coach Panel — privacy banner", () => {
     authenticatedPage: page,
   }) => {
     await page.goto(`/cases/${caseId}/joint`);
-    await page.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await page.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     const draftButton = page.getByRole("button", { name: /draft with coach/i });
     await draftButton.click();
@@ -217,9 +234,12 @@ test.describe("Draft Coach Panel — coaching conversation", () => {
     authenticatedPage: page,
   }) => {
     await page.goto(`/cases/${caseId}/joint`);
-    await page.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await page.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     const draftButton = page.getByRole("button", { name: /draft with coach/i });
     await draftButton.click();
@@ -266,9 +286,12 @@ test.describe("Draft Coach Panel — Draft it for me", () => {
     authenticatedPage: page,
   }) => {
     await page.goto(`/cases/${caseId}/joint`);
-    await page.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await page.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     const draftButton = page.getByRole("button", { name: /draft with coach/i });
     await draftButton.click();
@@ -277,7 +300,9 @@ test.describe("Draft Coach Panel — Draft it for me", () => {
     await expect(panel).toBeVisible({ timeout: 5_000 });
 
     // Click "Draft it for me" button
-    const draftItButton = panel.getByRole("button", { name: /draft it for me/i });
+    const draftItButton = panel.getByRole("button", {
+      name: /draft it for me/i,
+    });
     await draftItButton.click();
 
     // Wait for DraftReadyCard to appear (AI generates the draft)
@@ -285,9 +310,15 @@ test.describe("Draft Coach Panel — Draft it for me", () => {
     await expect(draftReadyCard).toBeVisible({ timeout: 30_000 });
 
     // Should show all 4 action buttons
-    await expect(panel.getByRole("button", { name: /send this message/i })).toBeVisible();
-    await expect(panel.getByRole("button", { name: /edit before sending/i })).toBeVisible();
-    await expect(panel.getByRole("button", { name: /keep refining with coach/i })).toBeVisible();
+    await expect(
+      panel.getByRole("button", { name: /send this message/i }),
+    ).toBeVisible();
+    await expect(
+      panel.getByRole("button", { name: /edit before sending/i }),
+    ).toBeVisible();
+    await expect(
+      panel.getByRole("button", { name: /keep refining with coach/i }),
+    ).toBeVisible();
     await expect(panel.getByRole("button", { name: /discard/i })).toBeVisible();
   });
 });
@@ -312,9 +343,12 @@ test.describe("Draft Coach Panel — Send this message (send-gate)", () => {
     authenticatedPage: page,
   }) => {
     await page.goto(`/cases/${caseId}/joint`);
-    await page.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await page.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     // Open Draft Coach panel
     const openButton = page.getByRole("button", { name: /draft with coach/i });
@@ -324,7 +358,9 @@ test.describe("Draft Coach Panel — Send this message (send-gate)", () => {
     await expect(panel).toBeVisible({ timeout: 5_000 });
 
     // Trigger draft generation
-    const draftItButton = panel.getByRole("button", { name: /draft it for me/i });
+    const draftItButton = panel.getByRole("button", {
+      name: /draft it for me/i,
+    });
     await draftItButton.click();
 
     // Wait for DraftReadyCard
@@ -335,7 +371,9 @@ test.describe("Draft Coach Panel — Send this message (send-gate)", () => {
     const draftText = await draftReadyCard.textContent();
 
     // Click "Send this message"
-    const sendButton = panel.getByRole("button", { name: /send this message/i });
+    const sendButton = panel.getByRole("button", {
+      name: /send this message/i,
+    });
     await sendButton.click();
 
     // Panel should close
@@ -343,7 +381,9 @@ test.describe("Draft Coach Panel — Send this message (send-gate)", () => {
 
     // The draft message should now appear in the joint chat
     // (look in the main chat window, not the panel)
-    const jointChat = page.locator("[data-testid='chat-window'], [class*='chat-window']").first();
+    const jointChat = page
+      .locator("[data-testid='chat-window'], [class*='chat-window']")
+      .first();
     // The draft text (trimmed of button labels) should be present in joint chat
     expect(draftText).not.toBeNull();
     // At least part of the draft should show up in the joint chat
@@ -372,9 +412,12 @@ test.describe("Draft Coach Panel — Edit before sending", () => {
     authenticatedPage: page,
   }) => {
     await page.goto(`/cases/${caseId}/joint`);
-    await page.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await page.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     // Open Draft Coach
     const openButton = page.getByRole("button", { name: /draft with coach/i });
@@ -384,14 +427,18 @@ test.describe("Draft Coach Panel — Edit before sending", () => {
     await expect(panel).toBeVisible({ timeout: 5_000 });
 
     // Generate a draft
-    const draftItButton = panel.getByRole("button", { name: /draft it for me/i });
+    const draftItButton = panel.getByRole("button", {
+      name: /draft it for me/i,
+    });
     await draftItButton.click();
 
     const draftReadyCard = panel.locator(".cc-draft-ready");
     await expect(draftReadyCard).toBeVisible({ timeout: 30_000 });
 
     // Click "Edit before sending"
-    const editButton = panel.getByRole("button", { name: /edit before sending/i });
+    const editButton = panel.getByRole("button", {
+      name: /edit before sending/i,
+    });
     await editButton.click();
 
     // Panel should close
@@ -423,9 +470,12 @@ test.describe("Draft Coach Panel — Keep refining", () => {
     authenticatedPage: page,
   }) => {
     await page.goto(`/cases/${caseId}/joint`);
-    await page.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await page.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     const openButton = page.getByRole("button", { name: /draft with coach/i });
     await openButton.click();
@@ -434,14 +484,18 @@ test.describe("Draft Coach Panel — Keep refining", () => {
     await expect(panel).toBeVisible({ timeout: 5_000 });
 
     // Generate a draft
-    const draftItButton = panel.getByRole("button", { name: /draft it for me/i });
+    const draftItButton = panel.getByRole("button", {
+      name: /draft it for me/i,
+    });
     await draftItButton.click();
 
     const draftReadyCard = panel.locator(".cc-draft-ready");
     await expect(draftReadyCard).toBeVisible({ timeout: 30_000 });
 
     // Click "Keep refining with Coach"
-    const refineButton = panel.getByRole("button", { name: /keep refining with coach/i });
+    const refineButton = panel.getByRole("button", {
+      name: /keep refining with coach/i,
+    });
     await refineButton.click();
 
     // Panel should remain open
@@ -476,13 +530,20 @@ test.describe("Draft Coach Panel — Discard", () => {
     authenticatedPage: page,
   }) => {
     await page.goto(`/cases/${caseId}/joint`);
-    await page.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await page.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     // Count current joint chat messages before opening Draft Coach
-    const jointChat = page.locator("[data-testid='chat-window'], [class*='chat-window']").first();
-    const messageCountBefore = await jointChat.locator("[class*='bubble']").count();
+    const jointChat = page
+      .locator("[data-testid='chat-window'], [class*='chat-window']")
+      .first();
+    const messageCountBefore = await jointChat
+      .locator("[class*='bubble']")
+      .count();
 
     // Open Draft Coach
     const openButton = page.getByRole("button", { name: /draft with coach/i });
@@ -492,7 +553,9 @@ test.describe("Draft Coach Panel — Discard", () => {
     await expect(panel).toBeVisible({ timeout: 5_000 });
 
     // Generate a draft
-    const draftItButton = panel.getByRole("button", { name: /draft it for me/i });
+    const draftItButton = panel.getByRole("button", {
+      name: /draft it for me/i,
+    });
     await draftItButton.click();
 
     const draftReadyCard = panel.locator(".cc-draft-ready");
@@ -506,7 +569,9 @@ test.describe("Draft Coach Panel — Discard", () => {
     await expect(panel).not.toBeVisible({ timeout: 5_000 });
 
     // No new message should have been posted to joint chat
-    const messageCountAfter = await jointChat.locator("[class*='bubble']").count();
+    const messageCountAfter = await jointChat
+      .locator("[class*='bubble']")
+      .count();
     expect(messageCountAfter).toBe(messageCountBefore);
   });
 });
@@ -530,9 +595,12 @@ test.describe("Draft Coach Panel — focus management", () => {
     authenticatedPage: page,
   }) => {
     await page.goto(`/cases/${caseId}/joint`);
-    await page.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await page.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     const openButton = page.getByRole("button", { name: /draft with coach/i });
     await openButton.click();

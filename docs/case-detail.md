@@ -21,12 +21,12 @@ private coaching redirects to `/private`).
 
 ## Status → Subview mapping
 
-| Case Status                                        | Rendered View         |
-|----------------------------------------------------|-----------------------|
-| `DRAFT_PRIVATE_COACHING` / `BOTH_PRIVATE_COACHING` | PrivateCoachingView   |
-| `READY_FOR_JOINT`                                  | ReadyForJointView     |
-| `JOINT_ACTIVE`                                     | JointChatView         |
-| `CLOSED_RESOLVED` / `CLOSED_UNRESOLVED` / `CLOSED_ABANDONED` | ClosedCaseView |
+| Case Status                                                  | Rendered View       |
+| ------------------------------------------------------------ | ------------------- |
+| `DRAFT_PRIVATE_COACHING` / `BOTH_PRIVATE_COACHING`           | PrivateCoachingView |
+| `READY_FOR_JOINT`                                            | ReadyForJointView   |
+| `JOINT_ACTIVE`                                               | JointChatView       |
+| `CLOSED_RESOLVED` / `CLOSED_UNRESOLVED` / `CLOSED_ABANDONED` | ClosedCaseView      |
 
 ## Invitee perspective form
 
@@ -66,10 +66,10 @@ When the case status is `CLOSED_RESOLVED`, `CLOSED_UNRESOLVED`, or
   prominently below the header.
 - **Banner:** "This case is closed. No new messages can be added."
 - **Tabbed content:** Three tabs controlled via URL search param (`?tab=`):
-  - *Joint Chat* — full read-only transcript (no input bar or send button).
-  - *My Private Coaching* — the authenticated user's private coaching
+  - _Joint Chat_ — full read-only transcript (no input bar or send button).
+  - _My Private Coaching_ — the authenticated user's private coaching
     messages only.
-  - *My Guidance* — the user's synthesis document.
+  - _My Guidance_ — the user's synthesis document.
 
 ### Privacy
 

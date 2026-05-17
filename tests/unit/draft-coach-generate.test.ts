@@ -257,9 +257,7 @@ describe("generateResponse — prompt assembly (DRAFT_COACH role)", () => {
     const messages = await t.run(async (ctx) =>
       ctx.db
         .query("draftMessages")
-        .withIndex("by_draft_session", (q) =>
-          q.eq("draftSessionId", sessionId),
-        )
+        .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
         .collect(),
     );
 
@@ -364,8 +362,7 @@ describe("generateResponse — template instructions", () => {
       recentHistory: [{ role: "user", content: "Help" }],
       templateVersion: {
         globalGuidance: "Global fallback guidance",
-        draftCoachInstructions:
-          "Category-specific draft coaching instructions",
+        draftCoachInstructions: "Category-specific draft coaching instructions",
       },
       context: {},
     });
@@ -426,9 +423,7 @@ describe("generateResponse — template instructions", () => {
     const messages = await t.run(async (ctx) =>
       ctx.db
         .query("draftMessages")
-        .withIndex("by_draft_session", (q) =>
-          q.eq("draftSessionId", sessionId),
-        )
+        .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
         .collect(),
     );
 
@@ -594,9 +589,7 @@ describe("generateResponse — readiness produces finalDraft AND stores AI messa
     const messages = await t.run(async (ctx) =>
       ctx.db
         .query("draftMessages")
-        .withIndex("by_draft_session", (q) =>
-          q.eq("draftSessionId", sessionId),
-        )
+        .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
         .collect(),
     );
 
@@ -643,9 +636,7 @@ describe("generateResponse — non-readiness turns", () => {
     const messages = await t.run(async (ctx) =>
       ctx.db
         .query("draftMessages")
-        .withIndex("by_draft_session", (q) =>
-          q.eq("draftSessionId", sessionId),
-        )
+        .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
         .collect(),
     );
 
@@ -721,9 +712,7 @@ describe("generateResponse — streaming lifecycle", () => {
     const messages = await t.run(async (ctx) =>
       ctx.db
         .query("draftMessages")
-        .withIndex("by_draft_session", (q) =>
-          q.eq("draftSessionId", sessionId),
-        )
+        .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
         .collect(),
     );
 
@@ -764,9 +753,7 @@ describe("generateResponse — streaming lifecycle", () => {
     const messages = await t.run(async (ctx) =>
       ctx.db
         .query("draftMessages")
-        .withIndex("by_draft_session", (q) =>
-          q.eq("draftSessionId", sessionId),
-        )
+        .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
         .collect(),
     );
 
@@ -811,9 +798,7 @@ describe("generateResponse — streaming lifecycle", () => {
     const messages = await t.run(async (ctx) =>
       ctx.db
         .query("draftMessages")
-        .withIndex("by_draft_session", (q) =>
-          q.eq("draftSessionId", sessionId),
-        )
+        .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
         .collect(),
     );
 
@@ -936,9 +921,7 @@ describe("generateResponse — error handling", () => {
     const messages = await t.run(async (ctx) =>
       ctx.db
         .query("draftMessages")
-        .withIndex("by_draft_session", (q) =>
-          q.eq("draftSessionId", sessionId),
-        )
+        .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
         .collect(),
     );
 
@@ -979,9 +962,7 @@ describe("generateResponse — error handling", () => {
     const messages = await t.run(async (ctx) =>
       ctx.db
         .query("draftMessages")
-        .withIndex("by_draft_session", (q) =>
-          q.eq("draftSessionId", sessionId),
-        )
+        .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
         .collect(),
     );
 
@@ -1017,9 +998,7 @@ describe("insertStreamingDraftMessage", () => {
     const messages = await t.run(async (ctx) =>
       ctx.db
         .query("draftMessages")
-        .withIndex("by_draft_session", (q) =>
-          q.eq("draftSessionId", sessionId),
-        )
+        .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
         .collect(),
     );
 
@@ -1188,21 +1167,17 @@ describe("retryLastDraftAIResponse", () => {
       return sId;
     });
 
-    await t
-      .withIdentity({ email: "partyA@test.com" })
-      .run(async (ctx) =>
-        ctx.runMutation(api.draftCoach.retryLastDraftAIResponse, {
-          sessionId,
-        }),
-      );
+    await t.withIdentity({ email: "partyA@test.com" }).run(async (ctx) =>
+      ctx.runMutation(api.draftCoach.retryLastDraftAIResponse, {
+        sessionId,
+      }),
+    );
 
     // ERROR message should be deleted
     const messages = await t.run(async (ctx) =>
       ctx.db
         .query("draftMessages")
-        .withIndex("by_draft_session", (q) =>
-          q.eq("draftSessionId", sessionId),
-        )
+        .withIndex("by_draft_session", (q) => q.eq("draftSessionId", sessionId))
         .collect(),
     );
 

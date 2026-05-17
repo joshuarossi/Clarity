@@ -1,11 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import {
-  render,
-  cleanup,
-  screen,
-  fireEvent,
-} from "@testing-library/react";
+import { render, cleanup, screen, fireEvent } from "@testing-library/react";
 import { PartyToggle } from "../../src/components/layout/PartyToggle";
 
 afterEach(cleanup);
@@ -19,9 +14,7 @@ interface PartyToggleProps {
   onToggle: (party: "initiator" | "invitee") => void;
 }
 
-function defaultProps(
-  overrides?: Partial<PartyToggleProps>,
-): PartyToggleProps {
+function defaultProps(overrides?: Partial<PartyToggleProps>): PartyToggleProps {
   return {
     initiatorName: "Alex (Initiator)",
     inviteeName: "Alex (Invitee)",
@@ -186,9 +179,10 @@ vi.mock("convex/react", () => ({
 }));
 
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>(
-    "react-router-dom",
-  );
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
   return {
     ...actual,
     useNavigate: () => mockNavigate,

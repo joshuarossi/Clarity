@@ -21,22 +21,22 @@ Providers are nested in `src/main.tsx` in this order:
 
 Defined in `src/App.tsx`:
 
-| Path                          | Guard       | Description               |
-| ----------------------------- | ----------- | ------------------------- |
-| `/`                           | public      | Landing / home page       |
-| `/login`                      | public      | Login (redirects to dashboard if already signed in) |
-| `/invite/:token`              | public      | Party invite acceptance   |
-| `/profile`                    | auth        | User profile / sign-out   |
-| `/dashboard`                  | auth        | Case list with status indicators (post-login home) |
-| `/cases/new`                  | auth        | Create a new case         |
-| `/cases/:caseId`              | auth        | Case detail               |
-| `/cases/:caseId/private`      | auth        | Private coaching session  |
-| `/cases/:caseId/joint`        | auth        | Joint session             |
-| `/cases/:caseId/closed`       | auth        | Closed case view          |
-| `/admin/templates`            | admin       | Prompt template list      |
-| `/admin/templates/:id`        | admin       | Prompt template editor    |
-| `/admin/audit`                | admin       | Audit log                 |
-| `*`                           | —           | 404 fallback              |
+| Path                     | Guard  | Description                                         |
+| ------------------------ | ------ | --------------------------------------------------- |
+| `/`                      | public | Landing / home page                                 |
+| `/login`                 | public | Login (redirects to dashboard if already signed in) |
+| `/invite/:token`         | public | Party invite acceptance                             |
+| `/profile`               | auth   | User profile / sign-out                             |
+| `/dashboard`             | auth   | Case list with status indicators (post-login home)  |
+| `/cases/new`             | auth   | Create a new case                                   |
+| `/cases/:caseId`         | auth   | Case detail                                         |
+| `/cases/:caseId/private` | auth   | Private coaching session                            |
+| `/cases/:caseId/joint`   | auth   | Joint session                                       |
+| `/cases/:caseId/closed`  | auth   | Closed case view                                    |
+| `/admin/templates`       | admin  | Prompt template list                                |
+| `/admin/templates/:id`   | admin  | Prompt template editor                              |
+| `/admin/audit`           | admin  | Audit log                                           |
+| `*`                      | —      | 404 fallback                                        |
 
 ### Route Guards
 
@@ -67,6 +67,6 @@ message. See [Error Handling](errors.md) for the backend error codes.
 
 ## Environment Variables
 
-| Variable          | Required | Description                          |
-| ----------------- | -------- | ------------------------------------ |
+| Variable          | Required | Description                                |
+| ----------------- | -------- | ------------------------------------------ |
 | `VITE_CONVEX_URL` | yes      | Convex deployment URL used by the provider |

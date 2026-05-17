@@ -7,11 +7,14 @@ const USER_MESSAGES: Record<ErrorCode, string> = {
   UNAUTHENTICATED: "Please sign in to continue.",
   FORBIDDEN: "You don't have permission to perform this action.",
   NOT_FOUND: "The requested resource could not be found.",
-  CONFLICT: "This action conflicts with the current state. Please refresh and try again.",
-  INVALID_INPUT: "The provided input is invalid. Please check your entries and try again.",
+  CONFLICT:
+    "This action conflicts with the current state. Please refresh and try again.",
+  INVALID_INPUT:
+    "The provided input is invalid. Please check your entries and try again.",
   TOKEN_INVALID: "This link is no longer valid. Please request a new one.",
   RATE_LIMITED: "Too many requests. Please wait a moment and try again.",
-  AI_ERROR: "The AI service is temporarily unavailable. Please try again shortly.",
+  AI_ERROR:
+    "The AI service is temporarily unavailable. Please try again shortly.",
   INTERNAL: "Something went wrong. Please try again.",
 };
 
@@ -31,5 +34,8 @@ export function handleConvexError(error: unknown): ErrorMessage {
       return { code, message: USER_MESSAGES[code] };
     }
   }
-  return { code: "INTERNAL", message: "Something went wrong. Please try again." };
+  return {
+    code: "INTERNAL",
+    message: "Something went wrong. Please try again.",
+  };
 }

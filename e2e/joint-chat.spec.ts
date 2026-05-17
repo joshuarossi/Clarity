@@ -37,12 +37,18 @@ test.describe("Joint Chat — real-time message propagation (E2E)", () => {
     await pageB.goto(`/cases/${caseId}/joint`);
 
     // Wait for both pages to load the chat view
-    await pageA.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
-    await pageB.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await pageA.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
+    await pageB.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     // Party A types and sends a message
     const messageContent = `Test propagation message ${Date.now()}`;
@@ -72,12 +78,18 @@ test.describe("Joint Chat — real-time message propagation (E2E)", () => {
     await pageB.goto(`/cases/${caseId}/joint`);
 
     // Wait for chat to load
-    await pageA.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
-    await pageB.waitForSelector("[data-testid='chat-window'], [class*='chat-window']", {
-      timeout: 10_000,
-    });
+    await pageA.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
+    await pageB.waitForSelector(
+      "[data-testid='chat-window'], [class*='chat-window']",
+      {
+        timeout: 10_000,
+      },
+    );
 
     // Send a message from Party A to trigger Coach response
     const textareaA = pageA.getByRole("textbox");

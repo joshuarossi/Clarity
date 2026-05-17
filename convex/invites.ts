@@ -100,17 +100,13 @@ export const decline = mutation({
 
     // 2. Validate status is ACTIVE
     if (!inviteToken || inviteToken.status !== "ACTIVE") {
-      throw tokenInvalid(
-        "Invite token is invalid or has already been used",
-      );
+      throw tokenInvalid("Invite token is invalid or has already been used");
     }
 
     // 3. Load the case
     const caseDoc = await ctx.db.get(inviteToken.caseId);
     if (!caseDoc) {
-      throw tokenInvalid(
-        "Invite token is invalid or has already been used",
-      );
+      throw tokenInvalid("Invite token is invalid or has already been used");
     }
 
     // 4. Prevent self-decline
@@ -193,17 +189,13 @@ export const redeem = mutation({
 
     // 2. Validate status is ACTIVE
     if (!inviteToken || inviteToken.status !== "ACTIVE") {
-      throw tokenInvalid(
-        "Invite token is invalid or has already been used",
-      );
+      throw tokenInvalid("Invite token is invalid or has already been used");
     }
 
     // 3. Load the case
     const caseDoc = await ctx.db.get(inviteToken.caseId);
     if (!caseDoc) {
-      throw tokenInvalid(
-        "Invite token is invalid or has already been used",
-      );
+      throw tokenInvalid("Invite token is invalid or has already been used");
     }
 
     // 4. Prevent self-redeem
