@@ -17,6 +17,9 @@ build/
 # without running `npx convex codegen` first. Re-run codegen and commit
 # the diff whenever the schema or functions change.
 
+# TypeScript build info
+*.tsbuildinfo
+
 # IDE / OS
 .DS_Store
 .vscode/
