@@ -1,6 +1,6 @@
 # Joint Chat API
 
-> Module: `convex/jointChat.ts` · Tickets: WOR-124, WOR-125, WOR-144, WOR-145, WOR-146
+> Module: `convex/jointChat.ts` · Tickets: WOR-124, WOR-125, WOR-144, WOR-145, WOR-146, WOR-148
 
 ## Overview
 
@@ -94,6 +94,9 @@ proposal without ending the session.
 
 Immediately transitions the case to `CLOSED_UNRESOLVED` via the state
 machine. Either party can invoke this at any time during `JOINT_ACTIVE`.
+A `notifications` record of type `CASE_CLOSED_UNRESOLVED` is inserted for
+the other party (unless the invitee never joined, in which case no
+notification is created).
 
 | Arg | Type | Description |
 |-----|------|-------------|
