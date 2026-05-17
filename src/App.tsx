@@ -16,6 +16,7 @@ import { JointChatView } from "./routes/JointChatView";
 import { ClosedCaseView } from "./routes/ClosedCaseView";
 import { AdminTemplatesPage } from "./routes/AdminTemplatesPage";
 import { AdminTemplateEditPage } from "./routes/AdminTemplateEditPage";
+import { AdminTemplateCreatePage } from "./routes/AdminTemplateCreatePage";
 import { AdminAuditLogPage } from "./routes/AdminAuditLogPage";
 import { LandingPage } from "./routes/LandingPage";
 
@@ -75,6 +76,7 @@ function AppLayout() {
         <Route path="/cases/:caseId/joint" element={<ProtectedRoute><JointChatView /></ProtectedRoute>} />
         <Route path="/cases/:caseId/closed" element={<ProtectedRoute><ClosedCaseView /></ProtectedRoute>} />
         <Route path="/admin/templates" element={<AdminRoute><AdminTemplatesPage /></AdminRoute>} />
+        <Route path="/admin/templates/new" element={<AdminRoute><AdminTemplateCreatePage /></AdminRoute>} />
         <Route path="/admin/templates/:id" element={<AdminRoute><AdminTemplateEditPage /></AdminRoute>} />
         <Route path="/admin/audit" element={<AdminRoute><AdminAuditLogPage /></AdminRoute>} />
         <Route path="*" element={<NotFoundPage />} />

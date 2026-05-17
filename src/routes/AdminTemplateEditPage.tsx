@@ -18,14 +18,22 @@ export function AdminTemplateEditPage(): React.ReactElement {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
+  // Defensive guard: if routing order is ever changed and "new" leaks through
+  // as a param, redirect to the dedicated create page instead of white-screening.
+  React.useEffect(() => {
+    if (id === "new") {
+      navigate("/admin/templates/new", { replace: true });
+    }
+  }, [id, navigate]);
+
   const templateId = id as Id<"templates">;
   const template = useQuery(
     api.admin.get,
-    id ? { templateId } : "skip"
+    id && id !== "new" ? { templateId } : "skip"
   );
   const versions = useQuery(
     api.admin.listVersions,
-    id ? { templateId } : "skip"
+    id && id !== "new" ? { templateId } : "skip"
   );
 
   const publishNewVersion = useMutation(api.admin.publishNewVersion);

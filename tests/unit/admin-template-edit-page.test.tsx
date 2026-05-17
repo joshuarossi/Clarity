@@ -261,6 +261,52 @@ describe("AC: Publish New Version button behavior", () => {
   });
 });
 
+// ── AC5 (WOR-143): Existing edit flow for valid IDs continues to work — no
+//    regression from the /admin/templates/new routing fix ─────────────────
+
+describe("AC5: Edit page with valid ID works correctly (regression guard)", () => {
+  it("calls useQuery to load template data for a valid ID", () => {
+    renderPage();
+
+    expect(mockUseQuery).toHaveBeenCalled();
+  });
+
+  it("pre-populates Global Guidance with current version value", () => {
+    renderPage();
+
+    const textarea = screen.getByLabelText(/global guidance/i);
+    expect(textarea).toHaveProperty(
+      "value",
+      "Help parties identify shared goals and communicate clearly.",
+    );
+  });
+
+  it("pre-populates Coach Instructions with current version value", () => {
+    renderPage();
+
+    const textarea = screen.getByLabelText(/^coach instructions$/i);
+    expect(textarea).toHaveProperty(
+      "value",
+      "Focus on active listening techniques.",
+    );
+  });
+
+  it("renders the template name and category", () => {
+    renderPage();
+
+    expect(screen.getByText("Conflict Resolution Guide")).toBeDefined();
+    expect(screen.getByText("workplace")).toBeDefined();
+  });
+
+  it("renders the Publish New Version button (edit controls available)", () => {
+    renderPage();
+
+    expect(
+      screen.getByRole("button", { name: /publish new version/i }),
+    ).toBeDefined();
+  });
+});
+
 // ── AC: No input controls if template is archived ────────────────────────
 
 describe("Archived template shows no edit controls", () => {
