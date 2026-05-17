@@ -1167,7 +1167,7 @@ describe("retryLastDraftAIResponse", () => {
       return sId;
     });
 
-    await t.withIdentity({ email: "partyA@test.com" }).run(async (ctx) =>
+    await t.withIdentity({ subject: userAId }).run(async (ctx) =>
       ctx.runMutation(api.draftCoach.retryLastDraftAIResponse, {
         sessionId,
       }),

@@ -119,10 +119,10 @@ async function seedGetForCaseEnv() {
 
 describe("invites/getForCase — successful retrieval", () => {
   it("returns token and url for an active invite when called by the initiator", async () => {
-    const { t, caseId, tokenString } = await seedGetForCaseEnv();
+    const { t, initiatorId, caseId, tokenString } = await seedGetForCaseEnv();
 
     const result = await t
-      .withIdentity({ email: "initiator@test.com" })
+      .withIdentity({ subject: initiatorId })
       .run(async (ctx) => ctx.runQuery(anyApi.invites.getForCase, { caseId }));
 
     expect(result).not.toBeNull();
@@ -135,7 +135,7 @@ describe("invites/getForCase — successful retrieval", () => {
 
 describe("invites/getForCase — consumed token", () => {
   it("returns null when the invite token has been consumed", async () => {
-    const { t, caseId, tokenId, nonInitiatorId } = await seedGetForCaseEnv();
+    const { t, initiatorId, caseId, tokenId, nonInitiatorId } = await seedGetForCaseEnv();
 
     // Mark the token as consumed
     await t.run(async (ctx) =>
@@ -147,7 +147,7 @@ describe("invites/getForCase — consumed token", () => {
     );
 
     const result = await t
-      .withIdentity({ email: "initiator@test.com" })
+      .withIdentity({ subject: initiatorId })
       .run(async (ctx) => ctx.runQuery(anyApi.invites.getForCase, { caseId }));
 
     expect(result).toBeNull();
@@ -171,11 +171,11 @@ describe("invites/getForCase — auth enforcement", () => {
 
 describe("invites/getForCase — initiator-only access", () => {
   it("throws FORBIDDEN when called by a user who is not the case initiator", async () => {
-    const { t, caseId } = await seedGetForCaseEnv();
+    const { t, nonInitiatorId, caseId } = await seedGetForCaseEnv();
 
     await expectConvexError(
       t
-        .withIdentity({ email: "other@test.com" })
+        .withIdentity({ subject: nonInitiatorId })
         .run(async (ctx) =>
           ctx.runQuery(anyApi.invites.getForCase, { caseId }),
         ),

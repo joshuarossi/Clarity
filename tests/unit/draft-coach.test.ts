@@ -168,7 +168,7 @@ describe("draftCoach/session query", () => {
     });
 
     const result = await t
-      .withIdentity({ email: "partyA@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) => ctx.runQuery(draftCoachApi.session, { caseId }));
 
     expect(result).not.toBeNull();
@@ -178,10 +178,10 @@ describe("draftCoach/session query", () => {
   });
 
   it("returns null when no ACTIVE session exists", async () => {
-    const { t, caseId } = await seedJointActiveEnv();
+    const { t, userAId, caseId } = await seedJointActiveEnv();
 
     const result = await t
-      .withIdentity({ email: "partyA@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) => ctx.runQuery(draftCoachApi.session, { caseId }));
 
     expect(result).toBeNull();
@@ -201,7 +201,7 @@ describe("draftCoach/session query", () => {
     });
 
     const result = await t
-      .withIdentity({ email: "partyA@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) => ctx.runQuery(draftCoachApi.session, { caseId }));
 
     expect(result).toBeNull();
@@ -221,7 +221,7 @@ describe("draftCoach/session query", () => {
     });
 
     const result = await t
-      .withIdentity({ email: "partyA@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) => ctx.runQuery(draftCoachApi.session, { caseId }));
 
     expect(result).toBeNull();
@@ -235,7 +235,7 @@ describe("draftCoach/startSession mutation", () => {
     const { t, userAId, caseId } = await seedJointActiveEnv();
 
     const sessionId = await t
-      .withIdentity({ email: "partyA@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runMutation(draftCoachApi.startSession, { caseId }),
       );
@@ -290,7 +290,7 @@ describe("draftCoach/startSession mutation", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "partyA@test.com" })
+        .withIdentity({ subject: userAId })
         .run(async (ctx) =>
           ctx.runMutation(draftCoachApi.startSession, { caseId }),
         ),
@@ -316,7 +316,7 @@ describe("draftCoach/sendMessage mutation", () => {
     );
 
     const messageId = await t
-      .withIdentity({ email: "partyA@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runMutation(draftCoachApi.sendMessage, {
           sessionId,
@@ -373,7 +373,7 @@ describe("draftCoach/sendMessage mutation", () => {
     );
 
     await expectConvexError(
-      t.withIdentity({ email: "partyA@test.com" }).run(async (ctx) =>
+      t.withIdentity({ subject: userAId }).run(async (ctx) =>
         ctx.runMutation(draftCoachApi.sendMessage, {
           sessionId,
           content: "Should fail",
@@ -402,7 +402,7 @@ describe("draftCoach/sendFinalDraft mutation — happy path", () => {
     );
 
     const jointMessageId = await t
-      .withIdentity({ email: "partyA@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runMutation(draftCoachApi.sendFinalDraft, { sessionId }),
       );
@@ -475,7 +475,7 @@ describe("draftCoach/sendFinalDraft mutation — conflict", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "partyA@test.com" })
+        .withIdentity({ subject: userAId })
         .run(async (ctx) =>
           ctx.runMutation(draftCoachApi.sendFinalDraft, { sessionId }),
         ),
@@ -500,7 +500,7 @@ describe("draftCoach/sendFinalDraft mutation — conflict", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "partyA@test.com" })
+        .withIdentity({ subject: userAId })
         .run(async (ctx) =>
           ctx.runMutation(draftCoachApi.sendFinalDraft, { sessionId }),
         ),
@@ -526,7 +526,7 @@ describe("draftCoach/discardSession mutation", () => {
     );
 
     await t
-      .withIdentity({ email: "partyA@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runMutation(draftCoachApi.discardSession, { sessionId }),
       );
@@ -561,7 +561,7 @@ describe("draftCoach/discardSession mutation", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "partyA@test.com" })
+        .withIdentity({ subject: userAId })
         .run(async (ctx) =>
           ctx.runMutation(draftCoachApi.discardSession, { sessionId }),
         ),
@@ -574,7 +574,7 @@ describe("draftCoach/discardSession mutation", () => {
 
 describe("draftCoach privacy — session query enforces userId match", () => {
   it("returns null when User B queries User A's active draft session", async () => {
-    const { t, userAId, caseId } = await seedJointActiveEnv();
+    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
 
     // Create ACTIVE session for User A
     await t.run(async (ctx) => {
@@ -595,14 +595,14 @@ describe("draftCoach privacy — session query enforces userId match", () => {
 
     // User B (also a party on the case) queries — should get null
     const result = await t
-      .withIdentity({ email: "partyB@test.com" })
+      .withIdentity({ subject: userBId })
       .run(async (ctx) => ctx.runQuery(draftCoachApi.session, { caseId }));
 
     expect(result).toBeNull();
   });
 
   it("sendMessage throws FORBIDDEN when called by a different party on a session they don't own", async () => {
-    const { t, userAId, caseId } = await seedJointActiveEnv();
+    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
 
     // Create ACTIVE session for User A
     const sessionId = await t.run(async (ctx) =>
@@ -616,7 +616,7 @@ describe("draftCoach privacy — session query enforces userId match", () => {
 
     // User B tries to send a message on User A's session
     await expectConvexError(
-      t.withIdentity({ email: "partyB@test.com" }).run(async (ctx) =>
+      t.withIdentity({ subject: userBId }).run(async (ctx) =>
         ctx.runMutation(draftCoachApi.sendMessage, {
           sessionId,
           content: "Trying to hijack",
@@ -627,7 +627,7 @@ describe("draftCoach privacy — session query enforces userId match", () => {
   });
 
   it("sendFinalDraft throws FORBIDDEN when called by a different party", async () => {
-    const { t, userAId, caseId } = await seedJointActiveEnv();
+    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
 
     const sessionId = await t.run(async (ctx) =>
       ctx.db.insert("draftSessions", {
@@ -641,7 +641,7 @@ describe("draftCoach privacy — session query enforces userId match", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "partyB@test.com" })
+        .withIdentity({ subject: userBId })
         .run(async (ctx) =>
           ctx.runMutation(draftCoachApi.sendFinalDraft, { sessionId }),
         ),
@@ -650,7 +650,7 @@ describe("draftCoach privacy — session query enforces userId match", () => {
   });
 
   it("discardSession throws FORBIDDEN when called by a different party", async () => {
-    const { t, userAId, caseId } = await seedJointActiveEnv();
+    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
 
     const sessionId = await t.run(async (ctx) =>
       ctx.db.insert("draftSessions", {
@@ -663,7 +663,7 @@ describe("draftCoach privacy — session query enforces userId match", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "partyB@test.com" })
+        .withIdentity({ subject: userBId })
         .run(async (ctx) =>
           ctx.runMutation(draftCoachApi.discardSession, { sessionId }),
         ),
@@ -768,11 +768,11 @@ describe("all draftCoach functions enforce auth + party-to-case check", () => {
   describe("non-party calls throw FORBIDDEN", () => {
     it("session — non-party", async () => {
       const { t, caseId } = await seedJointActiveEnv();
-      await seedStranger(t);
+      const strangerId = await seedStranger(t);
 
       await expectConvexError(
         t
-          .withIdentity({ email: "stranger@test.com" })
+          .withIdentity({ subject: strangerId })
           .run(async (ctx) => ctx.runQuery(draftCoachApi.session, { caseId })),
         "FORBIDDEN",
       );
@@ -780,11 +780,11 @@ describe("all draftCoach functions enforce auth + party-to-case check", () => {
 
     it("startSession — non-party", async () => {
       const { t, caseId } = await seedJointActiveEnv();
-      await seedStranger(t);
+      const strangerId = await seedStranger(t);
 
       await expectConvexError(
         t
-          .withIdentity({ email: "stranger@test.com" })
+          .withIdentity({ subject: strangerId })
           .run(async (ctx) =>
             ctx.runMutation(draftCoachApi.startSession, { caseId }),
           ),
@@ -794,7 +794,7 @@ describe("all draftCoach functions enforce auth + party-to-case check", () => {
 
     it("sendMessage — non-party", async () => {
       const { t, userAId, caseId } = await seedJointActiveEnv();
-      await seedStranger(t);
+      const strangerId = await seedStranger(t);
 
       const sessionId = await t.run(async (ctx) =>
         ctx.db.insert("draftSessions", {
@@ -806,7 +806,7 @@ describe("all draftCoach functions enforce auth + party-to-case check", () => {
       );
 
       await expectConvexError(
-        t.withIdentity({ email: "stranger@test.com" }).run(async (ctx) =>
+        t.withIdentity({ subject: strangerId }).run(async (ctx) =>
           ctx.runMutation(draftCoachApi.sendMessage, {
             sessionId,
             content: "Test",
@@ -818,7 +818,7 @@ describe("all draftCoach functions enforce auth + party-to-case check", () => {
 
     it("sendFinalDraft — non-party", async () => {
       const { t, userAId, caseId } = await seedJointActiveEnv();
-      await seedStranger(t);
+      const strangerId = await seedStranger(t);
 
       const sessionId = await t.run(async (ctx) =>
         ctx.db.insert("draftSessions", {
@@ -832,7 +832,7 @@ describe("all draftCoach functions enforce auth + party-to-case check", () => {
 
       await expectConvexError(
         t
-          .withIdentity({ email: "stranger@test.com" })
+          .withIdentity({ subject: strangerId })
           .run(async (ctx) =>
             ctx.runMutation(draftCoachApi.sendFinalDraft, { sessionId }),
           ),
@@ -842,7 +842,7 @@ describe("all draftCoach functions enforce auth + party-to-case check", () => {
 
     it("discardSession — non-party", async () => {
       const { t, userAId, caseId } = await seedJointActiveEnv();
-      await seedStranger(t);
+      const strangerId = await seedStranger(t);
 
       const sessionId = await t.run(async (ctx) =>
         ctx.db.insert("draftSessions", {
@@ -855,7 +855,7 @@ describe("all draftCoach functions enforce auth + party-to-case check", () => {
 
       await expectConvexError(
         t
-          .withIdentity({ email: "stranger@test.com" })
+          .withIdentity({ subject: strangerId })
           .run(async (ctx) =>
             ctx.runMutation(draftCoachApi.discardSession, { sessionId }),
           ),

@@ -128,7 +128,7 @@ describe("cases/list query", () => {
     );
 
     const result = await t
-      .withIdentity({ email: "a@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) => ctx.runQuery(api.cases.list, {}));
 
     expect(result).toHaveLength(2);
@@ -137,10 +137,10 @@ describe("cases/list query", () => {
   });
 
   it("returns empty array when caller has no cases", async () => {
-    const { t } = await seedEnv("lonely@test.com");
+    const { t, userId } = await seedEnv("lonely@test.com");
 
     const result = await t
-      .withIdentity({ email: "lonely@test.com" })
+      .withIdentity({ subject: userId })
       .run(async (ctx) => ctx.runQuery(api.cases.list, {}));
 
     expect(result).toEqual([]);
@@ -164,7 +164,7 @@ describe("cases/list query", () => {
     );
 
     const result = await t
-      .withIdentity({ email: "solo-list@test.com" })
+      .withIdentity({ subject: userId })
       .run(async (ctx) => ctx.runQuery(api.cases.list, {}));
 
     expect(result).toHaveLength(1);
@@ -190,7 +190,7 @@ describe("cases/get query", () => {
     );
 
     const result = await t
-      .withIdentity({ email: "party@test.com" })
+      .withIdentity({ subject: userId })
       .run(async (ctx) => ctx.runQuery(api.cases.get, { caseId }));
 
     expect(result._id).toEqual(caseId);
@@ -200,7 +200,7 @@ describe("cases/get query", () => {
 
   it("throws FORBIDDEN when caller is not a party", async () => {
     const { t, userId, versionId } = await seedEnv("owner@test.com");
-    await t.run(async (ctx) =>
+    const strangerId = await t.run(async (ctx) =>
       ctx.db.insert("users", {
         email: "stranger@test.com",
         displayName: "stranger",
@@ -223,7 +223,7 @@ describe("cases/get query", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "stranger@test.com" })
+        .withIdentity({ subject: strangerId })
         .run(async (ctx) => ctx.runQuery(api.cases.get, { caseId })),
       "FORBIDDEN",
     );
@@ -285,7 +285,7 @@ describe("cases/partyStates query", () => {
     });
 
     const result = await t
-      .withIdentity({ email: "initiator@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) => ctx.runQuery(api.cases.partyStates, { caseId }));
 
     // Self has full fields
@@ -337,7 +337,7 @@ describe("cases/partyStates query", () => {
     });
 
     const result = await t
-      .withIdentity({ email: "alone@test.com" })
+      .withIdentity({ subject: userId })
       .run(async (ctx) => ctx.runQuery(api.cases.partyStates, { caseId }));
 
     expect(result.self.role).toBe("INITIATOR");
@@ -352,7 +352,7 @@ describe("cases/create mutation — standard mode", () => {
     const { t, userId } = await seedEnv("creator@test.com");
 
     const result = await t
-      .withIdentity({ email: "creator@test.com" })
+      .withIdentity({ subject: userId })
       .run(async (ctx) =>
         ctx.runMutation(api.cases.create, {
           category: "workplace",
@@ -416,7 +416,7 @@ describe("cases/create mutation — solo mode", () => {
     const { t, userId } = await seedEnv("solo@test.com", "personal");
 
     const result = await t
-      .withIdentity({ email: "solo@test.com" })
+      .withIdentity({ subject: userId })
       .run(async (ctx) =>
         ctx.runMutation(api.cases.create, {
           category: "personal",
@@ -505,7 +505,7 @@ describe("cases/create pins templateVersionId at creation time", () => {
       return v2Id;
     });
 
-    await t.withIdentity({ email: "pin@test.com" }).run(async (ctx) =>
+    await t.withIdentity({ subject: userId }).run(async (ctx) =>
       ctx.runMutation(api.cases.create, {
         category: "family",
         mainTopic: "Topic",
@@ -522,10 +522,10 @@ describe("cases/create pins templateVersionId at creation time", () => {
   });
 
   it("throws INVALID_INPUT when category has no template", async () => {
-    const { t } = await seedEnv("notemplate@test.com");
+    const { t, userId } = await seedEnv("notemplate@test.com");
 
     await expectConvexError(
-      t.withIdentity({ email: "notemplate@test.com" }).run(async (ctx) =>
+      t.withIdentity({ subject: userId }).run(async (ctx) =>
         ctx.runMutation(api.cases.create, {
           category: "nonexistent",
           mainTopic: "Topic",
@@ -545,7 +545,7 @@ describe("cases/updateMyForm mutation", () => {
     const { t, userId } = await seedEnv("updater@test.com");
 
     const created = await t
-      .withIdentity({ email: "updater@test.com" })
+      .withIdentity({ subject: userId })
       .run(async (ctx) =>
         ctx.runMutation(api.cases.create, {
           category: "workplace",
@@ -560,7 +560,7 @@ describe("cases/updateMyForm mutation", () => {
     );
     const updatedAtBefore = casesBefore[0].updatedAt;
 
-    await t.withIdentity({ email: "updater@test.com" }).run(async (ctx) =>
+    await t.withIdentity({ subject: userId }).run(async (ctx) =>
       ctx.runMutation(api.cases.updateMyForm, {
         caseId: created.caseId,
         mainTopic: "Updated topic",
@@ -591,10 +591,10 @@ describe("cases/updateMyForm mutation", () => {
   });
 
   it("does not modify case status (state machine: updateMyForm is not a transition)", async () => {
-    const { t } = await seedEnv("sm@test.com");
+    const { t, userId } = await seedEnv("sm@test.com");
 
     const created = await t
-      .withIdentity({ email: "sm@test.com" })
+      .withIdentity({ subject: userId })
       .run(async (ctx) =>
         ctx.runMutation(api.cases.create, {
           category: "workplace",
@@ -609,7 +609,7 @@ describe("cases/updateMyForm mutation", () => {
     );
     const statusBefore = casesBefore[0].status;
 
-    await t.withIdentity({ email: "sm@test.com" }).run(async (ctx) =>
+    await t.withIdentity({ subject: userId }).run(async (ctx) =>
       ctx.runMutation(api.cases.updateMyForm, {
         caseId: created.caseId,
         mainTopic: "New Topic",

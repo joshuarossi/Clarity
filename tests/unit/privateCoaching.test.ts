@@ -155,7 +155,7 @@ describe("privateCoaching/myMessages — caller-only visibility", () => {
 
     // User A sees only their messages
     const resultA = await t
-      .withIdentity({ email: "usera@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runQuery(api.privateCoaching.myMessages, { caseId }),
       );
@@ -166,7 +166,7 @@ describe("privateCoaching/myMessages — caller-only visibility", () => {
 
     // User B sees only their messages
     const resultB = await t
-      .withIdentity({ email: "userb@test.com" })
+      .withIdentity({ subject: userBId })
       .run(async (ctx) =>
         ctx.runQuery(api.privateCoaching.myMessages, { caseId }),
       );
@@ -179,8 +179,8 @@ describe("privateCoaching/myMessages — caller-only visibility", () => {
     const { t, userAId, caseId } = await seedTwoPartyEnv();
 
     // Create a non-party user
-    await t.run(async (ctx) => {
-      await ctx.db.insert("users", {
+    const strangerId = await t.run(async (ctx) => {
+      const sId = await ctx.db.insert("users", {
         email: "stranger@test.com",
         displayName: "Stranger",
         role: "USER",
@@ -195,10 +195,11 @@ describe("privateCoaching/myMessages — caller-only visibility", () => {
         status: "COMPLETE",
         createdAt: 1000,
       });
+      return sId;
     });
 
     const result = await t
-      .withIdentity({ email: "stranger@test.com" })
+      .withIdentity({ subject: strangerId })
       .run(async (ctx) =>
         ctx.runQuery(api.privateCoaching.myMessages, { caseId }),
       );
@@ -207,10 +208,10 @@ describe("privateCoaching/myMessages — caller-only visibility", () => {
   });
 
   it("returns empty array for a party with no messages yet", async () => {
-    const { t, caseId } = await seedTwoPartyEnv();
+    const { t, userAId, caseId } = await seedTwoPartyEnv();
 
     const result = await t
-      .withIdentity({ email: "usera@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runQuery(api.privateCoaching.myMessages, { caseId }),
       );
@@ -254,7 +255,7 @@ describe("privateCoaching/myMessages — sort order", () => {
     });
 
     const result = await t
-      .withIdentity({ email: "usera@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runQuery(api.privateCoaching.myMessages, { caseId }),
       );
@@ -273,7 +274,7 @@ describe("privateCoaching/sendUserMessage — insert + schedule", () => {
     const { t, userAId, caseId } = await seedTwoPartyEnv();
 
     const messageId = await t
-      .withIdentity({ email: "usera@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.sendUserMessage, {
           caseId,
@@ -370,7 +371,7 @@ describe("privateCoaching/sendUserMessage — status validation", () => {
     });
 
     const messageId = await t
-      .withIdentity({ email: "draft@test.com" })
+      .withIdentity({ subject: userId })
       .run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.sendUserMessage, {
           caseId,
@@ -382,10 +383,10 @@ describe("privateCoaching/sendUserMessage — status validation", () => {
   });
 
   it("succeeds when case status is BOTH_PRIVATE_COACHING", async () => {
-    const { t, caseId } = await seedTwoPartyEnv();
+    const { t, userAId, caseId } = await seedTwoPartyEnv();
 
     const messageId = await t
-      .withIdentity({ email: "usera@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.sendUserMessage, {
           caseId,
@@ -397,14 +398,14 @@ describe("privateCoaching/sendUserMessage — status validation", () => {
   });
 
   it("throws CONFLICT when case status is READY_FOR_JOINT", async () => {
-    const { t, caseId } = await seedTwoPartyEnv();
+    const { t, userAId, caseId } = await seedTwoPartyEnv();
     await t.run(async (ctx) => {
       const caseDoc = await ctx.db.get(caseId);
       await ctx.db.patch(caseDoc!._id, { status: "READY_FOR_JOINT" });
     });
 
     await expectConvexError(
-      t.withIdentity({ email: "usera@test.com" }).run(async (ctx) =>
+      t.withIdentity({ subject: userAId }).run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.sendUserMessage, {
           caseId,
           content: "Should fail",
@@ -415,13 +416,13 @@ describe("privateCoaching/sendUserMessage — status validation", () => {
   });
 
   it("throws CONFLICT when case status is JOINT_ACTIVE", async () => {
-    const { t, caseId } = await seedTwoPartyEnv();
+    const { t, userAId, caseId } = await seedTwoPartyEnv();
     await t.run(async (ctx) => {
       await ctx.db.patch(caseId, { status: "JOINT_ACTIVE" });
     });
 
     await expectConvexError(
-      t.withIdentity({ email: "usera@test.com" }).run(async (ctx) =>
+      t.withIdentity({ subject: userAId }).run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.sendUserMessage, {
           caseId,
           content: "Should fail",
@@ -432,13 +433,13 @@ describe("privateCoaching/sendUserMessage — status validation", () => {
   });
 
   it("throws CONFLICT when case status is CLOSED_RESOLVED", async () => {
-    const { t, caseId } = await seedTwoPartyEnv();
+    const { t, userAId, caseId } = await seedTwoPartyEnv();
     await t.run(async (ctx) => {
       await ctx.db.patch(caseId, { status: "CLOSED_RESOLVED" });
     });
 
     await expectConvexError(
-      t.withIdentity({ email: "usera@test.com" }).run(async (ctx) =>
+      t.withIdentity({ subject: userAId }).run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.sendUserMessage, {
           caseId,
           content: "Should fail",
@@ -449,13 +450,13 @@ describe("privateCoaching/sendUserMessage — status validation", () => {
   });
 
   it("throws CONFLICT when case status is CLOSED_UNRESOLVED", async () => {
-    const { t, caseId } = await seedTwoPartyEnv();
+    const { t, userAId, caseId } = await seedTwoPartyEnv();
     await t.run(async (ctx) => {
       await ctx.db.patch(caseId, { status: "CLOSED_UNRESOLVED" });
     });
 
     await expectConvexError(
-      t.withIdentity({ email: "usera@test.com" }).run(async (ctx) =>
+      t.withIdentity({ subject: userAId }).run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.sendUserMessage, {
           caseId,
           content: "Should fail",
@@ -466,13 +467,13 @@ describe("privateCoaching/sendUserMessage — status validation", () => {
   });
 
   it("throws CONFLICT when case status is CLOSED_ABANDONED", async () => {
-    const { t, caseId } = await seedTwoPartyEnv();
+    const { t, userAId, caseId } = await seedTwoPartyEnv();
     await t.run(async (ctx) => {
       await ctx.db.patch(caseId, { status: "CLOSED_ABANDONED" });
     });
 
     await expectConvexError(
-      t.withIdentity({ email: "usera@test.com" }).run(async (ctx) =>
+      t.withIdentity({ subject: userAId }).run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.sendUserMessage, {
           caseId,
           content: "Should fail",
@@ -490,7 +491,7 @@ describe("privateCoaching/markComplete — completion + synthesis", () => {
     const { t, userAId, caseId } = await seedTwoPartyEnv();
 
     const result = await t
-      .withIdentity({ email: "usera@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.markComplete, { caseId }),
       );
@@ -511,11 +512,11 @@ describe("privateCoaching/markComplete — completion + synthesis", () => {
   });
 
   it("returns synthesisScheduled: true when both parties have completed", async () => {
-    const { t, caseId } = await seedTwoPartyEnv();
+    const { t, userAId, userBId, caseId } = await seedTwoPartyEnv();
 
     // User A completes
     const resultA = await t
-      .withIdentity({ email: "usera@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.markComplete, { caseId }),
       );
@@ -523,7 +524,7 @@ describe("privateCoaching/markComplete — completion + synthesis", () => {
 
     // User B completes — now both are done
     const resultB = await t
-      .withIdentity({ email: "userb@test.com" })
+      .withIdentity({ subject: userBId })
       .run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.markComplete, { caseId }),
       );
@@ -535,11 +536,11 @@ describe("privateCoaching/markComplete — completion + synthesis", () => {
 
 describe("privateCoaching/markComplete — idempotency", () => {
   it("calling markComplete twice does not error and returns synthesisScheduled: false on second call", async () => {
-    const { t, caseId } = await seedTwoPartyEnv();
+    const { t, userAId, caseId } = await seedTwoPartyEnv();
 
     // First call
     const first = await t
-      .withIdentity({ email: "usera@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.markComplete, { caseId }),
       );
@@ -547,7 +548,7 @@ describe("privateCoaching/markComplete — idempotency", () => {
 
     // Second call — idempotent, no error
     const second = await t
-      .withIdentity({ email: "usera@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.markComplete, { caseId }),
       );
@@ -555,17 +556,17 @@ describe("privateCoaching/markComplete — idempotency", () => {
   });
 
   it("does not schedule synthesis twice when both complete and one calls again", async () => {
-    const { t, caseId } = await seedTwoPartyEnv();
+    const { t, userAId, userBId, caseId } = await seedTwoPartyEnv();
 
     // Both complete
     await t
-      .withIdentity({ email: "usera@test.com" })
+      .withIdentity({ subject: userAId })
       .run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.markComplete, { caseId }),
       );
 
     const resultB = await t
-      .withIdentity({ email: "userb@test.com" })
+      .withIdentity({ subject: userBId })
       .run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.markComplete, { caseId }),
       );
@@ -573,7 +574,7 @@ describe("privateCoaching/markComplete — idempotency", () => {
 
     // User B calls again — idempotent, no re-trigger
     const resultB2 = await t
-      .withIdentity({ email: "userb@test.com" })
+      .withIdentity({ subject: userBId })
       .run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.markComplete, { caseId }),
       );
@@ -623,7 +624,7 @@ describe("auth enforcement", () => {
   it("sendUserMessage throws FORBIDDEN for a non-party user", async () => {
     const { t, caseId } = await seedTwoPartyEnv();
 
-    await t.run(async (ctx) =>
+    const outsiderId = await t.run(async (ctx) =>
       ctx.db.insert("users", {
         email: "outsider@test.com",
         displayName: "Outsider",
@@ -633,7 +634,7 @@ describe("auth enforcement", () => {
     );
 
     await expectConvexError(
-      t.withIdentity({ email: "outsider@test.com" }).run(async (ctx) =>
+      t.withIdentity({ subject: outsiderId }).run(async (ctx) =>
         ctx.runMutation(api.privateCoaching.sendUserMessage, {
           caseId,
           content: "Intruder message",
@@ -646,7 +647,7 @@ describe("auth enforcement", () => {
   it("markComplete throws FORBIDDEN for a non-party user", async () => {
     const { t, caseId } = await seedTwoPartyEnv();
 
-    await t.run(async (ctx) =>
+    const outsider2Id = await t.run(async (ctx) =>
       ctx.db.insert("users", {
         email: "outsider2@test.com",
         displayName: "Outsider2",
@@ -657,7 +658,7 @@ describe("auth enforcement", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "outsider2@test.com" })
+        .withIdentity({ subject: outsider2Id })
         .run(async (ctx) =>
           ctx.runMutation(api.privateCoaching.markComplete, { caseId }),
         ),
@@ -668,8 +669,8 @@ describe("auth enforcement", () => {
   it("myMessages returns empty array (not FORBIDDEN) for a non-party user", async () => {
     const { t, userAId, caseId } = await seedTwoPartyEnv();
 
-    await t.run(async (ctx) => {
-      await ctx.db.insert("users", {
+    const outsider3Id = await t.run(async (ctx) => {
+      const oId = await ctx.db.insert("users", {
         email: "outsider3@test.com",
         displayName: "Outsider3",
         role: "USER",
@@ -683,10 +684,11 @@ describe("auth enforcement", () => {
         status: "COMPLETE",
         createdAt: 1000,
       });
+      return oId;
     });
 
     const result = await t
-      .withIdentity({ email: "outsider3@test.com" })
+      .withIdentity({ subject: outsider3Id })
       .run(async (ctx) =>
         ctx.runQuery(api.privateCoaching.myMessages, { caseId }),
       );

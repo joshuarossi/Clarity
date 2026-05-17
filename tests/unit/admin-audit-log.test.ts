@@ -80,10 +80,10 @@ async function seedAuditEntries(
 describe("admin/listAuditLog query — admin gate", () => {
   it("throws FORBIDDEN when called by a non-admin user", async () => {
     const t = convexTest(schema);
-    await seedRegularUser(t);
+    const userId = await seedRegularUser(t);
 
     await expectConvexError(
-      t.withIdentity({ email: "user@test.com" }).query(api.admin.listAuditLog, {
+      t.withIdentity({ subject: userId }).query(api.admin.listAuditLog, {
         paginationOpts: { numItems: 25, cursor: null },
       }),
       "FORBIDDEN",
@@ -107,7 +107,7 @@ describe("admin/listAuditLog query — admin gate", () => {
     await seedAuditEntries(t, adminId, 3);
 
     const result = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAuditLog, {
         paginationOpts: { numItems: 25, cursor: null },
       });
@@ -126,7 +126,7 @@ describe("admin/listAuditLog query — pagination", () => {
     await seedAuditEntries(t, adminId, 10);
 
     const firstPage = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAuditLog, {
         paginationOpts: { numItems: 5, cursor: null },
       });
@@ -142,13 +142,13 @@ describe("admin/listAuditLog query — pagination", () => {
     await seedAuditEntries(t, adminId, 7);
 
     const firstPage = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAuditLog, {
         paginationOpts: { numItems: 5, cursor: null },
       });
 
     const secondPage = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAuditLog, {
         paginationOpts: { numItems: 5, cursor: firstPage.continueCursor },
       });
@@ -193,7 +193,7 @@ describe("admin/listAuditLog query — filtering", () => {
     });
 
     const result = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAuditLog, {
         actor: adminId,
         paginationOpts: { numItems: 25, cursor: null },
@@ -209,7 +209,7 @@ describe("admin/listAuditLog query — filtering", () => {
     await seedAuditEntries(t, adminId, 6);
 
     const result = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAuditLog, {
         action: "TEMPLATE_CREATED",
         paginationOpts: { numItems: 25, cursor: null },
@@ -253,7 +253,7 @@ describe("admin/listAuditLog query — filtering", () => {
     });
 
     const result = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAuditLog, {
         dateFrom: now - 60000,
         dateTo: now - 40000,
@@ -294,7 +294,7 @@ describe("admin/listAuditLog query — filtering", () => {
     });
 
     const result = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAuditLog, {
         actor: adminId,
         action: "TEMPLATE_CREATED",
@@ -326,7 +326,7 @@ describe("admin/listAuditLog query — actor enrichment", () => {
     });
 
     const result = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAuditLog, {
         paginationOpts: { numItems: 25, cursor: null },
       });
@@ -357,7 +357,7 @@ describe("admin/listAuditLog query — actor enrichment", () => {
     });
 
     const result = await t
-      .withIdentity({ email: "nodisplay@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAuditLog, {
         paginationOpts: { numItems: 25, cursor: null },
       });
@@ -372,10 +372,10 @@ describe("admin/listAuditLog query — actor enrichment", () => {
 describe("admin/listAuditLog query — empty state", () => {
   it("returns empty page when no audit entries exist", async () => {
     const t = convexTest(schema);
-    await seedAdmin(t);
+    const adminId = await seedAdmin(t);
 
     const result = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAuditLog, {
         paginationOpts: { numItems: 25, cursor: null },
       });
@@ -390,7 +390,7 @@ describe("admin/listAuditLog query — empty state", () => {
     await seedAuditEntries(t, adminId, 5);
 
     const result = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAuditLog, {
         action: "NONEXISTENT_ACTION",
         paginationOpts: { numItems: 25, cursor: null },

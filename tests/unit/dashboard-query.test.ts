@@ -136,7 +136,7 @@ describe("AC: listForDashboard returns enriched case data", () => {
       role: "INVITEE",
     });
 
-    const asAlice = t.withIdentity({ email: "alice@test.com" });
+    const asAlice = t.withIdentity({ subject: alice._id });
     const result = await asAlice.query(api.cases.listForDashboard, {});
 
     expect(result).toHaveLength(1);
@@ -181,7 +181,7 @@ describe("AC: Correct pill-turn vs pill-waiting in BOTH_PRIVATE_COACHING", () =>
       role: "INVITEE",
     });
 
-    const asAlice = t.withIdentity({ email: "alice@test.com" });
+    const asAlice = t.withIdentity({ subject: alice._id });
     const result = await asAlice.query(api.cases.listForDashboard, {});
 
     expect(result[0].statusVariant).toBe("pill-turn");
@@ -219,7 +219,7 @@ describe("AC: Correct pill-turn vs pill-waiting in BOTH_PRIVATE_COACHING", () =>
       role: "INVITEE",
     });
 
-    const asAlice = t.withIdentity({ email: "alice@test.com" });
+    const asAlice = t.withIdentity({ subject: alice._id });
     const result = await asAlice.query(api.cases.listForDashboard, {});
 
     expect(result[0].statusVariant).toBe("pill-waiting");
@@ -252,7 +252,7 @@ describe("AC: otherPartyName null when invitee hasn't joined", () => {
       role: "INITIATOR",
     });
 
-    const asAlice = t.withIdentity({ email: "alice@test.com" });
+    const asAlice = t.withIdentity({ subject: alice._id });
     const result = await asAlice.query(api.cases.listForDashboard, {});
 
     expect(result).toHaveLength(1);
@@ -313,7 +313,7 @@ describe("AC: Results sorted by updatedAt descending", () => {
       role: "INVITEE",
     });
 
-    const asAlice = t.withIdentity({ email: "alice@test.com" });
+    const asAlice = t.withIdentity({ subject: alice._id });
     const result = await asAlice.query(api.cases.listForDashboard, {});
 
     expect(result).toHaveLength(2);
