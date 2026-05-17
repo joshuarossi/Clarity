@@ -1,60 +1,54 @@
 import { describe, it, expect } from "vitest";
+import fs from "fs";
+import path from "path";
 import { convexTest } from "convex-test";
 import schema from "../../convex/schema";
 import { getUserByEmail } from "../../convex/lib/auth";
 import authConfig from "../../convex/auth.config";
+import * as authExports from "../../convex/auth";
 
 /**
- * WOR-109: Auth Convex module — Convex Auth setup, magic link + Google OAuth,
- * user upsert.
+ * WOR-156: Auth config shape fix — convex/auth.config.ts must export the
+ * deploy-compatible { domain, applicationID } shape, not full provider objects.
  *
- * Tests cover ACs 1, 2, 3, 4, 7, 8 using convex-test with the project schema
- * and direct module imports. At red state, the import from convex/auth.config.ts
- * produces TS2307 because the module has not been created yet — that is the
- * expected red-state error and is tolerated by the validator.
+ * Tests cover ACs 1–5 and legacy ACs 3, 4, 7, 8 using convex-test with the
+ * project schema and direct module imports. At red state, the imports from
+ * convex/auth.config.ts and convex/auth.ts may produce TS2307 because the
+ * modules have not been updated yet — that is the expected red-state error
+ * and is tolerated by the validator.
  */
 
-/** Minimal shape of an auth provider entry in the config providers array. */
-type AuthProvider = { id: string; clientId?: string; clientSecret?: string };
+/** Shape expected by Convex deploy for each provider entry. */
+interface DeployProvider {
+  domain: string | undefined;
+  applicationID: string;
+}
 
-// ── AC1: Convex Auth configured with magic link provider ─────────────
+// ── AC1: auth.config.ts exports the deploy-compatible shape ──────────
 
-describe("AC1 — magic link provider configured", () => {
-  it("auth config exports a providers array containing a magic-link entry", () => {
+describe("AC1 — auth.config.ts exports deploy-compatible shape", () => {
+  it("exports a providers array with { domain, applicationID } entries", () => {
     expect(authConfig).toBeDefined();
     expect(authConfig.providers).toBeInstanceOf(Array);
-
-    const magicLinkProvider = authConfig.providers.find(
-      (p: AuthProvider) => p.id === "magic-link",
+    expect(authConfig.providers.length).toBeGreaterThanOrEqual(1);
+    expect(authConfig.providers[0]).toHaveProperty("domain");
+    expect(authConfig.providers[0]).toHaveProperty("applicationID");
+    expect((authConfig.providers[0] as DeployProvider).applicationID).toBe(
+      "convex",
     );
-    expect(magicLinkProvider).toBeDefined();
   });
 });
 
-// ── AC2: Convex Auth configured with Google OAuth provider ───────────
+// ── AC2: auth.config.ts does NOT contain full provider objects ────────
 
-describe("AC2 — Google OAuth provider configured", () => {
-  it("auth config providers array contains a google provider", () => {
-    const googleProvider = authConfig.providers.find(
-      (p: AuthProvider) => p.id === "google",
+describe("AC2 — auth.config.ts has no provider-object fields", () => {
+  it("providers do not have id, sendVerificationRequest, clientId, or clientSecret", () => {
+    expect(authConfig.providers[0]).not.toHaveProperty("id");
+    expect(authConfig.providers[0]).not.toHaveProperty(
+      "sendVerificationRequest",
     );
-    expect(googleProvider).toBeDefined();
-  });
-
-  it("Google OAuth provider exposes clientId and clientSecret sourced from env vars", () => {
-    const googleProvider = authConfig.providers.find(
-      (p: AuthProvider) => p.id === "google",
-    );
-    expect(googleProvider).toBeDefined();
-
-    // The provider must have clientId and clientSecret properties.
-    // These are sourced from GOOGLE_OAUTH_CLIENT_ID and
-    // GOOGLE_OAUTH_CLIENT_SECRET env vars at config load time.
-    // In the test environment these env vars are typically unset, so
-    // the values will be undefined — proving they come from process.env
-    // rather than being hardcoded strings.
-    expect(googleProvider).toHaveProperty("clientId");
-    expect(googleProvider).toHaveProperty("clientSecret");
+    expect(authConfig.providers[0]).not.toHaveProperty("clientId");
+    expect(authConfig.providers[0]).not.toHaveProperty("clientSecret");
   });
 });
 
@@ -146,21 +140,51 @@ describe("AC4 — idempotent upsert on subsequent login", () => {
   });
 });
 
+// ── AC3: convex/auth.ts exports prove convexAuth() received providers ─
+
+describe("AC3 — auth.ts exports auth, signIn, signOut, store", () => {
+  it("auth.ts exports auth, signIn, signOut, and store", () => {
+    expect(authExports.auth).toBeDefined();
+    expect(authExports.signIn).toBeDefined();
+    expect(authExports.signOut).toBeDefined();
+    expect(authExports.store).toBeDefined();
+  });
+});
+
+// ── AC4: @auth/core import removed from auth.config.ts ───────────────
+
+describe("AC4 — no @auth/core in auth.config.ts source", () => {
+  it("auth.config.ts source does not reference @auth/core, Email(), or Google()", () => {
+    const authConfigSource = fs.readFileSync(
+      path.resolve(__dirname, "../../convex/auth.config.ts"),
+      "utf-8",
+    );
+    expect(authConfigSource).not.toContain("@auth/core");
+    expect(authConfigSource).not.toContain("Email(");
+    expect(authConfigSource).not.toContain("Google(");
+  });
+});
+
+// ── AC5: auth.config.ts exports exactly the correct shape ────────────
+
+describe("AC5 — auth.config.ts has exactly one deploy provider entry", () => {
+  it("providers array has length 1 with the correct shape", () => {
+    expect(authConfig.providers).toHaveLength(1);
+    expect(authConfig.providers[0]).toEqual({
+      domain: process.env.CONVEX_SITE_URL,
+      applicationID: "convex",
+    });
+  });
+});
+
 // ── AC7: No password-based registration ──────────────────────────────
 
 describe("AC7 — no password provider in auth config", () => {
-  it("auth config providers array does not include a password provider", () => {
-    const passwordProvider = authConfig.providers.find(
-      (p: AuthProvider) => p.id === "password" || p.id === "credentials",
-    );
-    expect(passwordProvider).toBeUndefined();
-  });
-
-  it("auth config has exactly two providers (magic-link and google)", () => {
-    expect(authConfig.providers).toHaveLength(2);
-
-    const ids = authConfig.providers.map((p: AuthProvider) => p.id).sort();
-    expect(ids).toEqual(["google", "magic-link"]);
+  it("auth config providers array has no entry resembling a password provider", () => {
+    for (const provider of authConfig.providers) {
+      expect(provider).not.toHaveProperty("id", "password");
+      expect(provider).not.toHaveProperty("id", "credentials");
+    }
   });
 });
 
