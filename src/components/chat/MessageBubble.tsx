@@ -1,5 +1,6 @@
 import * as React from "react";
 import { StreamingIndicator } from "./StreamingIndicator";
+import { MarkdownContent } from "./MarkdownContent";
 
 export type BubbleVariant =
   | "user"
@@ -79,7 +80,11 @@ export function MessageBubble({
       data-status={status}
     >
       {authorName && <span className="cc-bubble-avatar">{authorName}</span>}
-      <span>{content}</span>
+      {["coach", "coach-joint", "coach-intervention"].includes(variant) ? (
+        <MarkdownContent content={content} />
+      ) : (
+        <span>{content}</span>
+      )}
       {status === "STREAMING" && <StreamingIndicator />}
       {status === "COMPLETE" && (
         <>

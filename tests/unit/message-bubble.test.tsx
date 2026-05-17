@@ -5,6 +5,7 @@ import {
   MessageBubble,
   type BubbleVariant,
 } from "../../src/components/chat/MessageBubble";
+import { MarkdownContent } from "../../src/components/chat/MarkdownContent";
 
 afterEach(cleanup);
 
@@ -436,5 +437,155 @@ describe("AC: Copy button only appears on COMPLETE messages", () => {
     const retryBtn = c2.querySelector("[aria-label='Retry message']");
     expect(retryBtn).not.toBeNull();
     expect(retryBtn!.tagName.toLowerCase()).toBe("button");
+  });
+});
+
+// ── AC2: User messages render as plain text with no markdown formatting ──
+
+describe("AC2: User messages remain plain text", () => {
+  it("user variant renders **bold** as literal text, not <strong>", () => {
+    const { container } = render(
+      <MessageBubble
+        variant="user"
+        status="COMPLETE"
+        content="**bold**"
+        createdAt={Date.now()}
+      />,
+    );
+    expect(container.querySelector("strong")).toBeNull();
+    expect(container.textContent).toContain("**bold**");
+  });
+
+  it("user variant renders ### heading as literal text, not <h3>", () => {
+    const { container } = render(
+      <MessageBubble
+        variant="user"
+        status="COMPLETE"
+        content="### heading"
+        createdAt={Date.now()}
+      />,
+    );
+    expect(container.querySelector("h3")).toBeNull();
+    expect(container.textContent).toContain("### heading");
+  });
+
+  it("user variant renders - list item as literal text, not <ul>", () => {
+    const { container } = render(
+      <MessageBubble
+        variant="user"
+        status="COMPLETE"
+        content="- list item"
+        createdAt={Date.now()}
+      />,
+    );
+    expect(container.querySelector("ul")).toBeNull();
+    expect(container.textContent).toContain("- list item");
+  });
+});
+
+// ── AC4: Markdown rendering applies to coach variants in both private and joint chat ──
+
+describe("AC4: Variant-gated markdown rendering", () => {
+  const markdownContent = "**bold**";
+
+  describe("coach variants render markdown as HTML", () => {
+    const coachVariants: BubbleVariant[] = [
+      "coach",
+      "coach-joint",
+      "coach-intervention",
+    ];
+
+    for (const variant of coachVariants) {
+      it(`${variant} variant renders **bold** as <strong>`, () => {
+        const { container } = render(
+          <MessageBubble
+            variant={variant}
+            status="COMPLETE"
+            content={markdownContent}
+            createdAt={Date.now()}
+          />,
+        );
+        expect(container.querySelector("strong")).not.toBeNull();
+      });
+    }
+  });
+
+  describe("non-coach variants render markdown as plain text", () => {
+    const plainVariants: BubbleVariant[] = [
+      "user",
+      "party-initiator",
+      "party-invitee",
+      "error",
+    ];
+
+    for (const variant of plainVariants) {
+      it(`${variant} variant renders **bold** as literal text`, () => {
+        const { container } = render(
+          <MessageBubble
+            variant={variant}
+            status={variant === "error" ? "ERROR" : "COMPLETE"}
+            content={markdownContent}
+            createdAt={Date.now()}
+          />,
+        );
+        expect(container.querySelector("strong")).toBeNull();
+        expect(container.textContent).toContain("**bold**");
+      });
+    }
+  });
+});
+
+// ── AC5: Streaming indicator displays correctly alongside partial markdown ──
+
+describe("AC5: Streaming with partial markdown content", () => {
+  it("streaming cursor is present when content has incomplete markdown", () => {
+    const { container } = render(
+      <MessageBubble
+        variant="coach"
+        status="STREAMING"
+        content="**bol"
+        createdAt={Date.now()}
+      />,
+    );
+    const cursor = container.querySelector(".cc-streaming-cursor");
+    expect(cursor).not.toBeNull();
+  });
+
+  it("partial/incomplete markdown tokens do not crash rendering", () => {
+    const { container } = render(
+      <MessageBubble
+        variant="coach"
+        status="STREAMING"
+        content="**bol"
+        createdAt={Date.now()}
+      />,
+    );
+    expect(container.textContent).toContain("**bol");
+  });
+
+  it("incomplete **bol token is NOT rendered as bold (graceful degradation)", () => {
+    const { container } = render(
+      <MessageBubble
+        variant="coach"
+        status="STREAMING"
+        content="**bol"
+        createdAt={Date.now()}
+      />,
+    );
+    expect(container.querySelector("strong")).toBeNull();
+  });
+
+  it("complete markdown renders alongside streaming cursor", () => {
+    const { container } = render(
+      <MessageBubble
+        variant="coach"
+        status="STREAMING"
+        content="**bold** and more"
+        createdAt={Date.now()}
+      />,
+    );
+    const cursor = container.querySelector(".cc-streaming-cursor");
+    expect(cursor).not.toBeNull();
+    expect(container.querySelector("strong")).not.toBeNull();
   });
 });

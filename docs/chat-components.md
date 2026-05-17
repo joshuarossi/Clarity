@@ -80,6 +80,41 @@ import { MessageBubble } from "@/components/chat/MessageBubble";
 | `onCopy` | `() => void` | — | Callback fired after copy-to-clipboard |
 | `className` | `string` | — | Additional CSS class names |
 
+## MarkdownContent
+
+Lightweight markdown renderer used inside `MessageBubble` to format
+Coach/assistant message content. Supports headings (`###`), bold
+(`**text**`), italic (`*text*`), unordered lists (`- item`), and ordered
+lists (`1. item`). Raw HTML in message content is **not** rendered — all
+output is safe React elements, preventing XSS.
+
+```tsx
+import { MarkdownContent } from "@/components/chat/MarkdownContent";
+
+<MarkdownContent content="### Welcome\n- Point one\n- **Bold** point" />
+```
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `content` | `string` | — | Markdown source text to render |
+| `className` | `string` | — | Additional CSS class names on the wrapper `<span>` |
+
+### Rendering rules
+
+| Syntax | Output element |
+|--------|---------------|
+| `### heading` | `<h3>` |
+| `- item` | `<ul><li>` |
+| `1. item` | `<ol><li>` |
+| `**bold**` | `<strong>` |
+| `*italic*` | `<em>` |
+| Plain line | `<p>` |
+
+User-authored messages (variant `user`) continue to render as plain text;
+markdown rendering applies only to Coach/assistant variants.
+
 ## MessageInput
 
 Textarea + Send button with Enter-to-send and Shift+Enter for newline.
