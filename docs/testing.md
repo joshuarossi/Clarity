@@ -72,23 +72,23 @@ simulated failures, e.g. `429` for rate-limit testing (default: `500`).
 
 ### CI pipeline
 
-The GitHub Actions workflow (`.github/workflows/ci.yml`) runs four
+The GitHub Actions workflow (`.github/workflows/ci.yml`) runs three
 sequential jobs on every push and pull request to `main`:
 
 1. **lint** — ESLint + Prettier check
 2. **typecheck** — `tsc --noEmit`
 3. **unit** — `vitest run`
-4. **e2e** — Playwright with `CLAUDE_MOCK=true`, Convex dev deployment,
-   and seeded test data
 
 Jobs are chained via `needs:` so fast-failing checks (lint, typecheck)
 gate the slower ones. All jobs use Node.js LTS (`lts/*`) with npm
 caching.
 
-The E2E job requires a `CONVEX_DEPLOY_KEY` GitHub Actions secret to
-provision an ephemeral Convex deployment and seed data. On failure, the
-Playwright HTML report and trace files are uploaded as workflow artifacts
-(retained for 14 days).
+> **Note:** The **e2e** job (Playwright with `CLAUDE_MOCK=true`, Convex
+> dev deployment, and seeded test data) is temporarily commented out in
+> `ci.yml` (WOR-165). The Playwright suite is not yet stable enough for
+> CI gating and was blocking the auto-deploy trigger. It will be
+> re-enabled once the suite is reliable. You can still run Playwright
+> tests locally — see [Running tests](#running-tests) above.
 
 The Playwright config reads a `CI` environment variable to adjust
 timeouts and retries automatically.

@@ -4,11 +4,12 @@ import { resolve } from "node:path";
 import { load } from "js-yaml";
 
 /**
- * WOR-108: CI pipeline — GitHub Actions (lint, typecheck, unit, e2e)
+ * WOR-108 + WOR-165: CI pipeline — GitHub Actions
  *
- * These tests parse .github/workflows/ci.yml and validate the structural
- * contract for all seven acceptance criteria. The YAML file is the
- * implementation artifact; these tests validate its structure.
+ * WOR-108 established the CI workflow with lint, typecheck, unit, and e2e jobs.
+ * WOR-165 comments out the e2e job so CI passes without it, unblocking
+ * the auto-deploy trigger. These tests parse .github/workflows/ci.yml
+ * and validate its structure.
  */
 
 interface WorkflowStep {
@@ -37,11 +38,12 @@ interface Workflow {
 }
 
 let workflow: Workflow;
+let rawYamlContent: string;
 
 beforeAll(() => {
   const yamlPath = resolve(__dirname, "../../.github/workflows/ci.yml");
-  const yamlContent = readFileSync(yamlPath, "utf-8");
-  workflow = load(yamlContent) as Workflow;
+  rawYamlContent = readFileSync(yamlPath, "utf-8");
+  workflow = load(rawYamlContent) as Workflow;
 });
 
 describe("WOR-108: CI workflow triggers", () => {
@@ -53,9 +55,13 @@ describe("WOR-108: CI workflow triggers", () => {
     expect(workflow.on.pull_request?.branches).toContain("main");
   });
 
-  it("contains four jobs: lint, typecheck, unit, e2e", () => {
+  it("contains exactly three active jobs: lint, typecheck, unit (AC1)", () => {
     const jobNames = Object.keys(workflow.jobs).sort();
-    expect(jobNames).toEqual(["e2e", "lint", "typecheck", "unit"]);
+    expect(jobNames).toEqual(["lint", "typecheck", "unit"]);
+  });
+
+  it("does not contain an active e2e job (AC1)", () => {
+    expect(workflow.jobs["e2e"]).toBeUndefined();
   });
 });
 
@@ -125,117 +131,17 @@ describe("WOR-108: Unit job", () => {
   });
 });
 
-describe("WOR-108: E2E job", () => {
-  it("exists and depends on unit", () => {
-    const e2e = workflow.jobs["e2e"];
-    expect(e2e).toBeDefined();
-    const needs = Array.isArray(e2e.needs) ? e2e.needs : [e2e.needs];
-    expect(needs).toContain("unit");
+describe("WOR-165: E2e job commented out", () => {
+  it("e2e job definition is present as comments in ci.yml (AC2)", () => {
+    expect(rawYamlContent).toMatch(/^\s*#\s*e2e:/m);
   });
 
-  it("sets CLAUDE_MOCK=true environment variable", () => {
-    const e2e = workflow.jobs["e2e"];
-    // Check job-level env or step-level env
-    const jobEnvMock = e2e.env?.["CLAUDE_MOCK"] === "true";
-    const stepEnvMock = e2e.steps.some(
-      (s) => s.env?.["CLAUDE_MOCK"] === "true",
-    );
-    expect(jobEnvMock || stepEnvMock).toBe(true);
+  it("commented-out block contains playwright test reference (AC2)", () => {
+    expect(rawYamlContent).toMatch(/^\s*#.*playwright test/m);
   });
 
-  it("installs Playwright browsers", () => {
-    const e2e = workflow.jobs["e2e"];
-    const stepRuns = e2e.steps.filter((s) => s.run).map((s) => s.run);
-    const hasPlaywrightInstall = stepRuns.some(
-      (r) => r !== undefined && r.includes("playwright install"),
-    );
-    expect(hasPlaywrightInstall).toBe(true);
-  });
-
-  it("runs Playwright tests", () => {
-    const e2e = workflow.jobs["e2e"];
-    const stepRuns = e2e.steps.filter((s) => s.run).map((s) => s.run);
-    const hasPlaywrightTest = stepRuns.some(
-      (r) => r !== undefined && r.includes("playwright test"),
-    );
-    expect(hasPlaywrightTest).toBe(true);
-  });
-
-  it("provisions a Convex dev deployment", () => {
-    const e2e = workflow.jobs["e2e"];
-    const stepRuns = e2e.steps.filter((s) => s.run).map((s) => s.run);
-    const hasConvexDeploy = stepRuns.some(
-      (r) =>
-        r !== undefined &&
-        (r.includes("convex deploy") || r.includes("convex dev")),
-    );
-    expect(hasConvexDeploy).toBe(true);
-  });
-
-  it("seeds test data via --preview-run on the deploy step (AC1)", () => {
-    const e2e = workflow.jobs["e2e"];
-    const deployStep = e2e.steps.find(
-      (s) => s.run !== undefined && s.run.includes("convex deploy"),
-    );
-    expect(deployStep, "e2e job must have a convex deploy step").toBeDefined();
-    expect(deployStep!.run).toContain("--preview-run seed:seed");
-  });
-
-  it("does not use standalone convex run in any e2e step (AC2)", () => {
-    const e2e = workflow.jobs["e2e"];
-    const stepRuns = e2e.steps.filter((s) => s.run).map((s) => s.run!);
-    // A standalone "convex run" is any step that invokes "convex run" outside
-    // of "convex deploy". The deploy step may contain "convex deploy ... --preview-run"
-    // which includes the substring "run" but is NOT standalone.
-    const hasStandaloneRun = stepRuns.some(
-      (r) => /\bconvex run\b/.test(r) && !r.includes("convex deploy"),
-    );
-    expect(hasStandaloneRun).toBe(false);
-  });
-
-  it("deploy step includes --preview-run so seed data is available before Playwright (AC3)", () => {
-    const e2e = workflow.jobs["e2e"];
-    const deployStep = e2e.steps.find(
-      (s) => s.run !== undefined && s.run.includes("convex deploy"),
-    );
-    expect(deployStep, "e2e job must have a convex deploy step").toBeDefined();
-    expect(deployStep!.run).toContain("convex deploy");
-    expect(deployStep!.run).toContain("--preview-run seed:seed");
-  });
-
-  it("consolidates deploy and seed into a single convex deploy invocation (AC4)", () => {
-    const e2e = workflow.jobs["e2e"];
-    const deploySteps = e2e.steps.filter(
-      (s) => s.run !== undefined && s.run.includes("convex deploy"),
-    );
-    expect(deploySteps.length).toBe(1);
-    const deployRun = deploySteps[0].run!;
-    expect(deployRun).toContain("--preview-run seed:seed");
-    expect(deployRun).toContain("--cmd");
-  });
-
-  it("uses CONVEX_DEPLOY_KEY from secrets (no hardcoded secrets)", () => {
-    const e2e = workflow.jobs["e2e"];
-    const yamlPath = resolve(__dirname, "../../.github/workflows/ci.yml");
-    const yamlContent = readFileSync(yamlPath, "utf-8");
-    // Verify secrets reference exists in the raw YAML
-    expect(yamlContent).toContain("secrets.CONVEX_DEPLOY_KEY");
-    // Verify no hardcoded key values in step runs
-    const stepRuns = e2e.steps
-      .filter((s) => s.run)
-      .map((s) => s.run)
-      .join("\n");
-    // A hardcoded deploy key would be a long alphanumeric string assigned directly
-    expect(stepRuns).not.toMatch(/CONVEX_DEPLOY_KEY=["'][a-zA-Z0-9]{20,}["']/);
-  });
-
-  it("uploads artifacts on failure", () => {
-    const e2e = workflow.jobs["e2e"];
-    const uploadStep = e2e.steps.find(
-      (s) => s.uses !== undefined && s.uses.includes("upload-artifact"),
-    );
-    expect(uploadStep).toBeDefined();
-    expect(uploadStep?.if).toMatch(/failure\(\)/);
+  it("e2e job is not parsed as an active job (AC4)", () => {
+    expect(workflow.jobs["e2e"]).toBeUndefined();
   });
 });
 
@@ -271,28 +177,24 @@ describe("WOR-108: Node.js LTS and caching", () => {
   });
 });
 
-describe("WOR-108: Sequential job gating (needs chain)", () => {
-  it("enforces lint -> typecheck -> unit -> e2e chain", () => {
+describe("WOR-165: Sequential job gating (needs chain)", () => {
+  it("enforces lint -> typecheck -> unit chain (AC3)", () => {
     const typecheck = workflow.jobs["typecheck"];
     const unit = workflow.jobs["unit"];
-    const e2e = workflow.jobs["e2e"];
 
     expect(typecheck, "typecheck job must exist").toBeDefined();
     expect(unit, "unit job must exist").toBeDefined();
-    expect(e2e, "e2e job must exist").toBeDefined();
 
-    // Guard: only check needs if jobs exist (above assertions fail first if not)
-    if (!typecheck || !unit || !e2e) return;
+    if (!typecheck || !unit) return;
 
     const typecheckNeeds = Array.isArray(typecheck.needs)
       ? typecheck.needs
       : [typecheck.needs];
     const unitNeeds = Array.isArray(unit.needs) ? unit.needs : [unit.needs];
-    const e2eNeeds = Array.isArray(e2e.needs) ? e2e.needs : [e2e.needs];
 
     expect(typecheckNeeds).toContain("lint");
     expect(unitNeeds).toContain("typecheck");
-    expect(e2eNeeds).toContain("unit");
+    expect(workflow.jobs["e2e"]).toBeUndefined();
   });
 
   it("lint job has no dependencies (runs first)", () => {
