@@ -10,12 +10,12 @@ import {
 } from "../../convex/lib/auth";
 
 /**
- * WOR-97: Auth identity helper and authorization utilities tests
+ * WOR-163: requireAuth resolves user by identity.subject instead of identity.email
  *
- * Tests cover all 6 acceptance criteria using convex-test with the project
- * schema. At red state, the import from convex/lib/auth.ts produces TS2307
- * because the module has not been created yet — that is the expected
- * red-state error and is tolerated by the validator.
+ * Tests use withIdentity({ subject: userId }) (no email field) to exercise
+ * the subject-based resolution path. At red state, requireAuth/requireAdmin
+ * still use identity.email which is undefined when only subject is provided,
+ * so lookups fail — that is the expected red-state error.
  */
 
 /** Error shape from TechSpec §7.4 used by all auth helpers */
@@ -24,10 +24,10 @@ type AuthErrorData = { code: string; message: string; httpStatus: number };
 // ── AC1: requireAuth returns user or throws UNAUTHENTICATED ───────────
 
 describe("AC1 — requireAuth", () => {
-  it("returns the user doc when identity and user row exist", async () => {
+  it("returns the user doc when identity.subject matches a user _id", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => {
-      await ctx.db.insert("users", {
+    const insertedUserId = await t.run(async (ctx) => {
+      return await ctx.db.insert("users", {
         email: "alice@example.com",
         role: "USER",
         displayName: "alice",
@@ -35,8 +35,9 @@ describe("AC1 — requireAuth", () => {
       });
     });
     const user = await t
-      .withIdentity({ email: "alice@example.com" })
+      .withIdentity({ subject: insertedUserId })
       .run(async (ctx) => requireAuth(ctx));
+    expect(user._id).toEqual(insertedUserId);
     expect(user.email).toBe("alice@example.com");
     expect(user.role).toBe("USER");
   });
@@ -57,11 +58,11 @@ describe("AC1 — requireAuth", () => {
     }
   });
 
-  it("throws UNAUTHENTICATED (401) when identity exists but no user row", async () => {
+  it("throws UNAUTHENTICATED (401) when identity.subject does not match any user row", async () => {
     const t = convexTest(schema);
     expect.assertions(4);
     try {
-      await t.withIdentity({ email: "ghost@example.com" }).run(async (ctx) => {
+      await t.withIdentity({ subject: "nonexistent_user_id" }).run(async (ctx) => {
         await requireAuth(ctx);
       });
     } catch (err) {
@@ -277,8 +278,8 @@ describe("AC3 — requirePartyToCase", () => {
 describe("AC4 — requireAdmin", () => {
   it("returns the user doc when role is ADMIN", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => {
-      await ctx.db.insert("users", {
+    const adminUserId = await t.run(async (ctx) => {
+      return await ctx.db.insert("users", {
         email: "admin@example.com",
         role: "ADMIN",
         displayName: "admin",
@@ -286,16 +287,17 @@ describe("AC4 — requireAdmin", () => {
       });
     });
     const user = await t
-      .withIdentity({ email: "admin@example.com" })
+      .withIdentity({ subject: adminUserId })
       .run(async (ctx) => requireAdmin(ctx));
+    expect(user._id).toEqual(adminUserId);
     expect(user.email).toBe("admin@example.com");
     expect(user.role).toBe("ADMIN");
   });
 
   it("throws FORBIDDEN (403) when role is USER", async () => {
     const t = convexTest(schema);
-    await t.run(async (ctx) => {
-      await ctx.db.insert("users", {
+    const regularUserId = await t.run(async (ctx) => {
+      return await ctx.db.insert("users", {
         email: "regular@example.com",
         role: "USER",
         displayName: "regular",
@@ -305,7 +307,7 @@ describe("AC4 — requireAdmin", () => {
     expect.assertions(4);
     try {
       await t
-        .withIdentity({ email: "regular@example.com" })
+        .withIdentity({ subject: regularUserId })
         .run(async (ctx) => {
           await requireAdmin(ctx);
         });
@@ -319,13 +321,7 @@ describe("AC4 — requireAdmin", () => {
   });
 });
 
-// ── AC5: correct error codes on unauthorized access ───────────────────
-// Fully covered by the error-path assertions in ACs 1–4 above. Each test
-// verifies code, httpStatus, and non-empty message per TechSpec §7.4.
-
-// ── AC6: no bypass by importing table directly ────────────────────────
-// This is a design constraint enforced by convention. The tests above
-// verify that all four helpers exist and function correctly, establishing
-// them as the canonical access path. Enforcement that downstream Convex
-// functions use these helpers instead of querying tables directly is a
-// code-review concern, not a runtime-testable assertion.
+// ── AC5: unauthenticated guard preserved ──────────────────────────────
+// Covered by the "no identity" and "orphaned identity" tests in AC1 above.
+// Both verify ConvexError with code UNAUTHENTICATED, httpStatus 401, and
+// a non-empty message per TechSpec §7.4.
