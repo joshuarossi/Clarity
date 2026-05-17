@@ -43,15 +43,15 @@ function getCacheForClient(client: object): Map<string, string> {
 
 function hashContent(messages: CompressibleMessage[]): string {
   const concatenated = messages.map((m) => m.content).join("\n");
-  // FNV-1a hash — deterministic, low-collision for typical text, no Node deps
+  // FNV-1a-inspired dual hash — deterministic, low-collision for typical text, no Node deps
   let h1 = 0x811c9dc5;
   let h2 = 0x811c9dc5;
   for (let i = 0; i < concatenated.length; i++) {
     const ch = concatenated.charCodeAt(i);
     h1 = Math.imul(h1 ^ ch, 0x01000193);
-    h2 = Math.imul(h2 ^ (ch >>> 0), 0x01000193 + 0x100);
+    h2 = Math.imul(h2 ^ ch, 0x01000193 + 0x100);
   }
-  return ((h1 >>> 0) * 0x100000000 + (h2 >>> 0)).toString(36);
+  return (h1 >>> 0).toString(36) + (h2 >>> 0).toString(36);
 }
 
 /**
