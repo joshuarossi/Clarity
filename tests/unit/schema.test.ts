@@ -82,10 +82,15 @@ describe("AC1 — all 11 tables defined", () => {
 // AC2: All 15 indexes defined with correct names and field lists
 describe("AC2 — all 15 indexes defined", () => {
   it.each(Object.entries(EXPECTED_INDEXES))(
-    "table '%s' has expected indexes",
+    "table '%s' has exactly the expected indexes",
     (tableName, expectedIndexes) => {
       const table = schema.tables[tableName as keyof typeof schema.tables];
       const indexes = table[" indexes"]();
+
+      expect(
+        indexes.length,
+        `table "${tableName}" should have exactly ${expectedIndexes.length} index(es) but has ${indexes.length}`,
+      ).toBe(expectedIndexes.length);
 
       for (const expected of expectedIndexes) {
         const found = indexes.find(
@@ -107,7 +112,62 @@ describe("AC2 — all 15 indexes defined", () => {
       const table = schema.tables[tableName];
       totalIndexes += table[" indexes"]().length;
     }
-    expect(totalIndexes).toBe(22);
+    expect(totalIndexes).toBe(21);
+  });
+});
+
+// WOR-157 AC2: No two indexes on the same table cover identical fields
+describe("WOR-157 AC2 — no duplicate-field indexes", () => {
+  it("no table has two indexes covering the same fields", () => {
+    const duplicates: {
+      table: string;
+      indexA: string;
+      indexB: string;
+      fields: string[];
+    }[] = [];
+
+    for (const tableName of EXPECTED_TABLES) {
+      const table = schema.tables[tableName];
+      const indexes = table[" indexes"]() as {
+        indexDescriptor: string;
+        fields: string[];
+      }[];
+
+      for (let i = 0; i < indexes.length; i++) {
+        for (let j = i + 1; j < indexes.length; j++) {
+          if (
+            JSON.stringify(indexes[i].fields) ===
+            JSON.stringify(indexes[j].fields)
+          ) {
+            duplicates.push({
+              table: tableName,
+              indexA: indexes[i].indexDescriptor,
+              indexB: indexes[j].indexDescriptor,
+              fields: indexes[i].fields,
+            });
+          }
+        }
+      }
+    }
+
+    expect(duplicates).toEqual([]);
+  });
+});
+
+// WOR-157 AC3: by_email survives, redundant "email" index does not
+describe("WOR-157 AC3 — users table has by_email but not email index", () => {
+  it("users table contains the by_email index", () => {
+    const indexes = schema.tables.users[" indexes"]() as {
+      indexDescriptor: string;
+    }[];
+    expect(indexes.map((i) => i.indexDescriptor)).toContain("by_email");
+  });
+
+  it("users table does not contain the redundant email index", () => {
+    const indexes = schema.tables.users[" indexes"]() as {
+      indexDescriptor: string;
+    }[];
+    expect(indexes.map((i) => i.indexDescriptor)).not.toContain("email");
   });
 });
 
