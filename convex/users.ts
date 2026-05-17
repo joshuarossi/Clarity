@@ -1,16 +1,12 @@
 import { v } from "convex/values";
-import type { Id } from "./_generated/dataModel";
 import { query, mutation } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { requireAuth } from "./lib/auth";
 
 export const me = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
-    const userId = identity.subject as Id<"users">;
+    const userId = await getAuthUserId(ctx);
     if (!userId) {
       return null;
     }

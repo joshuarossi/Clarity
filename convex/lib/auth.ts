@@ -6,6 +6,7 @@ import {
   type DataModelFromSchemaDefinition,
   type DocumentByName,
 } from "convex/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 import schema from "../schema.js";
 
 type DataModel = DataModelFromSchemaDefinition<typeof schema>;
@@ -16,8 +17,8 @@ export async function requireAuth(ctx: {
   auth: Auth;
   db: GenericDatabaseReader<DataModel>;
 }): Promise<Doc<"users">> {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) {
+  const userId = await getAuthUserId(ctx);
+  if (!userId) {
     throw new ConvexError({
       code: "UNAUTHENTICATED" as const,
       message: "No authenticated session",
@@ -25,13 +26,12 @@ export async function requireAuth(ctx: {
     });
   }
 
-  const userId = identity.subject as Id<"users">;
   const user = await ctx.db.get(userId);
 
   if (!user) {
     throw new ConvexError({
       code: "UNAUTHENTICATED" as const,
-      message: `No user record found for subject ${identity.subject}`,
+      message: `No user record found for userId ${userId}`,
       httpStatus: 401,
     });
   }
@@ -94,8 +94,8 @@ export async function requireAdmin(ctx: {
   auth: Auth;
   db: GenericDatabaseReader<DataModel>;
 }): Promise<Doc<"users">> {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) {
+  const userId = await getAuthUserId(ctx);
+  if (!userId) {
     throw new ConvexError({
       code: "FORBIDDEN" as const,
       message: "Admin access required",
@@ -103,7 +103,6 @@ export async function requireAdmin(ctx: {
     });
   }
 
-  const userId = identity.subject as Id<"users">;
   const user = await ctx.db.get(userId);
 
   if (!user || user.role !== "ADMIN") {

@@ -10,21 +10,25 @@ import {
 } from "../../convex/lib/auth";
 
 /**
- * WOR-163: requireAuth resolves user by identity.subject instead of identity.email
+ * WOR-164: requireAuth / requireAdmin must use getAuthUserId(ctx) from
+ * @convex-dev/auth/server to resolve the user ID, NOT raw identity.subject.
  *
- * Tests use withIdentity({ subject: userId }) (no email field) to exercise
- * the subject-based resolution path. At red state, requireAuth/requireAdmin
- * still use identity.email which is undefined when only subject is provided,
- * so lookups fail — that is the expected red-state error.
+ * In production, @convex-dev/auth sets identity.subject to "userId|sessionId"
+ * (a composite string ~65 chars). Tests use withIdentity({ subject: `${userId}|${sessionId}` })
+ * to exercise this composite format. At red state, the code passes the full
+ * composite string to db.get() → "Invalid ID length 65".
  */
 
 /** Error shape from TechSpec §7.4 used by all auth helpers */
 type AuthErrorData = { code: string; message: string; httpStatus: number };
 
-// ── AC1: requireAuth returns user or throws UNAUTHENTICATED ───────────
+/** A fake session ID to build composite subjects like production @convex-dev/auth */
+const fakeSessionId = "s1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6";
 
-describe("AC1 — requireAuth", () => {
-  it("returns the user doc when identity.subject matches a user _id", async () => {
+// ── AC1: requireAuth uses getAuthUserId(ctx) to resolve user from composite subject ──
+
+describe("AC1 — requireAuth uses getAuthUserId", () => {
+  it("returns the user doc when composite subject contains a valid user _id", async () => {
     const t = convexTest(schema);
     const insertedUserId = await t.run(async (ctx) => {
       return await ctx.db.insert("users", {
@@ -35,7 +39,7 @@ describe("AC1 — requireAuth", () => {
       });
     });
     const user = await t
-      .withIdentity({ subject: insertedUserId })
+      .withIdentity({ subject: `${insertedUserId}|${fakeSessionId}` })
       .run(async (ctx) => requireAuth(ctx));
     expect(user._id).toEqual(insertedUserId);
     expect(user.email).toBe("alice@example.com");
@@ -63,7 +67,7 @@ describe("AC1 — requireAuth", () => {
     expect.assertions(4);
     try {
       await t
-        .withIdentity({ subject: "nonexistent_user_id" })
+        .withIdentity({ subject: `nonexistent_user_id|${fakeSessionId}` })
         .run(async (ctx) => {
           await requireAuth(ctx);
         });
@@ -275,10 +279,10 @@ describe("AC3 — requirePartyToCase", () => {
   });
 });
 
-// ── AC4: requireAdmin checks server-side role ─────────────────────────
+// ── AC2: requireAdmin uses getAuthUserId(ctx) to resolve admin from composite subject ──
 
-describe("AC4 — requireAdmin", () => {
-  it("returns the user doc when role is ADMIN", async () => {
+describe("AC2 — requireAdmin uses getAuthUserId", () => {
+  it("returns the user doc when role is ADMIN via composite subject", async () => {
     const t = convexTest(schema);
     const adminUserId = await t.run(async (ctx) => {
       return await ctx.db.insert("users", {
@@ -289,14 +293,14 @@ describe("AC4 — requireAdmin", () => {
       });
     });
     const user = await t
-      .withIdentity({ subject: adminUserId })
+      .withIdentity({ subject: `${adminUserId}|${fakeSessionId}` })
       .run(async (ctx) => requireAdmin(ctx));
     expect(user._id).toEqual(adminUserId);
     expect(user.email).toBe("admin@example.com");
     expect(user.role).toBe("ADMIN");
   });
 
-  it("throws FORBIDDEN (403) when role is USER", async () => {
+  it("throws FORBIDDEN (403) when role is USER via composite subject", async () => {
     const t = convexTest(schema);
     const regularUserId = await t.run(async (ctx) => {
       return await ctx.db.insert("users", {
@@ -308,7 +312,87 @@ describe("AC4 — requireAdmin", () => {
     });
     expect.assertions(4);
     try {
-      await t.withIdentity({ subject: regularUserId }).run(async (ctx) => {
+      await t
+        .withIdentity({ subject: `${regularUserId}|${fakeSessionId}` })
+        .run(async (ctx) => {
+          await requireAdmin(ctx);
+        });
+    } catch (err) {
+      expect(err).toBeInstanceOf(ConvexError);
+      const e = err as ConvexError<AuthErrorData>;
+      expect(e.data.code).toBe("FORBIDDEN");
+      expect(e.data.httpStatus).toBe(403);
+      expect(e.data.message).toBeTruthy();
+    }
+  });
+});
+
+// ── AC4: composite subject format is correctly handled ────────────────
+
+describe("AC4 — composite subject handling", () => {
+  it("requireAuth resolves user from a long composite subject without 'Invalid ID length'", async () => {
+    const t = convexTest(schema);
+    const insertedUserId = await t.run(async (ctx) => {
+      return await ctx.db.insert("users", {
+        email: "magic-link@example.com",
+        role: "USER",
+        displayName: "magic-link-user",
+        createdAt: Date.now(),
+      });
+    });
+    // Simulate a realistic composite subject: userId|someRandomSessionId
+    const compositeSubject = `${insertedUserId}|someRandomSessionId123456789012`;
+    const user = await t
+      .withIdentity({ subject: compositeSubject })
+      .run(async (ctx) => requireAuth(ctx));
+    expect(user._id).toEqual(insertedUserId);
+    expect(user.email).toBe("magic-link@example.com");
+  });
+
+  it("requireAdmin resolves admin from a long composite subject without 'Invalid ID length'", async () => {
+    const t = convexTest(schema);
+    const adminUserId = await t.run(async (ctx) => {
+      return await ctx.db.insert("users", {
+        email: "admin-oauth@example.com",
+        role: "ADMIN",
+        displayName: "admin-oauth",
+        createdAt: Date.now(),
+      });
+    });
+    const compositeSubject = `${adminUserId}|someRandomSessionId123456789012`;
+    const user = await t
+      .withIdentity({ subject: compositeSubject })
+      .run(async (ctx) => requireAdmin(ctx));
+    expect(user._id).toEqual(adminUserId);
+    expect(user.role).toBe("ADMIN");
+  });
+});
+
+// ── AC5: unauthenticated requests receive proper errors ───────────────
+
+describe("AC5 — unauthenticated guard preserved", () => {
+  it("requireAuth throws UNAUTHENTICATED (401) with meaningful message when no session", async () => {
+    const t = convexTest(schema);
+    expect.assertions(5);
+    try {
+      await t.run(async (ctx) => {
+        await requireAuth(ctx);
+      });
+    } catch (err) {
+      expect(err).toBeInstanceOf(ConvexError);
+      const e = err as ConvexError<AuthErrorData>;
+      expect(e.data.code).toBe("UNAUTHENTICATED");
+      expect(e.data.httpStatus).toBe(401);
+      expect(e.data.message).toBeTruthy();
+      expect(e.data.message).toContain("authenticated");
+    }
+  });
+
+  it("requireAdmin throws FORBIDDEN (403) when no session", async () => {
+    const t = convexTest(schema);
+    expect.assertions(4);
+    try {
+      await t.run(async (ctx) => {
         await requireAdmin(ctx);
       });
     } catch (err) {
@@ -320,8 +404,3 @@ describe("AC4 — requireAdmin", () => {
     }
   });
 });
-
-// ── AC5: unauthenticated guard preserved ──────────────────────────────
-// Covered by the "no identity" and "orphaned identity" tests in AC1 above.
-// Both verify ConvexError with code UNAUTHENTICATED, httpStatus 401, and
-// a non-empty message per TechSpec §7.4.

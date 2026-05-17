@@ -4,18 +4,22 @@ import schema from "../../convex/schema";
 import { api } from "../../convex/_generated/api";
 
 /**
- * WOR-163: users.me resolves user by identity.subject instead of identity.email
+ * WOR-164: users.me must use getAuthUserId(ctx) from @convex-dev/auth/server
+ * to resolve the user ID from the composite subject ("userId|sessionId"),
+ * NOT raw identity.subject.
  *
- * Tests use withIdentity({ subject: userId }) (no email field) to exercise
- * the subject-based resolution path. At red state, users.me still uses
- * identity.email which is undefined when only subject is provided, so the
- * query returns null — that is the expected red-state assertion error.
+ * Tests use withIdentity({ subject: `${userId}|${sessionId}` }) to exercise
+ * the composite format. At red state, users.me passes the full composite
+ * string to db.get() → "Invalid ID length 65".
  */
 
-// ── AC2: me returns the user doc when identity.subject matches ──────
+/** A fake session ID to build composite subjects like production @convex-dev/auth */
+const fakeSessionId = "s1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6";
 
-describe("AC2 — me returns user doc via identity.subject", () => {
-  it("returns the matching user document when identity.subject is a valid user _id", async () => {
+// ── AC3: users.me uses getAuthUserId(ctx) to resolve user from composite subject ──
+
+describe("AC3 — users.me uses getAuthUserId", () => {
+  it("returns the matching user document when composite subject contains a valid user _id", async () => {
     const t = convexTest(schema);
     const insertedUserId = await t.run(async (ctx) => {
       return await ctx.db.insert("users", {
@@ -26,7 +30,7 @@ describe("AC2 — me returns user doc via identity.subject", () => {
       });
     });
     const result = await t
-      .withIdentity({ subject: insertedUserId })
+      .withIdentity({ subject: `${insertedUserId}|${fakeSessionId}` })
       .query(api.users.me, {});
     expect(result).not.toBeNull();
     expect(result!._id).toEqual(insertedUserId);
@@ -39,10 +43,10 @@ describe("AC2 — me returns user doc via identity.subject", () => {
     expect(result).toBeNull();
   });
 
-  it("returns null when identity.subject does not match any user row", async () => {
+  it("returns null when composite subject does not match any user row", async () => {
     const t = convexTest(schema);
     const result = await t
-      .withIdentity({ subject: "nonexistent_user_id" })
+      .withIdentity({ subject: `nonexistent_user_id|${fakeSessionId}` })
       .query(api.users.me, {});
     expect(result).toBeNull();
   });

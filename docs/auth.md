@@ -46,7 +46,7 @@ the helpers below before proceeding.
 
 Returns the authenticated user's `Doc<"users">` record. Throws
 `UNAUTHENTICATED` (HTTP 401) if no valid session exists or if
-`identity.subject` (which holds the user's document `_id`) has no
+`getAuthUserId(ctx)` (from `@convex-dev/auth/server`) returns no
 matching row in the `users` table.
 
 **Typical usage:** first line of any query or mutation that needs the
@@ -72,8 +72,9 @@ case does not exist and `FORBIDDEN` (403) if the user is not a party.
 
 ### `requireAdmin(ctx)`
 
-Calls `requireAuth` internally, then checks that the user's `role` is
-`"ADMIN"`. Throws `FORBIDDEN` (403) otherwise.
+Uses `getAuthUserId(ctx)` to resolve the current user, then checks that
+the user's `role` is `"ADMIN"`. Throws `FORBIDDEN` (403) if no session
+exists or if the user is not an admin.
 
 **Typical usage:** admin-only operations such as template management or
 audit-log queries.
