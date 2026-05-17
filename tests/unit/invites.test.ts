@@ -197,7 +197,7 @@ describe("invites/redeem mutation — successful redemption", () => {
     expect(psRows[0].mainTopic).toBe("");
     expect(psRows[0].description).toBe("");
     expect(psRows[0].desiredOutcome).toBe("");
-    expect(psRows[0].formCompletedAt).toBeNull();
+    expect(psRows[0].formCompletedAt).toBeUndefined();
 
     // Verify inviteTokens status is CONSUMED with consumedAt and consumedByUserId
     const tokenRows = await t.run(async (ctx) =>
