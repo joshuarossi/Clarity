@@ -79,15 +79,17 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      # Uses a Convex *Preview* deploy key so CI runs against an isolated
+      # ephemeral deployment, never production.
       - name: Deploy Convex functions
         run: npx convex deploy --cmd 'echo "deployed"'
         env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_CI }}
 
       - name: Seed test data
         run: npx convex run seed:seed
         env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_CI }}
 
       - name: Run Playwright tests
         run: npx playwright test
