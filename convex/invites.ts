@@ -226,6 +226,9 @@ export const redeem = mutation({
       caseId: inviteToken.caseId,
       userId: user._id,
       role: "INVITEE",
+      mainTopic: "",
+      description: "",
+      desiredOutcome: "",
     });
 
     // 7. Mark token as consumed
