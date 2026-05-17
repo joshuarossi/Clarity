@@ -1,3 +1,4 @@
+import path from "path";
 import { defineConfig } from "vitest/config";
 
 // `server.deps.inline: ["convex-test"]` is required because convex-test uses
@@ -10,6 +11,11 @@ import { defineConfig } from "vitest/config";
 // config path is `test.server.deps.inline` (nested), not the legacy v1.x
 // top-level `deps.inline`.
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   test: {
     environment: "node",
     globals: false,
