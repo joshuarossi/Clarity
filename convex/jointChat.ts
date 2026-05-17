@@ -63,6 +63,14 @@ export const enterSession = mutation({
       status: newStatus,
       updatedAt: Date.now(),
     });
+
+    // Schedule Coach opening message generation (runs exactly once per case
+    // because the state machine prevents re-entry from JOINT_ACTIVE)
+    await ctx.scheduler.runAfter(
+      0,
+      internal.jointChat.generateCoachOpeningMessage,
+      { caseId },
+    );
   },
 });
 
@@ -779,6 +787,216 @@ export const generateCoachResponse = internalAction({
     await ctx.runMutation(internal.jointChat.finalizeCoachMessage, {
       messageId: coachMessageId,
       content: COACH_FALLBACK_MESSAGE,
+    });
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Coach opening message — generated once on first JOINT_ACTIVE entry (US-09b)
+// ---------------------------------------------------------------------------
+
+const COACH_OPENING_FALLBACK_MESSAGE =
+  "Welcome to the joint session. I'm here to help facilitate your conversation. Please take turns sharing your perspective, and I'll step in if I can help clarify or guide the discussion.";
+
+export const generateCoachOpeningMessage = internalAction({
+  args: {
+    caseId: v.id("cases"),
+  },
+  handler: async (ctx, args) => {
+    // 1. Read case and validate JOINT_ACTIVE
+    const caseDoc = await ctx.runQuery(internal.jointChat.getCaseForCoach, {
+      caseId: args.caseId,
+    });
+    if (!caseDoc || caseDoc.status !== "JOINT_ACTIVE") {
+      return;
+    }
+
+    // 2. Read party states for mainTopic and synthesis texts
+    const partyStates = await ctx.runQuery(
+      internal.jointChat.getPartyStatesForCoach,
+      { caseId: args.caseId },
+    );
+
+    const initiatorState = partyStates.find((ps) => ps.role === "INITIATOR");
+    const inviteeState = partyStates.find((ps) => ps.role === "INVITEE");
+    const mainTopic = initiatorState?.mainTopic ?? "";
+
+    // 3. Read template version
+    const templateVersion = await ctx.runQuery(
+      internal.jointChat.getTemplateVersionForCoach,
+      { templateVersionId: caseDoc.templateVersionId },
+    );
+
+    // 4. Assemble prompt — instruct Coach to produce an opening message
+    const openingInstruction = mainTopic
+      ? `Generate an opening message for this joint session. The main topic is: "${mainTopic}". Welcome both parties, briefly frame the conversation around this topic, and invite them to share their perspectives. Be warm, neutral, and concise.`
+      : `Generate an opening message for this joint session. Welcome both parties, explain your role as a neutral facilitator, and invite them to share their perspectives. Be warm, neutral, and concise.`;
+
+    const prompt = assemblePrompt({
+      role: "COACH",
+      caseId: args.caseId,
+      actingUserId: initiatorState?.userId ?? ("" as never),
+      recentHistory: [{ role: "user", content: openingInstruction }],
+      templateVersion: templateVersion
+        ? {
+            globalGuidance: templateVersion.globalGuidance,
+            coachInstructions: templateVersion.coachInstructions,
+          }
+        : undefined,
+      context: {
+        actingPartySynthesis: initiatorState?.synthesisText,
+        otherPartySynthesis: inviteeState?.synthesisText,
+      },
+    });
+
+    // 5. Insert STREAMING coach message
+    const coachMessageId = await ctx.runMutation(
+      internal.jointChat.insertCoachStreamingMessage,
+      { caseId: args.caseId, isIntervention: false },
+    );
+
+    // 6. Generate with streaming + privacy filter retry loop
+    const isMock = isClaudeMockEnabled();
+    const maxFilterAttempts = 3;
+
+    for (let filterAttempt = 0; filterAttempt < maxFilterAttempts; filterAttempt++) {
+      let finalContent = "";
+
+      try {
+        if (isMock) {
+          const mockResponse = getMockClaudeResponse("COACH");
+          const mockDelayMs = parseInt(process.env.CLAUDE_MOCK_DELAY_MS ?? "100", 10);
+          const chunkSize = Math.ceil(mockResponse.length / 5);
+          let content = "";
+
+          for (let i = 0; i < mockResponse.length; i += chunkSize) {
+            content += mockResponse.slice(i, i + chunkSize);
+            await ctx.runMutation(internal.jointChat.updateCoachStreamingMessage, {
+              messageId: coachMessageId,
+              content,
+            });
+            if (i + chunkSize < mockResponse.length) {
+              await sleep(mockDelayMs);
+            }
+          }
+          finalContent = content;
+        } else {
+          const apiKey = process.env.ANTHROPIC_API_KEY;
+          if (!apiKey) {
+            throw new Error("generateCoachOpeningMessage: ANTHROPIC_API_KEY environment variable is not configured");
+          }
+
+          const { default: Anthropic } = await import("@anthropic-ai/sdk");
+          const client = new Anthropic({ apiKey });
+
+          let attempt = 0;
+          const maxAttempts = 2;
+          let succeeded = false;
+
+          while (attempt < maxAttempts) {
+            try {
+              const stream = client.messages.stream({
+                model: "claude-sonnet-4-5",
+                max_tokens: 4096,
+                system: prompt.system,
+                messages: prompt.messages,
+              });
+
+              let content = "";
+              let lastFlush = Date.now();
+
+              stream.on("text", async (text) => {
+                content += text;
+                const now = Date.now();
+                if (now - lastFlush >= 50) {
+                  lastFlush = now;
+                  try {
+                    await ctx.runMutation(
+                      internal.jointChat.updateCoachStreamingMessage,
+                      { messageId: coachMessageId, content },
+                    );
+                  } catch (flushErr) {
+                    console.error("generateCoachOpeningMessage: flush error", {
+                      error: flushErr instanceof Error ? flushErr.message : String(flushErr),
+                    });
+                  }
+                }
+              });
+
+              const finalMessage = await stream.finalMessage();
+              finalContent = finalMessage.content
+                .filter((block) => block.type === "text")
+                .map((block) => block.text)
+                .join("");
+              succeeded = true;
+              break;
+            } catch (error: unknown) {
+              attempt++;
+              const statusCode = error instanceof Error && "status" in error
+                ? (error as Record<string, unknown>).status
+                : undefined;
+              const is429 = statusCode === 429;
+
+              if (attempt < maxAttempts) {
+                const delay = is429 ? 2000 * Math.pow(2, attempt - 1) : 2000;
+                await sleep(delay);
+              } else {
+                console.error("generateCoachOpeningMessage: Sonnet failed after retries", {
+                  error: error instanceof Error ? error.message : String(error),
+                });
+                await ctx.runMutation(internal.jointChat.markCoachMessageError, {
+                  messageId: coachMessageId,
+                });
+                return;
+              }
+            }
+          }
+
+          if (!succeeded) {
+            await ctx.runMutation(internal.jointChat.markCoachMessageError, {
+              messageId: coachMessageId,
+            });
+            return;
+          }
+        }
+
+        // 7. Privacy filter — check against both parties' raw private USER messages
+        const privateMessages = await ctx.runQuery(
+          internal.jointChat.getPrivateMessagesForCoach,
+          { caseId: args.caseId },
+        );
+        const rawUserMessages = privateMessages
+          .filter((m) => m.role === "USER")
+          .map((m) => m.content);
+
+        const filterResult = filterResponse(finalContent, rawUserMessages);
+
+        if (filterResult.passed) {
+          await ctx.runMutation(internal.jointChat.finalizeCoachMessage, {
+            messageId: coachMessageId,
+            content: finalContent,
+          });
+          return;
+        }
+
+        console.warn("generateCoachOpeningMessage: privacy filter rejected, retrying", {
+          attempt: filterAttempt + 1,
+        });
+      } catch (error: unknown) {
+        console.error("generateCoachOpeningMessage: unexpected error in generation loop", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        await ctx.runMutation(internal.jointChat.markCoachMessageError, {
+          messageId: coachMessageId,
+        });
+        return;
+      }
+    }
+
+    // All filter attempts exhausted — emit fallback
+    await ctx.runMutation(internal.jointChat.finalizeCoachMessage, {
+      messageId: coachMessageId,
+      content: COACH_OPENING_FALLBACK_MESSAGE,
     });
   },
 });
