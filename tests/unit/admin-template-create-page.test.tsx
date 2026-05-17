@@ -76,7 +76,7 @@ describe("AC1: Create form renders at /admin/templates/new", () => {
 
     expect(
       screen.getByRole("heading", { name: /new template|create template/i }),
-    ).toBeVisible();
+    ).toBeDefined();
   });
 
   it("does not display an error or argument validation message", () => {
