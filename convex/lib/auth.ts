@@ -25,15 +25,13 @@ export async function requireAuth(ctx: {
     });
   }
 
-  const user = await ctx.db
-    .query("users")
-    .withIndex("by_email", (q) => q.eq("email", identity.email!))
-    .unique();
+  const userId = identity.subject as Id<"users">;
+  const user = await ctx.db.get(userId);
 
   if (!user) {
     throw new ConvexError({
       code: "UNAUTHENTICATED" as const,
-      message: `No user record found for email ${identity.email}`,
+      message: `No user record found for subject ${identity.subject}`,
       httpStatus: 401,
     });
   }
@@ -105,10 +103,8 @@ export async function requireAdmin(ctx: {
     });
   }
 
-  const user = await ctx.db
-    .query("users")
-    .withIndex("by_email", (q) => q.eq("email", identity.email!))
-    .unique();
+  const userId = identity.subject as Id<"users">;
+  const user = await ctx.db.get(userId);
 
   if (!user || user.role !== "ADMIN") {
     throw new ConvexError({

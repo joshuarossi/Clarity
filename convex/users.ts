@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
 import { query, mutation } from "./_generated/server";
 import { requireAuth } from "./lib/auth";
 
@@ -9,14 +10,11 @@ export const me = query({
     if (!identity) {
       return null;
     }
-    const email = identity.email;
-    if (!email) {
+    const userId = identity.subject as Id<"users">;
+    if (!userId) {
       return null;
     }
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", email))
-      .unique();
+    const user = await ctx.db.get(userId);
     return user;
   },
 });
