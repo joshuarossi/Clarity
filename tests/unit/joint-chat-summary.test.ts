@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { convexTest } from "convex-test";
 import { anyApi } from "convex/server";
 import schema from "../../convex/schema";
@@ -219,7 +219,7 @@ describe("joint-chat-summary — AC1: PROGRESS triggers summary", () => {
     const latestCoach = coachMessages[coachMessages.length - 1];
     expect(latestCoach.status).toBe("COMPLETE");
     // The summary path uses summaryMode: true, so the mock returns COACH_SUMMARY
-    expect(latestCoach.content).toBe(getMockClaudeResponse("COACH_SUMMARY"));
+    expect(latestCoach.content).toBe(getMockClaudeResponse("COACH", true));
   });
 });
 
@@ -251,7 +251,7 @@ describe("joint-chat-summary — AC2: Summary distinct from intervention", () =>
     // Summary content should NOT be the generic COACH response
     expect(summaryMessage.content).not.toBe(getMockClaudeResponse("COACH"));
     // Summary content should be the COACH_SUMMARY variant
-    expect(summaryMessage.content).toBe(getMockClaudeResponse("COACH_SUMMARY"));
+    expect(summaryMessage.content).toBe(getMockClaudeResponse("COACH", true));
     // Summary is not an intervention
     expect(summaryMessage.isIntervention).toBeFalsy();
   });
@@ -288,6 +288,8 @@ describe("joint-chat-summary — AC3: Throttle mechanism", () => {
   });
 
   it("generates a summary when 6+ user messages since last Coach message", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
     // Seed with 8 user messages and a Coach message before them
     const { t, caseId } = await seedJointChatForSummary({
       userMessageCount: 8,
@@ -298,6 +300,9 @@ describe("joint-chat-summary — AC3: Throttle mechanism", () => {
     await t.action(api.jointChat.evaluateAndSummarize, {
       caseId,
     });
+
+    // Process scheduled generateCoachResponse (scheduled via ctx.scheduler.runAfter(0, ...))
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
 
     const messages = await t.run(async (ctx) =>
       ctx.db
@@ -311,8 +316,10 @@ describe("joint-chat-summary — AC3: Throttle mechanism", () => {
     );
     expect(newCoachMessages.length).toBeGreaterThanOrEqual(1);
     expect(newCoachMessages[newCoachMessages.length - 1].content).toBe(
-      getMockClaudeResponse("COACH_SUMMARY"),
+      getMockClaudeResponse("COACH", true),
     );
+
+    vi.useRealTimers();
   });
 });
 
@@ -345,7 +352,7 @@ describe("joint-chat-summary — AC4: Timer path bypasses suppression gate", () 
     expect(coachMessages.length).toBeGreaterThanOrEqual(1);
 
     const latestCoach = coachMessages[coachMessages.length - 1];
-    expect(latestCoach.content).toBe(getMockClaudeResponse("COACH_SUMMARY"));
+    expect(latestCoach.content).toBe(getMockClaudeResponse("COACH", true));
     // Timer-triggered summaries are NOT interventions
     expect(latestCoach.isIntervention).toBeFalsy();
   });
