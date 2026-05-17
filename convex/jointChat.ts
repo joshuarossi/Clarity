@@ -282,6 +282,22 @@ export const unilateralClose = mutation({
       closedAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    // Notify the other party about unilateral closure (US-11e)
+    const otherPartyUserId =
+      user._id === caseDoc.initiatorUserId
+        ? caseDoc.inviteeUserId
+        : caseDoc.initiatorUserId;
+
+    if (otherPartyUserId) {
+      await ctx.db.insert("notifications", {
+        userId: otherPartyUserId,
+        caseId,
+        type: "CASE_CLOSED_UNRESOLVED",
+        read: false,
+        createdAt: Date.now(),
+      });
+    }
   },
 });
 
