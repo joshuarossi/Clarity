@@ -3,7 +3,7 @@
 ## Sign-in providers (Convex Auth)
 
 Clarity uses [Convex Auth](https://labs.convex.dev/auth) for
-authentication. Two providers are configured in `convex/auth.config.ts`:
+authentication. Two providers are configured in `convex/auth.ts`:
 
 | Provider     | How it works                                   | Config env vars                                             |
 | ------------ | ---------------------------------------------- | ----------------------------------------------------------- |
@@ -11,6 +11,11 @@ authentication. Two providers are configured in `convex/auth.config.ts`:
 | Google OAuth | Standard OAuth 2.0 redirect flow               | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`      |
 
 Password-based registration is intentionally excluded.
+
+`convex/auth.config.ts` is a separate, platform-facing config file read
+by `npx convex deploy`. It exports only `{ domain, applicationID }`
+entries for JWT validation — it must **not** contain provider constructors
+or runtime logic.
 
 The `convexAuth()` helper in `convex/auth.ts` registers these providers
 and wires a `createOrUpdateUser` callback that delegates to
