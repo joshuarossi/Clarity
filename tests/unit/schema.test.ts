@@ -64,7 +64,11 @@ const EXPECTED_INDEXES: Record<string, { name: string; fields: string[] }[]> = {
     { name: "by_user", fields: ["userId"] },
     { name: "by_user_and_read", fields: ["userId", "read"] },
   ],
-  auditLog: [{ name: "by_actor", fields: ["actorUserId"] }],
+  auditLog: [
+    { name: "by_actor", fields: ["actorUserId"] },
+    { name: "by_action", fields: ["action"] },
+    { name: "by_createdAt", fields: ["createdAt"] },
+  ],
 };
 
 // AC1: convex/schema.ts defines all 11 tables
