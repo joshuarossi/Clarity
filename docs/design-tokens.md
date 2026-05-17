@@ -6,14 +6,14 @@ these tokens instead of hard-coded color, spacing, or typography values.
 
 ## File layout
 
-| File                           | Purpose                                                        |
-| ------------------------------ | -------------------------------------------------------------- |
+| File                           | Purpose                                                       |
+| ------------------------------ | ------------------------------------------------------------- |
 | `src/styles/globals.css`       | Design tokens, Tailwind v4 `@import` + `@theme`, base styles  |
-| `src/styles/components.css`    | Reusable class recipes (chat bubbles, buttons, banners)        |
-| `src/styles/theme.ts`          | TypeScript mirror of token values for JS-driven visuals        |
-| `src/lib/utils.ts`             | `cn()` class-merge helper (clsx + tailwind-merge)              |
-| `src/components/ui/button.tsx` | shadcn/ui Button with Clarity variant overrides                |
-| `components.json`              | shadcn CLI configuration (component paths, style, base color)  |
+| `src/styles/components.css`    | Reusable class recipes (chat bubbles, buttons, banners)       |
+| `src/styles/theme.ts`          | TypeScript mirror of token values for JS-driven visuals       |
+| `src/lib/utils.ts`             | `cn()` class-merge helper (clsx + tailwind-merge)             |
+| `src/components/ui/button.tsx` | shadcn/ui Button with Clarity variant overrides               |
+| `components.json`              | shadcn CLI configuration (component paths, style, base color) |
 
 ## Color palettes
 
@@ -118,12 +118,12 @@ automatically available as a Tailwind utility class — no separate
 
 `components.json` at the project root configures the shadcn CLI. Key paths:
 
-| Setting      | Value                  |
-| ------------ | ---------------------- |
+| Setting      | Value                    |
+| ------------ | ------------------------ |
 | CSS          | `src/styles/globals.css` |
-| Components   | `@/components`         |
-| UI           | `@/components/ui`      |
-| Utils (`cn`) | `@/lib/utils`          |
+| Components   | `@/components`           |
+| UI           | `@/components/ui`        |
+| Utils (`cn`) | `@/lib/utils`            |
 
 The `cn()` helper (re-exported from `src/lib/utils.ts`) merges class names
 using `clsx` + `tailwind-merge`, preventing conflicting Tailwind utilities.
