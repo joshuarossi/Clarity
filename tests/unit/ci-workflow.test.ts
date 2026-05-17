@@ -183,9 +183,7 @@ describe("WOR-108: E2E job", () => {
 
   it("does not use standalone convex run in any e2e step (AC2)", () => {
     const e2e = workflow.jobs["e2e"];
-    const stepRuns = e2e.steps
-      .filter((s) => s.run)
-      .map((s) => s.run!);
+    const stepRuns = e2e.steps.filter((s) => s.run).map((s) => s.run!);
     // A standalone "convex run" is any step that invokes "convex run" outside
     // of "convex deploy". The deploy step may contain "convex deploy ... --preview-run"
     // which includes the substring "run" but is NOT standalone.
