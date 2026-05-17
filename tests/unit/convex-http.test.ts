@@ -24,7 +24,9 @@ describe("convex/http.ts", () => {
 
     it("imports httpRouter from 'convex/server'", () => {
       const source = readSource();
-      expect(source).toMatch(/import.*httpRouter.*from\s+['"]convex\/server['"]/);
+      expect(source).toMatch(
+        /import.*httpRouter.*from\s+['"]convex\/server['"]/,
+      );
     });
 
     it("imports auth from './auth'", () => {
