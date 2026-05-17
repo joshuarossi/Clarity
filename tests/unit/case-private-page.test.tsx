@@ -45,6 +45,9 @@ vi.mock("react-router-dom", async () => {
     ...actual,
     useNavigate: () => mockNavigate,
     useParams: mockUseParams,
+    Navigate: ({ to }: { to: string }) => (
+      <div data-testid="navigate-redirect" data-to={to} />
+    ),
   };
 });
 
@@ -71,6 +74,8 @@ interface CaseDoc {
 
 interface PartyStates {
   self: {
+    role: string;
+    formCompletedAt: number | null;
     privateCoachingCompletedAt: number | null;
   };
   other: {
@@ -97,8 +102,8 @@ const DEFAULT_CASE: CaseDoc = {
 };
 
 const DEFAULT_PARTY_STATES: PartyStates = {
-  self: { privateCoachingCompletedAt: null },
-  other: { role: "invitee", hasCompletedPC: false },
+  self: { role: "INITIATOR", formCompletedAt: NOW - 100_000, privateCoachingCompletedAt: null },
+  other: { role: "INVITEE", hasCompletedPC: false },
 };
 
 const DEFAULT_OTHER_PARTY_NAME: OtherPartyName = {
@@ -643,6 +648,41 @@ describe("AC: AI error messages render inline with ERROR styling and Retry butto
     expect(
       screen.getByText(/encountered an error/i),
     ).toBeDefined();
+  });
+});
+
+// ── AC: Form-completion guard — invitee without formCompletedAt is redirected ──
+
+describe("AC: CasePrivatePage redirects invitees who have not submitted the intake form", () => {
+  it("redirects invitee without formCompletedAt to /cases/:caseId", () => {
+    partyStatesFixture = {
+      self: { role: "INVITEE", formCompletedAt: null, privateCoachingCompletedAt: null },
+      other: { role: "INITIATOR", hasCompletedPC: false },
+    };
+    renderPage();
+    const nav = screen.getByTestId("navigate-redirect");
+    expect(nav.getAttribute("data-to")).toBe(`/cases/${CASE_ID}`);
+  });
+
+  it("does NOT redirect invitee when formCompletedAt is set", () => {
+    partyStatesFixture = {
+      self: { role: "INVITEE", formCompletedAt: NOW - 50_000, privateCoachingCompletedAt: null },
+      other: { role: "INITIATOR", hasCompletedPC: false },
+    };
+    renderPage();
+    expect(screen.queryByTestId("navigate-redirect")).toBeNull();
+    // Chat UI should render normally
+    expect(screen.getByText(USER_MSG.content)).toBeDefined();
+  });
+
+  it("does NOT redirect initiator even without formCompletedAt check", () => {
+    partyStatesFixture = {
+      self: { role: "INITIATOR", formCompletedAt: NOW - 100_000, privateCoachingCompletedAt: null },
+      other: { role: "INVITEE", hasCompletedPC: false },
+    };
+    renderPage();
+    expect(screen.queryByTestId("navigate-redirect")).toBeNull();
+    expect(screen.getByText(USER_MSG.content)).toBeDefined();
   });
 });
 

@@ -241,7 +241,7 @@ describe("AC: Private coaching status shows invitee form when invitee has not co
     expect(screen.getByLabelText(/desired outcome/i)).toBeDefined();
   });
 
-  it("does not render invitee form when formCompletedAt is set", () => {
+  it("navigates to /cases/:caseId/private after form is completed", () => {
     partyStatesFixture = {
       self: { role: "INVITEE", formCompletedAt: NOW },
       other: { role: "INITIATOR", hasCompletedPC: false },
@@ -249,7 +249,7 @@ describe("AC: Private coaching status shows invitee form when invitee has not co
     renderPage();
     // Should navigate to /private instead of showing form
     const nav = screen.getByTestId("navigate-redirect");
-    expect(nav.getAttribute("data-to")).toContain("/private");
+    expect(nav.getAttribute("data-to")).toBe(`/cases/${CASE_ID}/private`);
   });
 
   it("does not render invitee form when user is the initiator", () => {
