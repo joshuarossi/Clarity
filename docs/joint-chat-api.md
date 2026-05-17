@@ -1,6 +1,6 @@
 # Joint Chat API
 
-> Module: `convex/jointChat.ts` · Tickets: WOR-124, WOR-125, WOR-144, WOR-145
+> Module: `convex/jointChat.ts` · Tickets: WOR-124, WOR-125, WOR-144, WOR-145, WOR-146
 
 ## Overview
 
@@ -142,6 +142,25 @@ for distinct UI styling.
 | New user message | Haiku gate decides |
 | @-mention | Always generates (bypasses gate) |
 | Silence timer (5+ exchanges) | Always generates |
+| Periodic summary (cron) | Always generates in summary mode |
+
+### `evaluateAndSummarize`
+
+A periodic internal action invoked by the `"joint session summary evaluation"`
+cron every 10 minutes. It queries all `JOINT_ACTIVE` cases (or a single
+specified case) and for each checks whether at least 6 user messages have been
+sent since the last Coach message. If the threshold is met, it schedules
+`generateCoachResponse` with `triggerType: "timer"`, which activates **summary
+mode** — appending a dedicated system instruction that asks the Coach to
+identify and summarise points of agreement rather than providing general
+facilitation.
+
+Throttle mechanism: the 6-message minimum prevents redundant summaries when
+conversation is slow or when agreement has not advanced since the last summary.
+
+| Arg | Type | Description |
+|-----|------|-------------|
+| `caseId` | `Id<"cases">` (optional) | Evaluate a single case; omit to scan all active cases |
 
 ## Error Codes
 
