@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { convexTest } from "convex-test";
 import { ConvexError } from "convex/values";
 import { anyApi } from "convex/server";
@@ -1116,6 +1116,28 @@ async function seedReadyForJointEnv() {
 }
 
 describe("WOR-144: Coach opening message on joint session entry", () => {
+  let savedClaudeMock: string | undefined;
+  let savedClaudeMockDelay: string | undefined;
+
+  beforeAll(() => {
+    savedClaudeMock = process.env.CLAUDE_MOCK;
+    savedClaudeMockDelay = process.env.CLAUDE_MOCK_DELAY_MS;
+    process.env.CLAUDE_MOCK = "true";
+    process.env.CLAUDE_MOCK_DELAY_MS = "10";
+  });
+
+  afterAll(() => {
+    if (savedClaudeMock === undefined) {
+      delete process.env.CLAUDE_MOCK;
+    } else {
+      process.env.CLAUDE_MOCK = savedClaudeMock;
+    }
+    if (savedClaudeMockDelay === undefined) {
+      delete process.env.CLAUDE_MOCK_DELAY_MS;
+    } else {
+      process.env.CLAUDE_MOCK_DELAY_MS = savedClaudeMockDelay;
+    }
+  });
   // ── AC1: enterSession schedules generateCoachOpeningMessage ────────────
 
   describe("AC1: enterSession schedules generateCoachOpeningMessage", () => {
@@ -1164,12 +1186,9 @@ describe("WOR-144: Coach opening message on joint session entry", () => {
         );
 
       // Run the internal action directly (CLAUDE_MOCK=true in test env)
-      await t.run(async (ctx) =>
-        ctx.runAction(
-          internal.jointChat.generateCoachOpeningMessage,
-          { caseId },
-        ),
-      );
+      await t.action(internal.jointChat.generateCoachOpeningMessage, {
+        caseId,
+      });
 
       // Verify a COACH message was inserted
       const messages = await t.run(async (ctx) =>
@@ -1201,12 +1220,9 @@ describe("WOR-144: Coach opening message on joint session entry", () => {
         );
 
       // Generate coach opening message
-      await t.run(async (ctx) =>
-        ctx.runAction(
-          internal.jointChat.generateCoachOpeningMessage,
-          { caseId },
-        ),
-      );
+      await t.action(internal.jointChat.generateCoachOpeningMessage, {
+        caseId,
+      });
 
       // Now send a user message
       await t
@@ -1293,17 +1309,15 @@ describe("WOR-144: Coach opening message on joint session entry", () => {
           userId: userAId,
           role: "USER",
           content: "My secret private thought about the conflict",
+          status: "COMPLETE",
           createdAt: Date.now(),
         });
       });
 
       // Run the internal action
-      await t.run(async (ctx) =>
-        ctx.runAction(
-          internal.jointChat.generateCoachOpeningMessage,
-          { caseId },
-        ),
-      );
+      await t.action(internal.jointChat.generateCoachOpeningMessage, {
+        caseId,
+      });
 
       // Verify the message has COMPLETE status (streaming lifecycle finished)
       const messages = await t.run(async (ctx) =>
