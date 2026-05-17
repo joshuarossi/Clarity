@@ -166,7 +166,7 @@ describe("invites/redeem mutation — successful redemption", () => {
     const { t, inviteeId, caseId, tokenString } = await seedInviteEnv();
 
     const result = await t
-      .withIdentity({ email: "invitee@test.com" })
+      .withIdentity({ subject: inviteeId })
       .run(async (ctx) =>
         ctx.runMutation(anyApi.invites.redeem, { token: tokenString }),
       );
@@ -217,10 +217,10 @@ describe("invites/redeem mutation — successful redemption", () => {
 
 describe("invites/redeem — case status invariant", () => {
   it("does NOT change case status — remains DRAFT_PRIVATE_COACHING after redeem", async () => {
-    const { t, caseId, tokenString } = await seedInviteEnv();
+    const { t, inviteeId, caseId, tokenString } = await seedInviteEnv();
 
     await t
-      .withIdentity({ email: "invitee@test.com" })
+      .withIdentity({ subject: inviteeId })
       .run(async (ctx) =>
         ctx.runMutation(anyApi.invites.redeem, { token: tokenString }),
       );
@@ -235,17 +235,17 @@ describe("invites/redeem — case status invariant", () => {
 
 describe("invites/redeem — consumed token", () => {
   it("throws TOKEN_INVALID when token has already been consumed", async () => {
-    const { t, tokenString } = await seedInviteEnv();
+    const { t, inviteeId, tokenString } = await seedInviteEnv();
 
     // First redemption succeeds
     await t
-      .withIdentity({ email: "invitee@test.com" })
+      .withIdentity({ subject: inviteeId })
       .run(async (ctx) =>
         ctx.runMutation(anyApi.invites.redeem, { token: tokenString }),
       );
 
     // Create a third user to attempt second redemption
-    await t.run(async (ctx) =>
+    const thirdPartyId = await t.run(async (ctx) =>
       ctx.db.insert("users", {
         email: "thirdparty@test.com",
         displayName: "Third",
@@ -257,7 +257,7 @@ describe("invites/redeem — consumed token", () => {
     // Second redemption throws TOKEN_INVALID
     await expectConvexError(
       t
-        .withIdentity({ email: "thirdparty@test.com" })
+        .withIdentity({ subject: thirdPartyId })
         .run(async (ctx) =>
           ctx.runMutation(anyApi.invites.redeem, { token: tokenString }),
         ),
@@ -266,10 +266,10 @@ describe("invites/redeem — consumed token", () => {
   });
 
   it("throws TOKEN_INVALID when token does not exist", async () => {
-    const { t } = await seedInviteEnv();
+    const { t, inviteeId } = await seedInviteEnv();
 
     await expectConvexError(
-      t.withIdentity({ email: "invitee@test.com" }).run(async (ctx) =>
+      t.withIdentity({ subject: inviteeId }).run(async (ctx) =>
         ctx.runMutation(anyApi.invites.redeem, {
           token: "nonexistent_token_value_here____",
         }),
@@ -283,11 +283,11 @@ describe("invites/redeem — consumed token", () => {
 
 describe("invites/redeem — self-redeem prevention", () => {
   it("throws CONFLICT when the initiator tries to redeem their own invite", async () => {
-    const { t, tokenString } = await seedInviteEnv();
+    const { t, initiatorId, tokenString } = await seedInviteEnv();
 
     await expectConvexError(
       t
-        .withIdentity({ email: "initiator@test.com" })
+        .withIdentity({ subject: initiatorId })
         .run(async (ctx) =>
           ctx.runMutation(anyApi.invites.redeem, { token: tokenString }),
         ),

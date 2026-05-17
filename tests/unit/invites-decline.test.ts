@@ -120,10 +120,10 @@ async function seedDeclineEnv() {
 
 describe("invites/decline — successful decline", () => {
   it("transitions case from DRAFT_PRIVATE_COACHING to CLOSED_ABANDONED", async () => {
-    const { t, caseId, tokenString } = await seedDeclineEnv();
+    const { t, inviteeId, caseId, tokenString } = await seedDeclineEnv();
 
     await t
-      .withIdentity({ email: "invitee@test.com" })
+      .withIdentity({ subject: inviteeId })
       .run(async (ctx) =>
         ctx.runMutation(anyApi.invites.decline, { token: tokenString }),
       );
@@ -134,12 +134,12 @@ describe("invites/decline — successful decline", () => {
   });
 
   it("sets closedAt timestamp on the case", async () => {
-    const { t, caseId, tokenString } = await seedDeclineEnv();
+    const { t, inviteeId, caseId, tokenString } = await seedDeclineEnv();
 
     const beforeDecline = Date.now();
 
     await t
-      .withIdentity({ email: "invitee@test.com" })
+      .withIdentity({ subject: inviteeId })
       .run(async (ctx) =>
         ctx.runMutation(anyApi.invites.decline, { token: tokenString }),
       );
@@ -154,7 +154,7 @@ describe("invites/decline — successful decline", () => {
     const { t, tokenId, inviteeId, tokenString } = await seedDeclineEnv();
 
     await t
-      .withIdentity({ email: "invitee@test.com" })
+      .withIdentity({ subject: inviteeId })
       .run(async (ctx) =>
         ctx.runMutation(anyApi.invites.decline, { token: tokenString }),
       );
@@ -167,10 +167,10 @@ describe("invites/decline — successful decline", () => {
   });
 
   it("returns null on success", async () => {
-    const { t, tokenString } = await seedDeclineEnv();
+    const { t, inviteeId, tokenString } = await seedDeclineEnv();
 
     const result = await t
-      .withIdentity({ email: "invitee@test.com" })
+      .withIdentity({ subject: inviteeId })
       .run(async (ctx) =>
         ctx.runMutation(anyApi.invites.decline, { token: tokenString }),
       );
@@ -198,11 +198,11 @@ describe("invites/decline — auth enforcement", () => {
 
 describe("invites/decline — self-decline prevention", () => {
   it("throws CONFLICT when the initiator tries to decline their own invite", async () => {
-    const { t, tokenString } = await seedDeclineEnv();
+    const { t, initiatorId, tokenString } = await seedDeclineEnv();
 
     await expectConvexError(
       t
-        .withIdentity({ email: "initiator@test.com" })
+        .withIdentity({ subject: initiatorId })
         .run(async (ctx) =>
           ctx.runMutation(anyApi.invites.decline, { token: tokenString }),
         ),
@@ -215,7 +215,7 @@ describe("invites/decline — self-decline prevention", () => {
 
 describe("invites/decline — state machine enforcement", () => {
   it("throws CONFLICT when case is not in DRAFT_PRIVATE_COACHING", async () => {
-    const { t, versionId, tokenString } = await seedDeclineEnv();
+    const { t, inviteeId, versionId, tokenString } = await seedDeclineEnv();
 
     // Create a new user, case in BOTH_PRIVATE_COACHING, and token
     const altInitiatorId = await t.run(async (ctx) =>
@@ -253,7 +253,7 @@ describe("invites/decline — state machine enforcement", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "invitee@test.com" })
+        .withIdentity({ subject: inviteeId })
         .run(async (ctx) =>
           ctx.runMutation(anyApi.invites.decline, { token: altTokenString }),
         ),
@@ -283,7 +283,7 @@ describe("invites/decline — invalid token handling", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "invitee@test.com" })
+        .withIdentity({ subject: inviteeId })
         .run(async (ctx) =>
           ctx.runMutation(anyApi.invites.decline, { token: tokenString }),
         ),
@@ -292,10 +292,10 @@ describe("invites/decline — invalid token handling", () => {
   });
 
   it("throws TOKEN_INVALID for a nonexistent token", async () => {
-    const { t } = await seedDeclineEnv();
+    const { t, inviteeId } = await seedDeclineEnv();
 
     await expectConvexError(
-      t.withIdentity({ email: "invitee@test.com" }).run(async (ctx) =>
+      t.withIdentity({ subject: inviteeId }).run(async (ctx) =>
         ctx.runMutation(anyApi.invites.decline, {
           token: "nonexistent_token_value_here____",
         }),

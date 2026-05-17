@@ -45,8 +45,9 @@ the helpers below before proceeding.
 ### `requireAuth(ctx)`
 
 Returns the authenticated user's `Doc<"users">` record. Throws
-`UNAUTHENTICATED` (HTTP 401) if no valid session exists or if the
-identity's email has no matching row in the `users` table.
+`UNAUTHENTICATED` (HTTP 401) if no valid session exists or if
+`identity.subject` (which holds the user's document `_id`) has no
+matching row in the `users` table.
 
 **Typical usage:** first line of any query or mutation that needs the
 current user.
@@ -114,7 +115,7 @@ A **Sign out** button logs the user out and redirects to the login page.
 
 | Code            | HTTP Status | When                             |
 | --------------- | ----------- | -------------------------------- |
-| UNAUTHENTICATED | 401         | No session or unknown email      |
+| UNAUTHENTICATED | 401         | No session or unknown subject    |
 | FORBIDDEN       | 403         | Insufficient role or not a party |
 | NOT_FOUND       | 404         | Case ID does not exist           |
 

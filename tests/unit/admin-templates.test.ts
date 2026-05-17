@@ -93,7 +93,7 @@ describe("admin/listAll query", () => {
     });
 
     const result = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAll, {});
 
     expect(result).toHaveLength(2);
@@ -104,10 +104,10 @@ describe("admin/listAll query", () => {
 
   it("throws FORBIDDEN for non-admin user", async () => {
     const t = convexTest(schema);
-    await seedRegularUser(t);
+    const userId = await seedRegularUser(t);
 
     await expectConvexError(
-      t.withIdentity({ email: "user@test.com" }).query(api.admin.listAll, {}),
+      t.withIdentity({ subject: userId }).query(api.admin.listAll, {}),
       "FORBIDDEN",
     );
   });
@@ -152,7 +152,7 @@ describe("admin/listVersions query", () => {
     });
 
     const result = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listVersions, { templateId });
 
     expect(result).toHaveLength(3);
@@ -163,7 +163,7 @@ describe("admin/listVersions query", () => {
 
   it("throws FORBIDDEN for non-admin user", async () => {
     const t = convexTest(schema);
-    await seedRegularUser(t);
+    const userId = await seedRegularUser(t);
     const adminId = await t.run(async (ctx) =>
       ctx.db.insert("users", {
         email: "admin2@test.com",
@@ -183,7 +183,7 @@ describe("admin/listVersions query", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "user@test.com" })
+        .withIdentity({ subject: userId })
         .query(api.admin.listVersions, { templateId }),
       "FORBIDDEN",
     );
@@ -198,7 +198,7 @@ describe("admin/create mutation", () => {
     const adminId = await seedAdmin(t);
 
     const templateId = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.create, {
         category: "workplace",
         name: "New Template",
@@ -246,10 +246,10 @@ describe("admin/create mutation", () => {
 
   it("throws FORBIDDEN for non-admin user", async () => {
     const t = convexTest(schema);
-    await seedRegularUser(t);
+    const userId = await seedRegularUser(t);
 
     await expectConvexError(
-      t.withIdentity({ email: "user@test.com" }).mutation(api.admin.create, {
+      t.withIdentity({ subject: userId }).mutation(api.admin.create, {
         category: "workplace",
         name: "Template",
         globalGuidance: "guidance",
@@ -268,7 +268,7 @@ describe("admin/publishNewVersion mutation", () => {
 
     // Create template with v1
     const templateId = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.create, {
         category: "workplace",
         name: "Versioned Template",
@@ -286,7 +286,7 @@ describe("admin/publishNewVersion mutation", () => {
 
     // Publish v2
     const newVersionId = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.publishNewVersion, {
         templateId,
         globalGuidance: "v2 guidance",
@@ -330,7 +330,7 @@ describe("admin/publishNewVersion mutation", () => {
 
   it("throws NOT_FOUND for non-existent template", async () => {
     const t = convexTest(schema);
-    await seedAdmin(t);
+    const adminId = await seedAdmin(t);
 
     // Create a template to get a valid-format ID, then use a different one
     const templateId = await t.run(async (ctx) => {
@@ -338,10 +338,7 @@ describe("admin/publishNewVersion mutation", () => {
         category: "workplace",
         name: "Temp",
         createdAt: Date.now(),
-        createdByUserId: (await ctx.db
-          .query("users")
-          .withIndex("by_email", (q) => q.eq("email", "admin@test.com"))
-          .unique())!._id,
+        createdByUserId: adminId,
       });
       await ctx.db.delete(id);
       return id;
@@ -349,7 +346,7 @@ describe("admin/publishNewVersion mutation", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "admin@test.com" })
+        .withIdentity({ subject: adminId })
         .mutation(api.admin.publishNewVersion, {
           templateId,
           globalGuidance: "guidance",
@@ -360,7 +357,7 @@ describe("admin/publishNewVersion mutation", () => {
 
   it("throws FORBIDDEN for non-admin user", async () => {
     const t = convexTest(schema);
-    await seedRegularUser(t);
+    const userId = await seedRegularUser(t);
     const adminId = await t.run(async (ctx) =>
       ctx.db.insert("users", {
         email: "admin3@test.com",
@@ -380,7 +377,7 @@ describe("admin/publishNewVersion mutation", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "user@test.com" })
+        .withIdentity({ subject: userId })
         .mutation(api.admin.publishNewVersion, {
           templateId,
           globalGuidance: "guidance",
@@ -399,7 +396,7 @@ describe("case pinning unaffected by new version publication", () => {
 
     // Create template with v1
     const templateId = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.create, {
         category: "workplace",
         name: "Case-Pinned Template",
@@ -428,7 +425,7 @@ describe("case pinning unaffected by new version publication", () => {
 
     // Publish v2
     await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.publishNewVersion, {
         templateId,
         globalGuidance: "v2 guidance",
@@ -453,7 +450,7 @@ describe("admin/archive mutation", () => {
     const adminId = await seedAdmin(t);
 
     const templateId = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.create, {
         category: "workplace",
         name: "Template To Archive",
@@ -461,7 +458,7 @@ describe("admin/archive mutation", () => {
       });
 
     const result = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.archive, { templateId });
 
     expect(result).toBeNull();
@@ -490,7 +487,7 @@ describe("admin/archive mutation", () => {
     const adminId = await seedAdmin(t);
 
     const templateId = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.create, {
         category: "workplace",
         name: "Double Archive",
@@ -499,7 +496,7 @@ describe("admin/archive mutation", () => {
 
     // Archive first time
     await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.archive, { templateId });
 
     const templateAfterFirst = await t.run(async (ctx) =>
@@ -509,7 +506,7 @@ describe("admin/archive mutation", () => {
 
     // Archive second time (small delay simulated by just calling again)
     await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.archive, { templateId });
 
     const templateAfterSecond = await t.run(async (ctx) =>
@@ -532,17 +529,14 @@ describe("admin/archive mutation", () => {
 
   it("throws NOT_FOUND for non-existent template", async () => {
     const t = convexTest(schema);
-    await seedAdmin(t);
+    const adminId = await seedAdmin(t);
 
     const templateId = await t.run(async (ctx) => {
       const id = await ctx.db.insert("templates", {
         category: "workplace",
         name: "Temp",
         createdAt: Date.now(),
-        createdByUserId: (await ctx.db
-          .query("users")
-          .withIndex("by_email", (q) => q.eq("email", "admin@test.com"))
-          .unique())!._id,
+        createdByUserId: adminId,
       });
       await ctx.db.delete(id);
       return id;
@@ -550,7 +544,7 @@ describe("admin/archive mutation", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "admin@test.com" })
+        .withIdentity({ subject: adminId })
         .mutation(api.admin.archive, { templateId }),
       "NOT_FOUND",
     );
@@ -558,7 +552,7 @@ describe("admin/archive mutation", () => {
 
   it("throws FORBIDDEN for non-admin user", async () => {
     const t = convexTest(schema);
-    await seedRegularUser(t);
+    const userId = await seedRegularUser(t);
     const adminId = await t.run(async (ctx) =>
       ctx.db.insert("users", {
         email: "admin4@test.com",
@@ -578,7 +572,7 @@ describe("admin/archive mutation", () => {
 
     await expectConvexError(
       t
-        .withIdentity({ email: "user@test.com" })
+        .withIdentity({ subject: userId })
         .mutation(api.admin.archive, { templateId }),
       "FORBIDDEN",
     );
@@ -590,10 +584,10 @@ describe("admin/archive mutation", () => {
 describe("archived template resolvability", () => {
   it("listAll still returns archived templates", async () => {
     const t = convexTest(schema);
-    await seedAdmin(t);
+    const adminId = await seedAdmin(t);
 
     const templateId = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.create, {
         category: "workplace",
         name: "Will Archive",
@@ -601,11 +595,11 @@ describe("archived template resolvability", () => {
       });
 
     await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.archive, { templateId });
 
     const allTemplates = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listAll, {});
 
     const found = allTemplates.find(
@@ -620,7 +614,7 @@ describe("archived template resolvability", () => {
     const adminId = await seedAdmin(t);
 
     const templateId = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.create, {
         category: "workplace",
         name: "Archivable Template",
@@ -648,7 +642,7 @@ describe("archived template resolvability", () => {
 
     // Archive the template
     await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.archive, { templateId });
 
     // Verify version data still resolvable
@@ -659,7 +653,7 @@ describe("archived template resolvability", () => {
 
     // Verify listVersions still works for archived template
     const versions = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .query(api.admin.listVersions, { templateId });
     expect(versions).toHaveLength(1);
     expect(versions[0].globalGuidance).toBe("resolvable guidance");
@@ -674,7 +668,7 @@ describe("audit log structure", () => {
     const adminId = await seedAdmin(t);
 
     const templateId = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.create, {
         category: "workplace",
         name: "Audit Test Template",
@@ -703,7 +697,7 @@ describe("audit log structure", () => {
     const adminId = await seedAdmin(t);
 
     const templateId = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.create, {
         category: "workplace",
         name: "Audit Publish Template",
@@ -711,7 +705,7 @@ describe("audit log structure", () => {
       });
 
     const newVersionId = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.publishNewVersion, {
         templateId,
         globalGuidance: "v2",
@@ -740,7 +734,7 @@ describe("audit log structure", () => {
     const adminId = await seedAdmin(t);
 
     const templateId = await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.create, {
         category: "workplace",
         name: "Audit Archive Template",
@@ -748,7 +742,7 @@ describe("audit log structure", () => {
       });
 
     await t
-      .withIdentity({ email: "admin@test.com" })
+      .withIdentity({ subject: adminId })
       .mutation(api.admin.archive, { templateId });
 
     const auditLogs = await t.run(async (ctx) =>
