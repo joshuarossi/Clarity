@@ -351,16 +351,14 @@ describe("cases/create mutation — standard mode", () => {
   it("creates case with DRAFT_PRIVATE_COACHING, initiator partyState, and invite token", async () => {
     const { t, userId } = await seedEnv("creator@test.com");
 
-    const result = await t
-      .withIdentity({ subject: userId })
-      .run(async (ctx) =>
-        ctx.runMutation(api.cases.create, {
-          category: "workplace",
-          mainTopic: "Conflict topic",
-          description: "Conflict description",
-          desiredOutcome: "Resolution",
-        }),
-      );
+    const result = await t.withIdentity({ subject: userId }).run(async (ctx) =>
+      ctx.runMutation(api.cases.create, {
+        category: "workplace",
+        mainTopic: "Conflict topic",
+        description: "Conflict description",
+        desiredOutcome: "Resolution",
+      }),
+    );
 
     expect(result.caseId).toBeDefined();
     expect(result.inviteUrl).not.toBeNull();
@@ -415,17 +413,15 @@ describe("cases/create mutation — solo mode", () => {
   it("creates case with BOTH_PRIVATE_COACHING, two partyStates, no invite", async () => {
     const { t, userId } = await seedEnv("solo@test.com", "personal");
 
-    const result = await t
-      .withIdentity({ subject: userId })
-      .run(async (ctx) =>
-        ctx.runMutation(api.cases.create, {
-          category: "personal",
-          mainTopic: "Solo topic",
-          description: "Solo desc",
-          desiredOutcome: "Solo outcome",
-          isSolo: true,
-        }),
-      );
+    const result = await t.withIdentity({ subject: userId }).run(async (ctx) =>
+      ctx.runMutation(api.cases.create, {
+        category: "personal",
+        mainTopic: "Solo topic",
+        description: "Solo desc",
+        desiredOutcome: "Solo outcome",
+        isSolo: true,
+      }),
+    );
 
     expect(result.caseId).toBeDefined();
     expect(result.inviteUrl).toBeNull();
@@ -544,16 +540,14 @@ describe("cases/updateMyForm mutation", () => {
   it("updates partyStates form fields and refreshes cases.updatedAt", async () => {
     const { t, userId } = await seedEnv("updater@test.com");
 
-    const created = await t
-      .withIdentity({ subject: userId })
-      .run(async (ctx) =>
-        ctx.runMutation(api.cases.create, {
-          category: "workplace",
-          mainTopic: "Original topic",
-          description: "Original desc",
-          desiredOutcome: "Original outcome",
-        }),
-      );
+    const created = await t.withIdentity({ subject: userId }).run(async (ctx) =>
+      ctx.runMutation(api.cases.create, {
+        category: "workplace",
+        mainTopic: "Original topic",
+        description: "Original desc",
+        desiredOutcome: "Original outcome",
+      }),
+    );
 
     const casesBefore = await t.run(async (ctx) =>
       ctx.db.query("cases").collect(),
@@ -593,16 +587,14 @@ describe("cases/updateMyForm mutation", () => {
   it("does not modify case status (state machine: updateMyForm is not a transition)", async () => {
     const { t, userId } = await seedEnv("sm@test.com");
 
-    const created = await t
-      .withIdentity({ subject: userId })
-      .run(async (ctx) =>
-        ctx.runMutation(api.cases.create, {
-          category: "workplace",
-          mainTopic: "Topic",
-          description: "Desc",
-          desiredOutcome: "Outcome",
-        }),
-      );
+    const created = await t.withIdentity({ subject: userId }).run(async (ctx) =>
+      ctx.runMutation(api.cases.create, {
+        category: "workplace",
+        mainTopic: "Topic",
+        description: "Desc",
+        desiredOutcome: "Outcome",
+      }),
+    );
 
     const casesBefore = await t.run(async (ctx) =>
       ctx.db.query("cases").collect(),

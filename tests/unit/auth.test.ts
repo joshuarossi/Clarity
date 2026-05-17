@@ -62,9 +62,11 @@ describe("AC1 — requireAuth", () => {
     const t = convexTest(schema);
     expect.assertions(4);
     try {
-      await t.withIdentity({ subject: "nonexistent_user_id" }).run(async (ctx) => {
-        await requireAuth(ctx);
-      });
+      await t
+        .withIdentity({ subject: "nonexistent_user_id" })
+        .run(async (ctx) => {
+          await requireAuth(ctx);
+        });
     } catch (err) {
       expect(err).toBeInstanceOf(ConvexError);
       const e = err as ConvexError<AuthErrorData>;
@@ -306,11 +308,9 @@ describe("AC4 — requireAdmin", () => {
     });
     expect.assertions(4);
     try {
-      await t
-        .withIdentity({ subject: regularUserId })
-        .run(async (ctx) => {
-          await requireAdmin(ctx);
-        });
+      await t.withIdentity({ subject: regularUserId }).run(async (ctx) => {
+        await requireAdmin(ctx);
+      });
     } catch (err) {
       expect(err).toBeInstanceOf(ConvexError);
       const e = err as ConvexError<AuthErrorData>;

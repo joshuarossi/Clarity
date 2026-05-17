@@ -135,7 +135,8 @@ describe("invites/getForCase — successful retrieval", () => {
 
 describe("invites/getForCase — consumed token", () => {
   it("returns null when the invite token has been consumed", async () => {
-    const { t, initiatorId, caseId, tokenId, nonInitiatorId } = await seedGetForCaseEnv();
+    const { t, initiatorId, caseId, tokenId, nonInitiatorId } =
+      await seedGetForCaseEnv();
 
     // Mark the token as consumed
     await t.run(async (ctx) =>
