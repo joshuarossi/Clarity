@@ -1,6 +1,6 @@
 # Joint Chat API
 
-> Module: `convex/jointChat.ts` · Tickets: WOR-124, WOR-125
+> Module: `convex/jointChat.ts` · Tickets: WOR-124, WOR-125, WOR-144
 
 ## Overview
 
@@ -32,6 +32,19 @@ guidance generated during the synthesis phase. Defined in the
 `enterSession` mutation's companion query (see WOR-123).
 
 ## Mutations
+
+### `enterSession`
+
+Transitions the case from `READY_FOR_JOINT` to `JOINT_ACTIVE` via the
+state machine. On the **first** such transition the mutation schedules
+`generateCoachOpeningMessage`, which produces a Coach opening message
+grounded in the case's `mainTopic`. The state machine prevents re-entry,
+so duplicate opening messages cannot be generated.
+
+| Arg | Type | Description |
+|-----|------|-------------|
+| `caseId` | `Id<"cases">` | Target case |
+| `viewAsRole` | `"INITIATOR" \| "INVITEE"` (optional) | Solo-mode role selector |
 
 ### `sendUserMessage`
 
@@ -85,6 +98,19 @@ machine. Either party can invoke this at any time during `JOINT_ACTIVE`.
 
 ## Internal Actions
 
+### `generateCoachOpeningMessage`
+
+Scheduled by `enterSession` on the first transition to `JOINT_ACTIVE`.
+Generates a contextual opening message where the Coach acts as a neutral
+facilitator, grounding the conversation in the case's `mainTopic`. Uses
+the same streaming-insert path as `generateCoachResponse` (insert →
+stream → finalize) and applies the privacy response filter before
+finalizing. On failure after retries the message row is marked `ERROR`.
+
+| Arg | Type | Description |
+|-----|------|-------------|
+| `caseId` | `Id<"cases">` | The case entering the joint session |
+
 ### `generateCoachResponse`
 
 Scheduled by `sendUserMessage` after each user message. Implements a two-step
@@ -126,5 +152,6 @@ for distinct UI styling.
 
 All status transitions go through `convex/lib/stateMachine.ts`:
 
+- `READY_FOR_JOINT` → `JOINT_ACTIVE` (via `enterSession`, event `START_JOINT`)
 - `JOINT_ACTIVE` → `CLOSED_RESOLVED` (via `confirmClosure`, event `RESOLVE`)
 - `JOINT_ACTIVE` → `CLOSED_UNRESOLVED` (via `unilateralClose`, event `CLOSE_UNRESOLVED`)
