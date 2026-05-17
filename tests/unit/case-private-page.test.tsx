@@ -541,7 +541,7 @@ describe("AC: Mark Complete opens confirmation dialog with message count and par
 describe("AC: After marking complete, view shows read-only state with status message", () => {
   beforeEach(() => {
     partyStatesFixture = {
-      self: { privateCoachingCompletedAt: NOW },
+      self: { role: "INITIATOR", formCompletedAt: NOW - 100_000, privateCoachingCompletedAt: NOW },
       other: { role: "invitee", hasCompletedPC: false },
     };
   });
@@ -576,7 +576,7 @@ describe("AC: After marking complete, view shows read-only state with status mes
 
   it("shows 'both complete' message when other party also completed", () => {
     partyStatesFixture = {
-      self: { privateCoachingCompletedAt: NOW },
+      self: { role: "INITIATOR", formCompletedAt: NOW - 100_000, privateCoachingCompletedAt: NOW },
       other: { role: "invitee", hasCompletedPC: true },
     };
     renderPage();
