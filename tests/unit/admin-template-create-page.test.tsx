@@ -120,7 +120,7 @@ describe("AC2: Form fields present", () => {
   it("renders a Coach Instructions textarea", () => {
     renderPage();
 
-    expect(screen.getByLabelText(/coach instructions/i)).toBeDefined();
+    expect(screen.getByLabelText("Coach Instructions")).toBeDefined();
   });
 
   it("renders a Draft Coach Instructions textarea", () => {
@@ -148,10 +148,10 @@ describe("AC3: Form submission calls api.admin.create", () => {
     fireEvent.change(screen.getByLabelText(/global guidance/i), {
       target: { value: "Test guidance" },
     });
-    fireEvent.change(screen.getByLabelText(/coach instructions/i), {
+    fireEvent.change(screen.getByLabelText("Coach Instructions"), {
       target: { value: "Coach instructions" },
     });
-    fireEvent.change(screen.getByLabelText(/draft coach instructions/i), {
+    fireEvent.change(screen.getByLabelText("Draft Coach Instructions"), {
       target: { value: "Draft coach instructions" },
     });
 
