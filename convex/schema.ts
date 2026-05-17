@@ -20,9 +20,7 @@ export default defineSchema({
     phone: v.optional(v.string()),
     phoneVerificationTime: v.optional(v.number()),
     isAnonymous: v.optional(v.boolean()),
-  })
-    .index("by_email", ["email"])
-    .index("email", ["email"]),
+  }).index("by_email", ["email"]),
 
   cases: defineTable({
     schemaVersion: v.literal(1),
