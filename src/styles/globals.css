@@ -1,3 +1,40 @@
+@import "tailwindcss";
+
+/* ─── Tailwind theme: map CSS custom properties to utility names ─── */
+@theme {
+  --color-canvas: var(--bg-canvas);
+  --color-surface: var(--bg-surface);
+  --color-surface-subtle: var(--bg-surface-subtle);
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-tertiary: var(--text-tertiary);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-accent-on: var(--accent-on);
+  --color-coach-accent: var(--coach-accent);
+  --color-coach-subtle: var(--coach-subtle);
+  --color-party-initiator: var(--party-initiator);
+  --color-party-initiator-subtle: var(--party-initiator-subtle);
+  --color-party-invitee: var(--party-invitee);
+  --color-party-invitee-subtle: var(--party-invitee-subtle);
+  --color-danger: var(--danger);
+  --color-danger-subtle: var(--danger-subtle);
+  --color-warning: var(--warning);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-success: var(--success);
+  --color-private-tint: var(--private-tint);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-full: var(--radius-full);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
 /* ─── Components ─── */
 @import "./components.css";
 
