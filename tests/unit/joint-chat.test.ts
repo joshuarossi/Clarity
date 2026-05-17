@@ -207,7 +207,7 @@ describe("jointChat/messages query", () => {
   });
 
   it("returns empty array when no messages exist for the case", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, userAId, caseId } = await seedJointActiveEnv();
 
     const result = await t
       .withIdentity({ subject: userAId })
@@ -262,7 +262,7 @@ describe("jointChat/messages query", () => {
   });
 
   it("throws FORBIDDEN when caller is not a party to the case", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, caseId } = await seedJointActiveEnv();
     const strangerId = await seedStranger(t);
 
     await expectConvexError(
@@ -278,7 +278,7 @@ describe("jointChat/messages query", () => {
 
 describe("jointChat/mySynthesis query", () => {
   it("returns the caller's own synthesisText", async () => {
-    const { t, userAId, userBId, caseId, partyStateAId } = await seedJointActiveEnv();
+    const { t, userAId, caseId, partyStateAId } = await seedJointActiveEnv();
 
     // Set synthesis text on party A
     await t.run(async (ctx) => {
@@ -324,7 +324,7 @@ describe("jointChat/mySynthesis query", () => {
   });
 
   it("returns null when synthesis has not been generated", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, userAId, caseId } = await seedJointActiveEnv();
 
     const result = await t
       .withIdentity({ subject: userAId })
@@ -334,7 +334,7 @@ describe("jointChat/mySynthesis query", () => {
   });
 
   it("throws FORBIDDEN when caller is not a party", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, caseId } = await seedJointActiveEnv();
     const strangerId = await seedStranger(t);
 
     await expectConvexError(
@@ -427,7 +427,7 @@ describe("jointChat/sendUserMessage — @Coach mention detection (WOR-145)", () 
   });
 
   it("AC1: schedules generateCoachResponse with triggerType 'mention' when content contains @Coach", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, userAId, caseId } = await seedJointActiveEnv();
 
     const messageId = await t
       .withIdentity({ subject: userAId })
@@ -460,7 +460,7 @@ describe("jointChat/sendUserMessage — @Coach mention detection (WOR-145)", () 
   });
 
   it("AC1: case-insensitive — schedules with triggerType 'mention' for @coach lowercase", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, userAId, caseId } = await seedJointActiveEnv();
 
     const messageId = await t
       .withIdentity({ subject: userAId })
@@ -488,7 +488,7 @@ describe("jointChat/sendUserMessage — @Coach mention detection (WOR-145)", () 
   });
 
   it("AC2: does NOT pass triggerType when content has no @Coach mention", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, userAId, caseId } = await seedJointActiveEnv();
 
     const messageId = await t
       .withIdentity({ subject: userAId })
@@ -516,7 +516,7 @@ describe("jointChat/sendUserMessage — @Coach mention detection (WOR-145)", () 
   });
 
   it("AC2: near-miss — 'the coach said hello' does not trigger mention", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, userAId, caseId } = await seedJointActiveEnv();
 
     const messageId = await t
       .withIdentity({ subject: userAId })
@@ -542,7 +542,7 @@ describe("jointChat/sendUserMessage — @Coach mention detection (WOR-145)", () 
   });
 
   it("AC4: mention path reaches generateCoachResponse — triggerType 'mention' bypasses suppression", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, userAId, caseId } = await seedJointActiveEnv();
 
     const messageId = await t
       .withIdentity({ subject: userAId })
@@ -716,7 +716,7 @@ describe("jointChat/sendUserMessage mutation — state validation", () => {
 
 describe("jointChat/proposeClosure mutation", () => {
   it("sets caller's closureProposed=true and stores closureSummary on the case", async () => {
-    const { t, userAId, userBId, caseId, partyStateAId } = await seedJointActiveEnv();
+    const { t, userAId, caseId, partyStateAId } = await seedJointActiveEnv();
 
     await t.withIdentity({ subject: userAId }).run(async (ctx) =>
       ctx.runMutation(jointChatApi.proposeClosure, {
@@ -735,7 +735,7 @@ describe("jointChat/proposeClosure mutation", () => {
   });
 
   it("is idempotent — calling twice updates closureSummary without error", async () => {
-    const { t, userAId, userBId, caseId, partyStateAId } = await seedJointActiveEnv();
+    const { t, userAId, caseId, partyStateAId } = await seedJointActiveEnv();
 
     await t.withIdentity({ subject: userAId }).run(async (ctx) =>
       ctx.runMutation(jointChatApi.proposeClosure, {
@@ -803,7 +803,7 @@ describe("jointChat/proposeClosure mutation", () => {
 
 describe("jointChat/confirmClosure mutation", () => {
   it("transitions case to CLOSED_RESOLVED when other party has proposed", async () => {
-    const { t, userAId, userBId, caseId, partyStateAId } = await seedJointActiveEnv();
+    const { t, userBId, caseId, partyStateAId } = await seedJointActiveEnv();
 
     // Party A proposes closure
     await t.run(async (ctx) => {
@@ -824,7 +824,7 @@ describe("jointChat/confirmClosure mutation", () => {
   });
 
   it("sets both parties' closureProposed and closureConfirmed to true", async () => {
-    const { t, userAId, userBId, caseId, partyStateAId, partyStateBId } =
+    const { t, userBId, caseId, partyStateAId, partyStateBId } =
       await seedJointActiveEnv();
 
     // Party A proposes
@@ -848,7 +848,7 @@ describe("jointChat/confirmClosure mutation", () => {
   });
 
   it("throws CONFLICT when no one has proposed closure", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, userBId, caseId } = await seedJointActiveEnv();
 
     await expectConvexError(
       t
@@ -865,7 +865,7 @@ describe("jointChat/confirmClosure mutation", () => {
 
 describe("jointChat/unilateralClose mutation", () => {
   it("transitions case to CLOSED_UNRESOLVED immediately", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, userAId, caseId } = await seedJointActiveEnv();
 
     await t
       .withIdentity({ subject: userAId })
@@ -944,7 +944,7 @@ describe("jointChat/unilateralClose mutation", () => {
   });
 
   it("AC2: notification record shape matches abandonedCases pattern (userId, caseId, type, read, createdAt)", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, userAId, caseId } = await seedJointActiveEnv();
 
     await t
       .withIdentity({ subject: userAId })
@@ -1043,7 +1043,7 @@ describe("jointChat/unilateralClose mutation", () => {
 
 describe("jointChat/rejectClosure mutation", () => {
   it("clears the proposer's closureProposed flag", async () => {
-    const { t, userAId, userBId, caseId, partyStateAId } = await seedJointActiveEnv();
+    const { t, userBId, caseId, partyStateAId } = await seedJointActiveEnv();
 
     // Party A proposes
     await t.run(async (ctx) => {
@@ -1062,7 +1062,7 @@ describe("jointChat/rejectClosure mutation", () => {
   });
 
   it("is a no-op when no proposal exists (no error thrown)", async () => {
-    const { t, userAId, userBId, caseId, partyStateAId } = await seedJointActiveEnv();
+    const { t, userBId, caseId, partyStateAId } = await seedJointActiveEnv();
 
     // Party B rejects even though no one proposed — should not throw
     await t
@@ -1084,7 +1084,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
 
   describe("unauthenticated calls throw UNAUTHENTICATED", () => {
     it("messages — unauthenticated", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
 
       await expectConvexError(
         t.run(async (ctx) => ctx.runQuery(jointChatApi.messages, { caseId })),
@@ -1093,7 +1093,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
     });
 
     it("mySynthesis — unauthenticated", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
 
       await expectConvexError(
         t.run(async (ctx) =>
@@ -1104,7 +1104,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
     });
 
     it("sendUserMessage — unauthenticated", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
 
       await expectConvexError(
         t.run(async (ctx) =>
@@ -1118,7 +1118,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
     });
 
     it("proposeClosure — unauthenticated", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
 
       await expectConvexError(
         t.run(async (ctx) =>
@@ -1132,7 +1132,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
     });
 
     it("confirmClosure — unauthenticated", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
 
       await expectConvexError(
         t.run(async (ctx) =>
@@ -1143,7 +1143,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
     });
 
     it("unilateralClose — unauthenticated", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
 
       await expectConvexError(
         t.run(async (ctx) =>
@@ -1154,7 +1154,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
     });
 
     it("rejectClosure — unauthenticated", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
 
       await expectConvexError(
         t.run(async (ctx) =>
@@ -1169,7 +1169,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
 
   describe("non-party calls throw FORBIDDEN", () => {
     it("messages — non-party", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
       const strangerId = await seedStranger(t);
 
       await expectConvexError(
@@ -1181,7 +1181,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
     });
 
     it("mySynthesis — non-party", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
       const strangerId = await seedStranger(t);
 
       await expectConvexError(
@@ -1195,7 +1195,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
     });
 
     it("sendUserMessage — non-party", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
       const strangerId = await seedStranger(t);
 
       await expectConvexError(
@@ -1210,7 +1210,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
     });
 
     it("proposeClosure — non-party", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
       const strangerId = await seedStranger(t);
 
       await expectConvexError(
@@ -1225,7 +1225,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
     });
 
     it("confirmClosure — non-party", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
       const strangerId = await seedStranger(t);
 
       await expectConvexError(
@@ -1239,7 +1239,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
     });
 
     it("unilateralClose — non-party", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
       const strangerId = await seedStranger(t);
 
       await expectConvexError(
@@ -1253,7 +1253,7 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
     });
 
     it("rejectClosure — non-party", async () => {
-      const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+      const { t, caseId } = await seedJointActiveEnv();
       const strangerId = await seedStranger(t);
 
       await expectConvexError(
@@ -1395,7 +1395,7 @@ describe("WOR-144: Coach opening message on joint session entry", () => {
 
   describe("AC1: enterSession schedules generateCoachOpeningMessage", () => {
     it("schedules generateCoachOpeningMessage when case transitions to JOINT_ACTIVE for the first time", async () => {
-      const { t, userAId, userBId, caseId } = await seedReadyForJointEnv();
+      const { t, userAId, caseId } = await seedReadyForJointEnv();
 
       await t
         .withIdentity({ subject: userAId })
@@ -1429,7 +1429,7 @@ describe("WOR-144: Coach opening message on joint session entry", () => {
 
   describe("AC2: generateCoachOpeningMessage inserts a COACH message", () => {
     it("inserts a jointMessages row with authorType COACH and status COMPLETE", async () => {
-      const { t, userAId, userBId, caseId } = await seedReadyForJointEnv();
+      const { t, userAId, caseId } = await seedReadyForJointEnv();
 
       // Transition to JOINT_ACTIVE first
       await t
@@ -1466,7 +1466,7 @@ describe("WOR-144: Coach opening message on joint session entry", () => {
 
   describe("AC3: Coach opening message appears before user messages in transcript", () => {
     it("the COACH message has a createdAt earlier than any subsequent user message", async () => {
-      const { t, userAId, userBId, caseId } = await seedReadyForJointEnv();
+      const { t, userAId, caseId } = await seedReadyForJointEnv();
 
       // Transition to JOINT_ACTIVE
       await t
