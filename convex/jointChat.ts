@@ -8,6 +8,7 @@ import { conflict } from "./lib/errors";
 import { assemblePrompt, type PromptMessage } from "./lib/prompts";
 import { filterResponse } from "./lib/privacyFilter";
 import { isClaudeMockEnabled, getMockClaudeResponse } from "./lib/claudeMock";
+import { detectCoachMention } from "./lib/mentionDetect";
 
 export const mySynthesis = query({
   args: {
@@ -123,10 +124,11 @@ export const sendUserMessage = mutation({
       createdAt: Date.now(),
     });
 
+    const triggerType = detectCoachMention(content) ? "mention" : undefined;
     await ctx.scheduler.runAfter(
       0,
       internal.jointChat.generateCoachResponse,
-      { caseId, messageId },
+      { caseId, messageId, ...(triggerType && { triggerType }) },
     );
 
     return messageId;
