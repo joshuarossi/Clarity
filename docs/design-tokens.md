@@ -6,12 +6,14 @@ these tokens instead of hard-coded color, spacing, or typography values.
 
 ## File layout
 
-| File                           | Purpose                                                 |
-| ------------------------------ | ------------------------------------------------------- |
-| `src/styles/globals.css`       | All CSS custom property tokens and base styles          |
-| `src/styles/components.css`    | Reusable class recipes (chat bubbles, buttons, banners) |
-| `src/styles/theme.ts`          | TypeScript mirror of token values for JS-driven visuals |
-| `src/components/ui/button.tsx` | shadcn/ui Button with Clarity variant overrides         |
+| File                           | Purpose                                                       |
+| ------------------------------ | ------------------------------------------------------------- |
+| `src/styles/globals.css`       | Design tokens, Tailwind v4 `@import` + `@theme`, base styles  |
+| `src/styles/components.css`    | Reusable class recipes (chat bubbles, buttons, banners)       |
+| `src/styles/theme.ts`          | TypeScript mirror of token values for JS-driven visuals       |
+| `src/lib/utils.ts`             | `cn()` class-merge helper (clsx + tailwind-merge)             |
+| `src/components/ui/button.tsx` | shadcn/ui Button with Clarity variant overrides               |
+| `components.json`              | shadcn CLI configuration (component paths, style, base color) |
 
 ## Color palettes
 
@@ -93,6 +95,45 @@ Defined in `components.css`:
 | `.cc-phase-header`              | PhaseHeader top bar (56 px, `--bg-surface` background)        |
 
 See [UI Primitives](ui-primitives.md) for component usage and props.
+
+## Tailwind CSS v4 integration
+
+Tailwind CSS v4 is integrated via the `@tailwindcss/vite` plugin (registered
+in `vite.config.ts`). The top of `globals.css` contains:
+
+```css
+@import "tailwindcss";
+```
+
+followed by a `@theme` block that maps the project's CSS custom properties to
+Tailwind utility names. For example, `--color-canvas: var(--bg-canvas)` lets
+you write `bg-canvas` in markup instead of the longer
+`bg-[var(--bg-canvas)]`.
+
+Because the mapping lives inside `@theme`, every design token added there is
+automatically available as a Tailwind utility class — no separate
+`tailwind.config` file is needed (Tailwind v4 uses CSS-first configuration).
+
+### shadcn/ui
+
+`components.json` at the project root configures the shadcn CLI. Key paths:
+
+| Setting      | Value                    |
+| ------------ | ------------------------ |
+| CSS          | `src/styles/globals.css` |
+| Components   | `@/components`           |
+| UI           | `@/components/ui`        |
+| Utils (`cn`) | `@/lib/utils`            |
+
+The `cn()` helper (re-exported from `src/lib/utils.ts`) merges class names
+using `clsx` + `tailwind-merge`, preventing conflicting Tailwind utilities.
+Use it in any component that conditionally applies classes.
+
+### Path alias
+
+`tsconfig.json` and `vite.config.ts` define a `@/` alias pointing to `src/`.
+This is required by shadcn-generated components and is the preferred import
+style for application code.
 
 ## Button variants
 
