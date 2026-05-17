@@ -420,6 +420,198 @@ describe("jointChat/sendUserMessage mutation — happy path", () => {
   });
 });
 
+// ── WOR-145: @Coach mention detection in sendUserMessage ──────────────
+
+describe("jointChat/sendUserMessage — @Coach mention detection (WOR-145)", () => {
+  let savedClaudeMock: string | undefined;
+  let savedClaudeMockDelay: string | undefined;
+
+  beforeAll(() => {
+    savedClaudeMock = process.env.CLAUDE_MOCK;
+    savedClaudeMockDelay = process.env.CLAUDE_MOCK_DELAY_MS;
+    process.env.CLAUDE_MOCK = "true";
+    process.env.CLAUDE_MOCK_DELAY_MS = "10";
+  });
+
+  afterAll(() => {
+    if (savedClaudeMock === undefined) {
+      delete process.env.CLAUDE_MOCK;
+    } else {
+      process.env.CLAUDE_MOCK = savedClaudeMock;
+    }
+    if (savedClaudeMockDelay === undefined) {
+      delete process.env.CLAUDE_MOCK_DELAY_MS;
+    } else {
+      process.env.CLAUDE_MOCK_DELAY_MS = savedClaudeMockDelay;
+    }
+  });
+
+  it("AC1: schedules generateCoachResponse with triggerType 'mention' when content contains @Coach", async () => {
+    const { t, caseId } = await seedJointActiveEnv();
+
+    const messageId = await t
+      .withIdentity({ email: "partyA@test.com" })
+      .run(async (ctx) =>
+        ctx.runMutation(jointChatApi.sendUserMessage, {
+          caseId,
+          content: "@Coach can you summarize where we are?",
+        }),
+      );
+
+    expect(messageId).toBeDefined();
+
+    const scheduledFns = await t.run(async (ctx) =>
+      ctx.db.system.query("_scheduled_functions").collect(),
+    );
+
+    const generateCoachResponseJob = scheduledFns.find(
+      (job) =>
+        typeof job.name === "string" &&
+        job.name.includes("jointChat") &&
+        job.name.includes("generateCoachResponse"),
+    );
+    expect(
+      generateCoachResponseJob,
+      "Expected generateCoachResponse to be scheduled with triggerType: 'mention'",
+    ).toBeDefined();
+    expect(generateCoachResponseJob!.args).toEqual([
+      { caseId, messageId, triggerType: "mention" },
+    ]);
+  });
+
+  it("AC1: case-insensitive — schedules with triggerType 'mention' for @coach lowercase", async () => {
+    const { t, caseId } = await seedJointActiveEnv();
+
+    const messageId = await t
+      .withIdentity({ email: "partyA@test.com" })
+      .run(async (ctx) =>
+        ctx.runMutation(jointChatApi.sendUserMessage, {
+          caseId,
+          content: "hey @coach what do you think",
+        }),
+      );
+
+    const scheduledFns = await t.run(async (ctx) =>
+      ctx.db.system.query("_scheduled_functions").collect(),
+    );
+
+    const generateCoachResponseJob = scheduledFns.find(
+      (job) =>
+        typeof job.name === "string" &&
+        job.name.includes("jointChat") &&
+        job.name.includes("generateCoachResponse"),
+    );
+    expect(generateCoachResponseJob).toBeDefined();
+    expect(generateCoachResponseJob!.args).toEqual([
+      { caseId, messageId, triggerType: "mention" },
+    ]);
+  });
+
+  it("AC2: does NOT pass triggerType when content has no @Coach mention", async () => {
+    const { t, caseId } = await seedJointActiveEnv();
+
+    const messageId = await t
+      .withIdentity({ email: "partyA@test.com" })
+      .run(async (ctx) =>
+        ctx.runMutation(jointChatApi.sendUserMessage, {
+          caseId,
+          content: "Hello from party A",
+        }),
+      );
+
+    const scheduledFns = await t.run(async (ctx) =>
+      ctx.db.system.query("_scheduled_functions").collect(),
+    );
+
+    const generateCoachResponseJob = scheduledFns.find(
+      (job) =>
+        typeof job.name === "string" &&
+        job.name.includes("jointChat") &&
+        job.name.includes("generateCoachResponse"),
+    );
+    expect(generateCoachResponseJob).toBeDefined();
+    // Non-mention messages should NOT have triggerType in args
+    expect(generateCoachResponseJob!.args).toEqual([
+      { caseId, messageId },
+    ]);
+    expect(generateCoachResponseJob!.args[0]).not.toHaveProperty("triggerType");
+  });
+
+  it("AC2: near-miss — 'the coach said hello' does not trigger mention", async () => {
+    const { t, caseId } = await seedJointActiveEnv();
+
+    const messageId = await t
+      .withIdentity({ email: "partyA@test.com" })
+      .run(async (ctx) =>
+        ctx.runMutation(jointChatApi.sendUserMessage, {
+          caseId,
+          content: "the coach said hello",
+        }),
+      );
+
+    const scheduledFns = await t.run(async (ctx) =>
+      ctx.db.system.query("_scheduled_functions").collect(),
+    );
+
+    const generateCoachResponseJob = scheduledFns.find(
+      (job) =>
+        typeof job.name === "string" &&
+        job.name.includes("jointChat") &&
+        job.name.includes("generateCoachResponse"),
+    );
+    expect(generateCoachResponseJob).toBeDefined();
+    expect(generateCoachResponseJob!.args).toEqual([
+      { caseId, messageId },
+    ]);
+  });
+
+  it("AC4: mention path reaches generateCoachResponse — triggerType 'mention' bypasses suppression", async () => {
+    const { t, caseId } = await seedJointActiveEnv();
+
+    const messageId = await t
+      .withIdentity({ email: "partyA@test.com" })
+      .run(async (ctx) =>
+        ctx.runMutation(jointChatApi.sendUserMessage, {
+          caseId,
+          content: "@Coach please summarize our discussion",
+        }),
+      );
+
+    // Verify the scheduled args include triggerType: 'mention'
+    const scheduledFns = await t.run(async (ctx) =>
+      ctx.db.system.query("_scheduled_functions").collect(),
+    );
+
+    const generateCoachResponseJob = scheduledFns.find(
+      (job) =>
+        typeof job.name === "string" &&
+        job.name.includes("jointChat") &&
+        job.name.includes("generateCoachResponse"),
+    );
+    expect(generateCoachResponseJob).toBeDefined();
+    expect(generateCoachResponseJob!.args[0].triggerType).toBe("mention");
+
+    // Run the action to verify the mention path produces a Coach response
+    await t.action(internal.jointChat.generateCoachResponse, {
+      caseId,
+      messageId,
+      triggerType: "mention",
+    });
+
+    // Verify a Coach message was produced
+    const messages = await t.run(async (ctx) =>
+      ctx.db
+        .query("jointMessages")
+        .withIndex("by_case", (q) => q.eq("caseId", caseId))
+        .collect(),
+    );
+
+    const coachMessages = messages.filter((m) => m.authorType === "COACH");
+    expect(coachMessages.length).toBeGreaterThanOrEqual(1);
+    expect(coachMessages[0].status).toBe("COMPLETE");
+  });
+});
+
 // ── AC 4: sendUserMessage state validation ──────────────────────────────
 
 describe("jointChat/sendUserMessage mutation — state validation", () => {
