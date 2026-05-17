@@ -110,14 +110,14 @@ export function AdminTemplateCreatePage(): React.ReactElement {
 
         <div>
           <label className="block text-sm font-medium mb-1" htmlFor="draft-coach-instructions">
-            Draft Coaching Instructions
+            Draft Coach Instructions
           </label>
           <textarea
             id="draft-coach-instructions"
             className="w-full border rounded px-3 py-2 min-h-[100px] font-mono text-sm"
             value={draftCoachInstructions}
             onChange={(e) => setDraftCoachInstructions(e.target.value)}
-            aria-label="Draft Coaching Instructions"
+            aria-label="Draft Coach Instructions"
             placeholder="Instructions for draft coaching sessions (optional)..."
           />
         </div>
