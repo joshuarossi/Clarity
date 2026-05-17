@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { describe, it, expect, vi } from "vitest";
 import {
   compressTranscript,
@@ -81,6 +83,23 @@ describe("estimateTokens", () => {
     const short = estimateTokens("one two");
     const long = estimateTokens("one two three four five six seven eight");
     expect(long).toBeGreaterThan(short);
+  });
+});
+
+// ── AC1 (WOR-155): No Node built-in imports in compression.ts ─────────
+
+describe("AC1: convex/lib/compression.ts has no Node built-in imports", () => {
+  const source = readFileSync(
+    join(__dirname, "../../convex/lib/compression.ts"),
+    "utf-8",
+  );
+
+  it("does not import from Node crypto", () => {
+    expect(source).not.toMatch(/import\s+.*\s+from\s+['"]crypto['"]/);
+  });
+
+  it("does not require Node crypto", () => {
+    expect(source).not.toMatch(/require\s*\(\s*['"]crypto['"]\s*\)/);
   });
 });
 
@@ -253,11 +272,16 @@ describe("AC 4: summaries are cached by content hash", () => {
     const result1 = await compressTranscript(messages, 1, { client });
     const result2 = await compressTranscript(messages, 1, { client });
 
-    // Haiku called only once — second call uses cache
+    // Haiku called only once — second call uses cache (hash is deterministic)
     expect(createFn).toHaveBeenCalledTimes(1);
 
     // Both results are deeply equal
     expect(result2).toEqual(result1);
+
+    // A third call also returns cached result, confirming stability
+    const result3 = await compressTranscript(messages, 1, { client });
+    expect(createFn).toHaveBeenCalledTimes(1);
+    expect(result3).toEqual(result1);
   });
 
   it("different messages produce separate cache entries and separate API calls", async () => {
@@ -323,5 +347,22 @@ describe("AC 5: comprehensive Vitest suite", () => {
     await compressTranscript(messages, 1, { client });
 
     expect(messages).toEqual(originalCopy);
+  });
+});
+
+// ── AC4 (WOR-155): Export-shape smoke test ─────────────────────────────
+
+describe("AC4: public exports remain intact after hash implementation swap", () => {
+  it("compressTranscript is a function", () => {
+    expect(typeof compressTranscript).toBe("function");
+  });
+
+  it("estimateTokens is a function", () => {
+    expect(typeof estimateTokens).toBe("function");
+  });
+
+  it("COMPRESSION_PROMPT is a non-empty string", () => {
+    expect(typeof COMPRESSION_PROMPT).toBe("string");
+    expect(COMPRESSION_PROMPT.length).toBeGreaterThan(0);
   });
 });
