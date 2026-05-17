@@ -316,7 +316,7 @@ function JointChatViewInner({
               key={`draft-${draftVersion}`}
               onSend={handleSend}
               isAiResponding={isCoachStreaming}
-              placeholder="Type a message..."
+              placeholder="Type a message... (use @Coach to ask the facilitator)"
               autoFocus
               defaultValue={draftInputText ?? undefined}
             />
