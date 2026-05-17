@@ -98,11 +98,29 @@ export function isClaudeMockEnabled(): boolean {
   return process.env.CLAUDE_MOCK === "true";
 }
 
+const MOCK_SUMMARY_RESPONSE =
+  `## Progress Summary
+
+Here's a summary of where you both agree:
+
+- You both value open and respectful communication going forward
+- There is shared recognition that past misunderstandings were not intentional
+- Both parties want to establish clearer expectations for decision-making
+
+**Areas of emerging progress:**
+- You're both willing to try a new approach to checking in with each other before major decisions
+
+This is encouraging progress. Keep building on these areas of alignment.`;
+
 /**
  * Returns a deterministic canned response string for the given prompt role.
  * The response is always the same for a given role — no randomness.
+ * When summaryMode is true and role is COACH, returns a summary-specific mock.
  */
-export function getMockClaudeResponse(role: PromptRole): string {
+export function getMockClaudeResponse(role: PromptRole, summaryMode?: boolean): string {
+  if (summaryMode && role === "COACH") {
+    return MOCK_SUMMARY_RESPONSE;
+  }
   return MOCK_RESPONSES[role];
 }
 

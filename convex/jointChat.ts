@@ -1,7 +1,9 @@
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
 import { query, mutation, internalAction, internalMutation, internalQuery } from "./_generated/server";
+import type { ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
+import type { Id } from "./_generated/dataModel";
 import { requireAuth, requirePartyToCase } from "./lib/auth";
 import { validateTransition } from "./lib/stateMachine";
 import { conflict } from "./lib/errors";
@@ -371,6 +373,16 @@ export const getTemplateVersionForCoach = internalQuery({
   },
 });
 
+export const getActiveCasesForSummary = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("cases")
+      .withIndex("by_status", (q) => q.eq("status", "JOINT_ACTIVE"))
+      .collect();
+  },
+});
+
 // ---------------------------------------------------------------------------
 // Internal mutations for Coach streaming lifecycle
 // ---------------------------------------------------------------------------
@@ -589,6 +601,9 @@ export const generateCoachResponse = internalAction({
         content: m.content,
       }));
 
+    // Enable summary mode for PROGRESS classification or timer-triggered responses (US-10b)
+    const summaryMode = classification === "PROGRESS" || triggerType === "timer";
+
     const prompt = assemblePrompt({
       role: "COACH",
       caseId: args.caseId,
@@ -605,6 +620,7 @@ export const generateCoachResponse = internalAction({
         otherPartySynthesis,
         jointChatHistory,
       },
+      summaryMode,
     });
 
     // 9. Insert STREAMING row
@@ -648,7 +664,7 @@ export const generateCoachResponse = internalAction({
 
           // Mock streaming
           const mockDelayMs = parseInt(process.env.CLAUDE_MOCK_DELAY_MS ?? "100", 10);
-          const mockResponse = getMockClaudeResponse("COACH");
+          const mockResponse = getMockClaudeResponse("COACH", summaryMode);
           const chunkSize = Math.ceil(mockResponse.length / 5);
           let content = "";
 
@@ -790,6 +806,70 @@ export const generateCoachResponse = internalAction({
       messageId: coachMessageId,
       content: COACH_FALLBACK_MESSAGE,
     });
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Periodic summary evaluation — evaluates active joint sessions (US-10b)
+// ---------------------------------------------------------------------------
+
+async function evaluateCase(ctx: ActionCtx, caseId: Id<"cases">) {
+  const jointMessages = await ctx.runQuery(
+    internal.jointChat.getJointMessagesForCoach,
+    { caseId },
+  );
+  const sortedMessages = [...jointMessages].sort(
+    (a, b) => a.createdAt - b.createdAt,
+  );
+
+  // Count user messages since last COACH message
+  let userMessagesSinceLastCoach = 0;
+  for (let i = sortedMessages.length - 1; i >= 0; i--) {
+    if (sortedMessages[i].authorType === "COACH") break;
+    if (sortedMessages[i].authorType === "USER") {
+      userMessagesSinceLastCoach++;
+    }
+  }
+
+  // Throttle: require at least 6 user messages since last Coach message
+  if (userMessagesSinceLastCoach < 6) {
+    return;
+  }
+
+  // Use the last message as the reference messageId for generateCoachResponse
+  const lastMessage = sortedMessages[sortedMessages.length - 1];
+  if (!lastMessage) {
+    return;
+  }
+
+  await ctx.scheduler.runAfter(0, internal.jointChat.generateCoachResponse, {
+    caseId,
+    messageId: lastMessage._id,
+    triggerType: "timer",
+  });
+}
+
+export const evaluateAndSummarize = internalAction({
+  args: {
+    caseId: v.optional(v.id("cases")),
+  },
+  handler: async (ctx, args) => {
+    // If a specific caseId is provided, evaluate just that case.
+    // Otherwise, query all JOINT_ACTIVE cases.
+    if (args.caseId) {
+      const caseDoc = await ctx.runQuery(internal.jointChat.getCaseForCoach, {
+        caseId: args.caseId,
+      });
+      if (!caseDoc || caseDoc.status !== "JOINT_ACTIVE") {
+        return;
+      }
+      await evaluateCase(ctx, args.caseId);
+    } else {
+      const activeCases = await ctx.runQuery(internal.jointChat.getActiveCasesForSummary);
+      for (const caseDoc of activeCases) {
+        await evaluateCase(ctx, caseDoc._id);
+      }
+    }
   },
 });
 

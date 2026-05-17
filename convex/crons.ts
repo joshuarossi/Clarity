@@ -9,4 +9,11 @@ crons.daily(
   internal.abandonedCases.scanAndCloseAbandoned,
 );
 
+crons.interval(
+  "joint session summary evaluation",
+  { minutes: 10 },
+  internal.jointChat.evaluateAndSummarize,
+  {},
+);
+
 export default crons;
