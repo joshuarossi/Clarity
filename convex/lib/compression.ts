@@ -1,5 +1,3 @@
-import { createHash } from "crypto";
-
 export interface CompressibleMessage {
   role: string;
   content: string;
@@ -45,7 +43,15 @@ function getCacheForClient(client: object): Map<string, string> {
 
 function hashContent(messages: CompressibleMessage[]): string {
   const concatenated = messages.map((m) => m.content).join("\n");
-  return createHash("sha256").update(concatenated).digest("hex");
+  // FNV-1a hash — deterministic, low-collision for typical text, no Node deps
+  let h1 = 0x811c9dc5;
+  let h2 = 0x811c9dc5;
+  for (let i = 0; i < concatenated.length; i++) {
+    const ch = concatenated.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 0x01000193);
+    h2 = Math.imul(h2 ^ (ch >>> 0), 0x01000193 + 0x100);
+  }
+  return (((h1 >>> 0) * 0x100000000 + (h2 >>> 0)).toString(36));
 }
 
 /**
