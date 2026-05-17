@@ -27,9 +27,7 @@ describe("AC1: src/main.tsx imports globals.css", () => {
   });
 
   it("contains an import statement for styles/globals.css", () => {
-    expect(mainTsxSource).toMatch(
-      /import\s+['"]\.\/styles\/globals\.css['"]/,
-    );
+    expect(mainTsxSource).toMatch(/import\s+['"]\.\/styles\/globals\.css['"]/);
   });
 });
 
@@ -45,9 +43,7 @@ describe("AC2: globals.css declares design tokens and font variables", () => {
   });
 
   it("src/main.tsx imports globals.css (prerequisite for tokens reaching the build)", () => {
-    expect(mainTsxSource).toMatch(
-      /import\s+['"]\.\/styles\/globals\.css['"]/,
-    );
+    expect(mainTsxSource).toMatch(/import\s+['"]\.\/styles\/globals\.css['"]/);
   });
 
   it("globals.css declares the --bg-canvas color token", () => {
@@ -71,12 +67,10 @@ describe("AC3: dark mode tokens are included via globals.css import", () => {
   });
 
   it("src/main.tsx imports globals.css (prerequisite for dark mode working)", () => {
-    expect(mainTsxSource).toMatch(
-      /import\s+['"]\.\/styles\/globals\.css['"]/,
-    );
+    expect(mainTsxSource).toMatch(/import\s+['"]\.\/styles\/globals\.css['"]/);
   });
 
-  it("globals.css contains a [data-theme=\"dark\"] selector block", () => {
+  it('globals.css contains a [data-theme="dark"] selector block', () => {
     expect(globalsCssSource).toMatch(/\[data-theme=["']dark["']\]/);
   });
 });
