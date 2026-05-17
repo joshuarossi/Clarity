@@ -17,6 +17,15 @@ by `npx convex deploy`. It exports only `{ domain, applicationID }`
 entries for JWT validation — it must **not** contain provider constructors
 or runtime logic.
 
+### HTTP route registration (`convex/http.ts`)
+
+Convex Auth relies on HTTP callback routes (e.g. `/api/auth/*`) for
+magic-link verification and OAuth redirects. These routes are registered
+in `convex/http.ts`, which creates an `httpRouter()` and calls
+`auth.addHttpRoutes(http)`. This file **must** exist and be
+default-exported for authentication to work in deployed environments —
+without it Convex returns "HTTP actions not enabled".
+
 The `convexAuth()` helper in `convex/auth.ts` registers these providers
 and wires a `createOrUpdateUser` callback that delegates to
 `getUserByEmail` (see below) — ensuring every authenticated identity has
