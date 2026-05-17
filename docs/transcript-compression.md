@@ -49,9 +49,11 @@ This wording is mandated by TechSpec §6.4 and must not be paraphrased.
 
 ## Caching
 
-Summaries are cached by a SHA-256 hash of the concatenated message
-content being compressed. The cache is scoped per Anthropic client
-instance using a `WeakMap`, so:
+Summaries are cached by an FNV-1a hash of the concatenated message
+content being compressed (changed from SHA-256 in WOR-155 to eliminate
+the Node `crypto` dependency, which is unavailable in the Convex V8
+runtime). The cache is scoped per Anthropic client instance using a
+`WeakMap`, so:
 
 - Each client gets its own isolated cache.
 - When a client is garbage-collected, its cache is automatically freed.
@@ -71,7 +73,8 @@ the `SUMMARY:` prefix on system messages.
 
 ## Caller contract
 
-The module is a **pure helper** with no Convex runtime dependencies.
+The module is a **pure helper** with no Convex runtime dependencies and
+no Node built-in imports (enforced by `tests/unit/no-node-builtins.test.ts`).
 Callers must:
 
 1. Supply a valid `AnthropicClient` when messages exceed the budget.
