@@ -5,7 +5,6 @@ import {
   MessageBubble,
   type BubbleVariant,
 } from "../../src/components/chat/MessageBubble";
-import { MarkdownContent } from "../../src/components/chat/MarkdownContent";
 
 afterEach(cleanup);
 
