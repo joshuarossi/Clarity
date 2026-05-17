@@ -3,7 +3,7 @@ import { convexTest } from "convex-test";
 import { ConvexError } from "convex/values";
 import { anyApi } from "convex/server";
 import schema from "../../convex/schema";
-import { api } from "../../convex/_generated/api";
+import { api, internal } from "../../convex/_generated/api";
 
 // References for functions that will be added by the implementation agent.
 // These don't exist yet on the generated `api` type, so we use Convex's
@@ -18,6 +18,7 @@ const jointChatApi = {
   confirmClosure: pendingJointChat.confirmClosure,
   unilateralClose: pendingJointChat.unilateralClose,
   rejectClosure: pendingJointChat.rejectClosure,
+  generateCoachOpeningMessage: pendingJointChat.generateCoachOpeningMessage,
 };
 
 /**
@@ -1009,6 +1010,315 @@ describe("all jointChat functions enforce auth + party-to-case check", () => {
             ctx.runMutation(jointChatApi.rejectClosure, { caseId }),
           ),
         "FORBIDDEN",
+      );
+    });
+  });
+});
+
+// ── WOR-144: Coach opening message tests ──────────────────────────────────
+
+/**
+ * Seeds a two-party environment with a READY_FOR_JOINT case (pre-transition).
+ * Used for testing enterSession's scheduling behavior.
+ */
+async function seedReadyForJointEnv() {
+  const t = convexTest(schema);
+
+  const userAId = await t.run(async (ctx) =>
+    ctx.db.insert("users", {
+      email: "partyA@test.com",
+      displayName: "Party A",
+      role: "USER",
+      createdAt: Date.now(),
+    }),
+  );
+  const userBId = await t.run(async (ctx) =>
+    ctx.db.insert("users", {
+      email: "partyB@test.com",
+      displayName: "Party B",
+      role: "USER",
+      createdAt: Date.now(),
+    }),
+  );
+
+  const { caseId, versionId, partyStateAId, partyStateBId } = await t.run(
+    async (ctx) => {
+      const tplId = await ctx.db.insert("templates", {
+        category: "workplace",
+        name: "Workplace Template",
+        createdAt: Date.now(),
+        createdByUserId: userAId,
+      });
+      const vId = await ctx.db.insert("templateVersions", {
+        templateId: tplId,
+        version: 1,
+        globalGuidance: "Test guidance",
+        publishedAt: Date.now(),
+        publishedByUserId: userAId,
+      });
+      await ctx.db.patch(tplId, { currentVersionId: vId });
+
+      const cId = await ctx.db.insert("cases", {
+        schemaVersion: 1,
+        status: "READY_FOR_JOINT",
+        isSolo: false,
+        category: "workplace",
+        templateVersionId: vId,
+        initiatorUserId: userAId,
+        inviteeUserId: userBId,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+
+      const psAId = await ctx.db.insert("partyStates", {
+        caseId: cId,
+        userId: userAId,
+        role: "INITIATOR",
+        mainTopic: "Disagreement over project deadlines",
+        description: "Desc A",
+        desiredOutcome: "Outcome A",
+        synthesisText: "Party A feels deadlines are unrealistic.",
+        synthesisGeneratedAt: Date.now(),
+        formCompletedAt: Date.now(),
+        privateCoachingCompletedAt: Date.now(),
+      });
+      const psBId = await ctx.db.insert("partyStates", {
+        caseId: cId,
+        userId: userBId,
+        role: "INVITEE",
+        mainTopic: "Topic B",
+        description: "Desc B",
+        desiredOutcome: "Outcome B",
+        synthesisText: "Party B feels unheard.",
+        synthesisGeneratedAt: Date.now(),
+        formCompletedAt: Date.now(),
+        privateCoachingCompletedAt: Date.now(),
+      });
+
+      return {
+        caseId: cId,
+        versionId: vId,
+        partyStateAId: psAId,
+        partyStateBId: psBId,
+      };
+    },
+  );
+
+  return {
+    t,
+    userAId,
+    userBId,
+    caseId,
+    versionId,
+    partyStateAId,
+    partyStateBId,
+  };
+}
+
+describe("WOR-144: Coach opening message on joint session entry", () => {
+  // ── AC1: enterSession schedules generateCoachOpeningMessage ────────────
+
+  describe("AC1: enterSession schedules generateCoachOpeningMessage", () => {
+    it("schedules generateCoachOpeningMessage when case transitions to JOINT_ACTIVE for the first time", async () => {
+      const { t, caseId } = await seedReadyForJointEnv();
+
+      await t
+        .withIdentity({ email: "partyA@test.com" })
+        .run(async (ctx) =>
+          ctx.runMutation(jointChatApi.enterSession, { caseId }),
+        );
+
+      // Verify the case transitioned
+      const caseDoc = await t.run(async (ctx) => ctx.db.get(caseId));
+      expect(caseDoc!.status).toBe("JOINT_ACTIVE");
+
+      // Verify generateCoachOpeningMessage was scheduled
+      const scheduledFns = await t.run(async (ctx) =>
+        ctx.db.system.query("_scheduled_functions").collect(),
+      );
+
+      const openingMessageJob = scheduledFns.find(
+        (job) =>
+          typeof job.name === "string" &&
+          job.name.includes("generateCoachOpeningMessage"),
+      );
+      expect(
+        openingMessageJob,
+        "Expected generateCoachOpeningMessage to be scheduled after enterSession transitions to JOINT_ACTIVE",
+      ).toBeDefined();
+      expect(openingMessageJob!.args).toEqual([{ caseId }]);
+    });
+  });
+
+  // ── AC2: Coach opening message is grounded in mainTopic ────────────────
+
+  describe("AC2: generateCoachOpeningMessage inserts a COACH message", () => {
+    it("inserts a jointMessages row with authorType COACH and status COMPLETE", async () => {
+      const { t, caseId } = await seedReadyForJointEnv();
+
+      // Transition to JOINT_ACTIVE first
+      await t
+        .withIdentity({ email: "partyA@test.com" })
+        .run(async (ctx) =>
+          ctx.runMutation(jointChatApi.enterSession, { caseId }),
+        );
+
+      // Run the internal action directly (CLAUDE_MOCK=true in test env)
+      await t.run(async (ctx) =>
+        ctx.runAction(
+          internal.jointChat.generateCoachOpeningMessage,
+          { caseId },
+        ),
+      );
+
+      // Verify a COACH message was inserted
+      const messages = await t.run(async (ctx) =>
+        ctx.db
+          .query("jointMessages")
+          .withIndex("by_case", (q) => q.eq("caseId", caseId))
+          .collect(),
+      );
+
+      const coachMessage = messages.find((m) => m.authorType === "COACH");
+      expect(coachMessage, "Expected a COACH message to be inserted").toBeDefined();
+      expect(coachMessage!.authorType).toBe("COACH");
+      expect(coachMessage!.status).toBe("COMPLETE");
+      expect(coachMessage!.content.length).toBeGreaterThan(0);
+    });
+  });
+
+  // ── AC3: Coach message appears before user messages ────────────────────
+
+  describe("AC3: Coach opening message appears before user messages in transcript", () => {
+    it("the COACH message has a createdAt earlier than any subsequent user message", async () => {
+      const { t, caseId } = await seedReadyForJointEnv();
+
+      // Transition to JOINT_ACTIVE
+      await t
+        .withIdentity({ email: "partyA@test.com" })
+        .run(async (ctx) =>
+          ctx.runMutation(jointChatApi.enterSession, { caseId }),
+        );
+
+      // Generate coach opening message
+      await t.run(async (ctx) =>
+        ctx.runAction(
+          internal.jointChat.generateCoachOpeningMessage,
+          { caseId },
+        ),
+      );
+
+      // Now send a user message
+      await t
+        .withIdentity({ email: "partyA@test.com" })
+        .run(async (ctx) =>
+          ctx.runMutation(jointChatApi.sendUserMessage, {
+            caseId,
+            content: "Hello from party A",
+          }),
+        );
+
+      // Query all messages sorted by createdAt
+      const allMessages = await t.run(async (ctx) =>
+        ctx.db
+          .query("jointMessages")
+          .withIndex("by_case", (q) => q.eq("caseId", caseId))
+          .collect(),
+      );
+
+      const sorted = allMessages.sort((a, b) => a.createdAt - b.createdAt);
+      expect(sorted[0].authorType).toBe("COACH");
+
+      const userMessages = sorted.filter((m) => m.authorType === "USER");
+      if (userMessages.length > 0) {
+        expect(sorted[0].createdAt).toBeLessThanOrEqual(userMessages[0].createdAt);
+      }
+    });
+  });
+
+  // ── AC4: Re-entry guard — no duplicate Coach opening message ───────────
+
+  describe("AC4: Re-entry guard prevents duplicate Coach opening message", () => {
+    it("calling enterSession on a JOINT_ACTIVE case does not schedule a second generateCoachOpeningMessage", async () => {
+      const { t, caseId } = await seedReadyForJointEnv();
+
+      // First call — transitions to JOINT_ACTIVE
+      await t
+        .withIdentity({ email: "partyA@test.com" })
+        .run(async (ctx) =>
+          ctx.runMutation(jointChatApi.enterSession, { caseId }),
+        );
+
+      // Second call — should throw CONFLICT (state machine prevents re-entry)
+      await expectConvexError(
+        t
+          .withIdentity({ email: "partyB@test.com" })
+          .run(async (ctx) =>
+            ctx.runMutation(jointChatApi.enterSession, { caseId }),
+          ),
+        "CONFLICT",
+      );
+
+      // Verify only one generateCoachOpeningMessage was scheduled
+      const scheduledFns = await t.run(async (ctx) =>
+        ctx.db.system.query("_scheduled_functions").collect(),
+      );
+
+      const openingMessageJobs = scheduledFns.filter(
+        (job) =>
+          typeof job.name === "string" &&
+          job.name.includes("generateCoachOpeningMessage"),
+      );
+      expect(openingMessageJobs).toHaveLength(1);
+    });
+  });
+
+  // ── AC5: Uses same streaming-insert path as reactive coach responses ───
+
+  describe("AC5: Coach opening message uses streaming-insert path with privacy filtering", () => {
+    it("produces a COMPLETE message using the same mock streaming path as generateCoachResponse", async () => {
+      const { t, userAId, caseId } = await seedReadyForJointEnv();
+
+      // Transition to JOINT_ACTIVE
+      await t
+        .withIdentity({ email: "partyA@test.com" })
+        .run(async (ctx) =>
+          ctx.runMutation(jointChatApi.enterSession, { caseId }),
+        );
+
+      // Seed a private message to verify privacy filtering doesn't leak it
+      await t.run(async (ctx) => {
+        await ctx.db.insert("privateMessages", {
+          caseId,
+          userId: userAId,
+          role: "USER",
+          content: "My secret private thought about the conflict",
+          createdAt: Date.now(),
+        });
+      });
+
+      // Run the internal action
+      await t.run(async (ctx) =>
+        ctx.runAction(
+          internal.jointChat.generateCoachOpeningMessage,
+          { caseId },
+        ),
+      );
+
+      // Verify the message has COMPLETE status (streaming lifecycle finished)
+      const messages = await t.run(async (ctx) =>
+        ctx.db
+          .query("jointMessages")
+          .withIndex("by_case", (q) => q.eq("caseId", caseId))
+          .collect(),
+      );
+
+      const coachMessage = messages.find((m) => m.authorType === "COACH");
+      expect(coachMessage, "Expected a COACH opening message").toBeDefined();
+      expect(coachMessage!.status).toBe("COMPLETE");
+      // The content should not contain verbatim private message content
+      expect(coachMessage!.content).not.toContain(
+        "My secret private thought about the conflict",
       );
     });
   });
