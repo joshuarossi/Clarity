@@ -46,7 +46,7 @@ Each table defines indexes for the queries that downstream tasks will use:
 - **inviteTokens**: `by_token`, `by_case`
 - **templates**: `by_category`
 - **templateVersions**: `by_template`
-- **auditLog**: `by_actor`
+- **auditLog**: `by_actor`, `by_action`, `by_createdAt`
 
 ## Schema version
 
