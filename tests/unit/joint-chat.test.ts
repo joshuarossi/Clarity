@@ -968,7 +968,7 @@ describe("jointChat/unilateralClose mutation", () => {
   // ── WOR-148: Notification on unilateral close ───────────────────────────
 
   it("AC1: inserts a notification record addressed to the other party on unilateral close", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, userBId, caseId } = await seedJointActiveEnv();
 
     // Party A closes unilaterally — Party B should be notified
     await t
@@ -992,7 +992,7 @@ describe("jointChat/unilateralClose mutation", () => {
   });
 
   it("AC2: notification record shape matches abandonedCases pattern (userId, caseId, type, read, createdAt)", async () => {
-    const { t, userAId, userBId, caseId } = await seedJointActiveEnv();
+    const { t, caseId } = await seedJointActiveEnv();
 
     await t
       .withIdentity({ email: "partyA@test.com" })
