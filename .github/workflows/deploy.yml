@@ -1,11 +1,13 @@
 name: deploy
 
-# Runs only after the `ci` workflow completes successfully on main.
+# Runs automatically after the `ci` workflow completes successfully on main,
+# or on demand via "Run workflow" in the Actions tab (bypasses the CI gate).
 on:
   workflow_run:
     workflows: ["ci"]
     types: [completed]
     branches: [main]
+  workflow_dispatch:
 
 # Avoid overlapping production deploys.
 concurrency:
@@ -14,8 +16,8 @@ concurrency:
 
 jobs:
   deploy:
-    # Skip if CI failed/was cancelled.
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # Run on a manual dispatch, or when the gating CI run succeeded.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
