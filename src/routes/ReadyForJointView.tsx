@@ -8,43 +8,7 @@ import { LoadingSpinner } from "../components/layout/LoadingSpinner";
 import { PhaseHeader } from "../components/layout/PhaseHeader";
 import { PartyToggle } from "../components/layout/PartyToggle";
 import { useSoloActingParty } from "../hooks/useSoloActingParty";
-
-function SynthesisMarkdown({ text }: { text: string }): React.ReactElement {
-  // Simple markdown renderer for synthesis content:
-  // Handles ### headings, **bold**, and paragraph breaks.
-  const lines = text.split("\n");
-  const elements: React.ReactElement[] = [];
-  let key = 0;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (line.startsWith("### ")) {
-      elements.push(<h3 key={key++}>{line.slice(4)}</h3>);
-    } else if (line.trim() === "") {
-      // skip blank lines (paragraph breaks handled by block structure)
-    } else {
-      // Render inline bold
-      const parts: React.ReactNode[] = [];
-      let partKey = 0;
-      const regex = /\*\*(.+?)\*\*/g;
-      let lastIndex = 0;
-      let match;
-      while ((match = regex.exec(line)) !== null) {
-        if (match.index > lastIndex) {
-          parts.push(line.slice(lastIndex, match.index));
-        }
-        parts.push(<strong key={partKey++}>{match[1]}</strong>);
-        lastIndex = regex.lastIndex;
-      }
-      if (lastIndex < line.length) {
-        parts.push(line.slice(lastIndex));
-      }
-      elements.push(<p key={key++}>{parts.length > 0 ? parts : line}</p>);
-    }
-  }
-
-  return <>{elements}</>;
-}
+import { MarkdownContent } from "../components/chat/MarkdownContent";
 
 function ReadyForJointViewInner({
   caseId,
@@ -146,7 +110,7 @@ function ReadyForJointViewInner({
 
       {synthesis ? (
         <div className="cc-synthesis-card">
-          <SynthesisMarkdown text={synthesis.text} />
+          <MarkdownContent content={synthesis.text} />
         </div>
       ) : (
         <div
