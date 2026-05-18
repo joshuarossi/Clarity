@@ -1,5 +1,6 @@
 import { test, expect } from "./fixtures";
 import type { Page } from "@playwright/test";
+import { createTestUser, createTestCase, loginAs } from "./helpers";
 
 /**
  * WOR-107: Smoke tests — Playwright infrastructure validation
@@ -72,5 +73,58 @@ test.describe("AC 3: twoUserContexts fixture", () => {
     const bodyTextA = await pageA.locator("body").innerText();
     const bodyTextB = await pageB.locator("body").innerText();
     expect(bodyTextA).not.toBe(bodyTextB);
+  });
+});
+
+// ── WOR-166 AC: loginAs authenticates via ConvexCredentials ─────────────
+
+test.describe("WOR-166: loginAs creates a real Convex Auth session", () => {
+  test("loginAs creates a session that persists across navigation", async ({
+    browser,
+  }) => {
+    const { email } = await createTestUser();
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await loginAs(page, email);
+
+    // Navigate to dashboard — should not redirect to /login
+    await page.goto("/dashboard");
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/dashboard/);
+
+    // Navigate away and back — session should persist
+    await page.goto("/");
+    await page.goto("/dashboard");
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(/\/dashboard/);
+
+    await context.close();
+  });
+});
+
+// ── WOR-166 AC: Full e2e test harness smoke ────────────────────────────
+
+test.describe("WOR-166: e2e test harness end-to-end", () => {
+  test("createTestUser + createTestCase + loginAs produce a working session with seeded data", async ({
+    browser,
+  }) => {
+    const { email } = await createTestUser();
+    const result = await createTestCase({
+      initiatorEmail: email,
+      category: "workplace",
+    });
+    expect(result.caseId).toBeTruthy();
+
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await loginAs(page, email);
+
+    await page.goto("/dashboard");
+    await page.waitForLoadState("networkidle");
+
+    // User should be authenticated and on the dashboard
+    await expect(page).toHaveURL(/\/dashboard/);
+
+    await context.close();
   });
 });
